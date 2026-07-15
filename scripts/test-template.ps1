@@ -153,3 +153,5 @@ finally {
         Remove-Item -LiteralPath $outside -Force
     }
 }
+
+& (Join-Path $PSScriptRoot 'test-daily-work.ps1') -Date '2026-07-15'

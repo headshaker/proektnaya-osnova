@@ -83,7 +83,12 @@ try {
             'README.md',
             'TEMPLATE-LICENSE',
             'TEMPLATE-VERSION',
+            'DAILY-WORK.md',
+            'WORK-PROFILES.md',
+            'scripts/add-entry.ps1',
             'scripts/init-project.ps1',
+            'scripts/prepare-commit-digest.ps1',
+            'scripts/rotate-history.ps1',
             '.github/workflows/knowledge-base.yml'
         )
         foreach ($path in $required) {

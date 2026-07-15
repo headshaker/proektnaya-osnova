@@ -42,7 +42,10 @@ tags:
     pwsh ./scripts/validate-vault.ps1
     pwsh ./scripts/build-project-dossier.ps1
     pwsh ./scripts/build-project-dossier.ps1 --check
+    pwsh ./scripts/rotate-history.ps1
+    pwsh ./scripts/prepare-commit-digest.ps1
     python scripts/context-budget.py
 
 `PROJECT.md` создаётся автоматически и вручную не редактируется.
 
+Команды безопасного добавления решений, вопросов и источников описаны в [ежедневном протоколе](DAILY-WORK.md). Примеры глубины управления приведены в [рабочих профилях](WORK-PROFILES.md).

@@ -8,7 +8,8 @@ $errors = [System.Collections.Generic.List[string]]::new()
 $requiredFiles = @(
     'README.md', 'AGENTS.md', 'PROJECT-BRIEF.md', 'DECISIONS.md',
     'OPEN-QUESTIONS.md', 'SOURCES.md', 'GLOSSARY.md', 'HANDOFF.md',
-    'CHANGELOG.md', 'OBSIDIAN.md', 'TEMPLATE-LICENSE', 'TEMPLATE-VERSION'
+    'CHANGELOG.md', 'OBSIDIAN.md', 'DAILY-WORK.md', 'WORK-PROFILES.md',
+    'TEMPLATE-LICENSE', 'TEMPLATE-VERSION'
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
 
@@ -50,8 +51,19 @@ if (Test-Path -LiteralPath $templateVersionPath -PathType Leaf) {
     }
 }
 
-$markdown = Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.md' |
-    Where-Object { $_.Name -ne 'PROJECT.md' -and $_.FullName -notmatch '[\\/]_templates[\\/]' }
+$markdown = @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.md' |
+    Where-Object {
+        $_.Name -ne 'PROJECT.md' -and
+        $_.FullName -notmatch '[\\/]_templates[\\/]' -and
+        $_.FullName -notmatch '[\\/]\.project[\\/]'
+    })
+$incomingLinks = @{}
+$outgoingLinks = @{}
+foreach ($file in $markdown) {
+    $relative = [System.IO.Path]::GetRelativePath($root, $file.FullName).Replace('\', '/')
+    $incomingLinks[$relative] = 0
+    $outgoingLinks[$relative] = 0
+}
 
 foreach ($file in $markdown) {
     $relative = [System.IO.Path]::GetRelativePath($root, $file.FullName).Replace('\', '/')
@@ -132,10 +144,28 @@ foreach ($file in $markdown) {
             elseif (-not (Test-Path -LiteralPath $full)) {
                 $errors.Add("${relative}: битая ссылка -> $target")
             }
+            elseif ((Test-Path -LiteralPath $full -PathType Leaf) -and
+                [System.IO.Path]::GetExtension($full) -ieq '.md') {
+                $targetRelative = [System.IO.Path]::GetRelativePath($root, $full).Replace('\', '/')
+                if ($targetRelative -cne $relative -and $incomingLinks.ContainsKey($targetRelative)) {
+                    $outgoingLinks[$relative]++
+                    $incomingLinks[$targetRelative]++
+                }
+            }
         }
         catch {
             $errors.Add("${relative}: некорректная ссылка -> $target")
         }
+    }
+}
+
+foreach ($relative in $outgoingLinks.Keys | Sort-Object) {
+    if ($relative -notmatch '^(?:docs|_inbox)/') { continue }
+    if ($outgoingLinks[$relative] -eq 0) {
+        $errors.Add("${relative}: у новой заметки нет исходящей локальной ссылки")
+    }
+    if ($incomingLinks[$relative] -eq 0) {
+        $errors.Add("${relative}: у новой заметки нет входящей локальной ссылки")
     }
 }
 

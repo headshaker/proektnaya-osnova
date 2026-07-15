@@ -25,10 +25,11 @@ tags:
 
 1. Скопируйте содержимое папки `template` из репозитория «Проектная основа» в новый репозиторий.
 2. Выполните `pwsh ./scripts/init-project.ps1 -Title "Название проекта" -Slug "project-slug"`.
-3. Заполните [бриф](PROJECT-BRIEF.md), затем [решения](DECISIONS.md) и [открытые вопросы](OPEN-QUESTIONS.md).
-4. Настройте состав [единой книги](scripts/project-dossier.manifest.json).
-5. Выполните `pwsh ./scripts/build-project-dossier.ps1` и `pwsh ./scripts/validate-vault.ps1`.
-6. Зафиксируйте первый контрольный рубеж в [передаче контекста](HANDOFF.md).
+3. Выберите [рабочий профиль](WORK-PROFILES.md) и зафиксируйте выбор решением.
+4. Заполните [бриф](PROJECT-BRIEF.md), затем [решения](DECISIONS.md) и [открытые вопросы](OPEN-QUESTIONS.md).
+5. Настройте состав [единой книги](scripts/project-dossier.manifest.json).
+6. Выполните `pwsh ./scripts/build-project-dossier.ps1` и `pwsh ./scripts/validate-vault.ps1`.
+7. Зафиксируйте первый контрольный рубеж в [передаче контекста](HANDOFF.md).
 
 ## Исполнительная картина
 
@@ -48,6 +49,8 @@ tags:
 - [Решения и допущения](DECISIONS.md)
 - [Открытые вопросы](OPEN-QUESTIONS.md)
 - [Передача контекста](HANDOFF.md)
+- [Ежедневная работа](DAILY-WORK.md)
+- [Рабочие профили](WORK-PROFILES.md)
 
 ### Канонические области
 
@@ -71,6 +74,8 @@ tags:
 2. Выполняется `pwsh ./scripts/validate-vault.ps1`.
 3. Выполняются сборка и проверка `PROJECT.md`.
 4. Готовится дайджест изменений и запрашивается разрешение владельца на публикацию.
+
+Практические команды добавления записей, ротации истории и подготовки дайджеста собраны в [ежедневном протоколе](DAILY-WORK.md).
 
 ## Лицензирование шаблона
 
