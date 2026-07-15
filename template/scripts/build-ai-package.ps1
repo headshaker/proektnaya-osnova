@@ -195,8 +195,18 @@ if ($sourceMarkdown.Length -gt 0) {
     $package += "`n`n# Адресно выбранные материалы из вложений`n"
     $package += $sourceMarkdown.ToString()
 }
-$sourceIncludedTokens = [int](($sourceResults | Measure-Object -Property includedTokens -Sum).Sum)
-$sourceFullTokens = [int](($sourceResults | Measure-Object -Property fullEstimatedTokens -Sum).Sum)
+$sourceIncludedTokens = if ($sourceResults.Count -eq 0) {
+    0
+}
+else {
+    [int](($sourceResults | Measure-Object -Property includedTokens -Sum).Sum)
+}
+$sourceFullTokens = if ($sourceResults.Count -eq 0) {
+    0
+}
+else {
+    [int](($sourceResults | Measure-Object -Property fullEstimatedTokens -Sum).Sum)
+}
 $estimatedTokens = [int]$baseReport.estimatedTokens + $sourceIncludedTokens
 $complete = [bool]$baseReport.complete -and $sourceErrors.Count -eq 0 -and $estimatedTokens -le [int]$baseReport.contentBudget
 $reduction = if ($sourceFullTokens -le 0) { 0.0 } else {
