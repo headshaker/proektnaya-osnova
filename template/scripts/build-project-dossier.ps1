@@ -2,6 +2,7 @@
 param(
     [string]$ManifestPath = (Join-Path $PSScriptRoot 'project-dossier.manifest.json'),
     [switch]$Check,
+    [switch]$AllowPlaceholders,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$RemainingArguments
 )
@@ -12,6 +13,7 @@ $ErrorActionPreference = 'Stop'
 foreach ($argument in @($RemainingArguments)) {
     if ([string]::IsNullOrWhiteSpace($argument)) { continue }
     if ($argument -eq '--check') { $Check = $true; continue }
+    if ($argument -eq '--allow-placeholders') { $AllowPlaceholders = $true; continue }
     throw "Неизвестный аргумент: $argument"
 }
 
@@ -53,7 +55,10 @@ function ConvertFrom-YamlScalar([string]$Raw, [string]$Path, [string]$Field) {
     return $value
 }
 
+$datePlaceholder = '{{' + 'DATE' + '}}'
+
 function Assert-IsoDate([string]$Value, [string]$Path, [string]$Field) {
+    if ($AllowPlaceholders -and $Value -ceq $datePlaceholder) { return }
     [DateTime]$parsed = [DateTime]::MinValue
     if (-not [DateTime]::TryParseExact(
             $Value,

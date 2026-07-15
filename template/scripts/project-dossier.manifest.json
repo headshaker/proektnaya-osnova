@@ -5,7 +5,7 @@
   "parts": [
     {
       "title": "Исполнительная картина",
-      "documents": ["README.md", "PROJECT-BRIEF.md", "HANDOFF.md"]
+      "documents": ["README.md", "PROJECT-BRIEF.md", "HANDOFF.md", "WORK-PROFILES.md"]
     },
     {
       "title": "Продукт и реализация",
@@ -22,8 +22,7 @@
     },
     {
       "title": "Служебные материалы",
-      "documents": ["AGENTS.md", "OBSIDIAN.md", "CHANGELOG.md"]
+      "documents": ["AGENTS.md", "OBSIDIAN.md", "DAILY-WORK.md", "CHANGELOG.md"]
     }
   ]
 }
-
