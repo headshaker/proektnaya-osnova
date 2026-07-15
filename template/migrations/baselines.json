@@ -37,6 +37,11 @@
       "migrations/manifest.json": "dcb87a5c928146c74c20f187d00b83d0cec477b5b67883d2ff3251004e856b64",
       "scripts/context-budget.py": "965e9f19de6e1c98bf7f945e4430c8824576d279e83f1aa55c3c4c8e9fa14ad1",
       "scripts/validate-vault.ps1": "ec62b4fd604f38c04f4a21282bacafc0c1614d942b0bac81c305da39d4b74dd3"
+    },
+    "0.4.0": {
+      ".github/workflows/knowledge-base.yml": "52909b16ffa913c58e514de1de1eb4e6e78dc3fe1922e829c809c59ad373c052",
+      "migrations/baselines.json": "48571623920bc5be4901083560c98aa254efc76d6e63cc5753ba1b2274b76f2c",
+      "migrations/manifest.json": "0e250ba8ebf7e58f1e4a88f8f3611bcf890beffb3e5b5740cf14f69f4e1bf0d3"
     }
   }
 }
