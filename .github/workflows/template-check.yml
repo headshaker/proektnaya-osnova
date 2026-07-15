@@ -30,3 +30,15 @@ jobs:
       - name: Выполнить сквозную проверку
         shell: pwsh
         run: ./scripts/test-template.ps1
+
+  package:
+    name: Выпускной пакет
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Получить репозиторий
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Проверить версию и выпускной архив
+        shell: pwsh
+        run: ./scripts/test-release.ps1
