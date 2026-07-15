@@ -5,7 +5,7 @@
   "parts": [
     {
       "title": "Исполнительная картина",
-      "documents": ["README.md", "PROJECT-BRIEF.md", "HANDOFF.md", "WORK-PROFILES.md"]
+      "documents": ["README.md", "PROJECT-BRIEF.md", "HANDOFF.md", "WORK-PROFILES.md", "CONTEXT-WORKFLOW.md"]
     },
     {
       "title": "Продукт и реализация",

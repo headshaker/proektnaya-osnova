@@ -28,7 +28,7 @@ def main() -> int:
     rows = []
     warnings = []
     for path in sorted(ROOT.rglob("*.md")):
-        if path.name in EXCLUDED or "_templates" in path.parts:
+        if path.name in EXCLUDED or "_templates" in path.parts or ".project" in path.parts:
             continue
         text = path.read_text(encoding="utf-8")
         count = tokens(text)

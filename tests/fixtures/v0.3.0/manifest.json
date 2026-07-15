@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "targetVersion": "0.4.0",
-  "supportedFromVersions": ["0.1.0", "0.1.1", "0.1.2", "0.2.0", "0.3.0"],
+  "targetVersion": "0.3.0",
+  "supportedFromVersions": ["0.1.0", "0.1.1", "0.1.2", "0.2.0"],
   "baselineFile": "migrations/baselines.json",
   "managedFiles": [
     ".github/workflows/knowledge-base.yml",
@@ -18,14 +18,11 @@
     "scripts/validate-vault.ps1"
   ],
   "additiveFiles": [
-    "CONTEXT-PROFILES.json",
-    "CONTEXT-WORKFLOW.md",
     "DAILY-WORK.md",
     "MIGRATIONS.md",
     "WORK-PROFILES.md",
     "_templates/Commit digest.md",
     "scripts/add-entry.ps1",
-    "scripts/build-context.ps1",
     "scripts/prepare-commit-digest.ps1",
     "scripts/rotate-history.ps1"
   ],

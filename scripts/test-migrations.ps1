@@ -48,15 +48,40 @@ function New-ProjectFixture(
         -Title "Миграция $Name" -Slug "migration-$Name" -Date '2026-07-01'
 
     foreach ($relative in @(
-            'MIGRATIONS.md',
-            'REGISTRY-SCHEMA.json',
-            'TEMPLATE-STATE.json',
-            'migrations',
-            'scripts/update-project.ps1',
-            'scripts/validate-registries.ps1',
-            '.github/workflows/registry-compatibility.yml'
+            'CONTEXT-PROFILES.json',
+            'CONTEXT-WORKFLOW.md',
+            'scripts/build-context.ps1'
         )) {
         Remove-SafePath $project $relative
+    }
+
+    if ($Version -ceq '0.3.0') {
+        $fixtureRoot = Join-Path $root 'tests/fixtures/v0.3.0'
+        Copy-Item -LiteralPath (Join-Path $fixtureRoot 'knowledge-base.yml') `
+            -Destination (Join-Path $project '.github/workflows/knowledge-base.yml') -Force
+        Copy-Item -LiteralPath (Join-Path $fixtureRoot 'REGISTRY-SCHEMA.json') `
+            -Destination (Join-Path $project 'REGISTRY-SCHEMA.json') -Force
+        Copy-Item -LiteralPath (Join-Path $fixtureRoot 'manifest.json') `
+            -Destination (Join-Path $project 'migrations/manifest.json') -Force
+        Copy-Item -LiteralPath (Join-Path $fixtureRoot 'baselines.json') `
+            -Destination (Join-Path $project 'migrations/baselines.json') -Force
+        $statePath = Join-Path $project 'TEMPLATE-STATE.json'
+        $state = [System.IO.File]::ReadAllText($statePath) | ConvertFrom-Json
+        $state.templateVersion = '0.3.0'
+        [System.IO.File]::WriteAllText($statePath, ($state | ConvertTo-Json -Depth 5) + "`n", $utf8)
+    }
+    else {
+        foreach ($relative in @(
+                'MIGRATIONS.md',
+                'REGISTRY-SCHEMA.json',
+                'TEMPLATE-STATE.json',
+                'migrations',
+                'scripts/update-project.ps1',
+                'scripts/validate-registries.ps1',
+                '.github/workflows/registry-compatibility.yml'
+            )) {
+            Remove-SafePath $project $relative
+        }
     }
 
     if ($Legacy) {
@@ -101,6 +126,27 @@ try {
     [System.IO.Directory]::CreateDirectory($testRoot) | Out-Null
     $updater = Join-Path $source 'scripts/update-project.ps1'
 
+    $project030 = New-ProjectFixture 'from-030' '0.3.0'
+    $plan030 = & $updater -ProjectPath $project030 -Date '2026-07-15' 6>&1 | Out-String
+    if ($plan030 -notmatch 'Это только план' -or
+        (Test-Path -LiteralPath (Join-Path $project030 'CONTEXT-PROFILES.json'))) {
+        throw 'План обновления 0.3.0 изменил проект или не сообщил о режиме планирования.'
+    }
+    & $updater -ProjectPath $project030 -Date '2026-07-15' -Apply
+    Assert-Version $project030 '0.4.0'
+    $state030 = [System.IO.File]::ReadAllText((Join-Path $project030 'TEMPLATE-STATE.json')) | ConvertFrom-Json
+    if ($state030.previousTemplateVersion -cne '0.3.0' -or $state030.templateVersion -cne '0.4.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.3.0 -> 0.4.0.'
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $project030 'CONTEXT-PROFILES.json') -PathType Leaf) -or
+        -not (Test-Path -LiteralPath (Join-Path $project030 'scripts/build-context.ps1') -PathType Leaf)) {
+        throw 'Миграция 0.3.0 не добавила файлы управления контекстом.'
+    }
+    & (Join-Path $project030 'scripts/build-context.ps1') -Profile compact -IncludeId D-001,Q-001 -Check
+    if ([System.IO.File]::ReadAllText((Join-Path $project030 '.github/workflows/knowledge-base.yml')) -notmatch 'build-context\.ps1') {
+        throw 'Официальный workflow 0.3.0 не обновлён по историческому SHA-256.'
+    }
+
     $project020 = New-ProjectFixture 'from-020' '0.2.0'
     $decisionsPath = Join-Path $project020 'DECISIONS.md'
     $decisions = [System.IO.File]::ReadAllText($decisionsPath) + "`n<!-- CANONICAL-USER-DATA -->`n"
@@ -113,13 +159,13 @@ try {
     Assert-Version $project020 '0.2.0'
 
     & $updater -ProjectPath $project020 -Date '2026-07-15' -Apply
-    Assert-Version $project020 '0.3.0'
+    Assert-Version $project020 '0.4.0'
     if ([System.IO.File]::ReadAllText($decisionsPath) -notmatch 'CANONICAL-USER-DATA') {
         throw 'Миграция изменила канонические пользовательские данные.'
     }
     $state = [System.IO.File]::ReadAllText((Join-Path $project020 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state.previousTemplateVersion -cne '0.2.0' -or $state.templateVersion -cne '0.3.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.2.0 -> 0.3.0.'
+    if ($state.previousTemplateVersion -cne '0.2.0' -or $state.templateVersion -cne '0.4.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.2.0 -> 0.4.0.'
     }
     $report = Get-ChildItem -LiteralPath (Join-Path $project020 '.project/backups') -Recurse -File -Filter 'update-report.json' |
         Select-Object -First 1
@@ -142,7 +188,7 @@ try {
         & $updater -ProjectPath $legacy -Date '2026-07-15'
     } 'Укажите проверенную исходную версию' 'проект без маркера не обновляется без FromVersion'
     & $updater -ProjectPath $legacy -FromVersion '0.1.0' -Date '2026-07-15' -Apply
-    Assert-Version $legacy '0.3.0'
+    Assert-Version $legacy '0.4.0'
     if ([System.IO.File]::ReadAllText((Join-Path $legacy '.gitignore')) -notmatch '(?m)^\.project/$') {
         throw 'Миграция старого проекта не добавила .project в .gitignore.'
     }
@@ -178,7 +224,7 @@ try {
     } 'Найдены конфликты управляемых файлов' 'изменённый управляемый файл блокирует обновление'
     Assert-Version $conflict '0.2.0'
     & $updater -ProjectPath $conflict -Date '2026-07-15' -Apply -ForceManagedFiles
-    Assert-Version $conflict '0.3.0'
+    Assert-Version $conflict '0.4.0'
     $managedBackup = Get-ChildItem -LiteralPath (Join-Path $conflict '.project/backups') -Recurse -File |
         Where-Object FullName -match 'files[\\/]scripts[\\/]build-project-dossier\.ps1$' |
         Select-Object -First 1

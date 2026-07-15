@@ -27,9 +27,10 @@ tags:
 2. Выполните `pwsh ./scripts/init-project.ps1 -Title "Название проекта" -Slug "project-slug"`.
 3. Выберите [рабочий профиль](WORK-PROFILES.md) и зафиксируйте выбор решением.
 4. Заполните [бриф](PROJECT-BRIEF.md), затем [решения](DECISIONS.md) и [открытые вопросы](OPEN-QUESTIONS.md).
-5. Настройте состав [единой книги](scripts/project-dossier.manifest.json).
-6. Выполните `pwsh ./scripts/build-project-dossier.ps1` и `pwsh ./scripts/validate-vault.ps1`.
-7. Зафиксируйте первый контрольный рубеж в [передаче контекста](HANDOFF.md).
+5. Выберите [нейтральный профиль контекста](CONTEXT-WORKFLOW.md) по доступному бюджету модели.
+6. Настройте состав [единой книги](scripts/project-dossier.manifest.json).
+7. Выполните `pwsh ./scripts/build-project-dossier.ps1` и `pwsh ./scripts/validate-vault.ps1`.
+8. Зафиксируйте первый контрольный рубеж в [передаче контекста](HANDOFF.md).
 
 ## Исполнительная картина
 
@@ -51,6 +52,7 @@ tags:
 - [Передача контекста](HANDOFF.md)
 - [Ежедневная работа](DAILY-WORK.md)
 - [Рабочие профили](WORK-PROFILES.md)
+- [Управление контекстом моделей](CONTEXT-WORKFLOW.md)
 - [Обновление основы](MIGRATIONS.md)
 
 ### Канонические области
@@ -78,6 +80,7 @@ tags:
 
 Практические команды добавления записей, ротации истории и подготовки дайджеста собраны в [ежедневном протоколе](DAILY-WORK.md).
 Проверяемое обновление существующего проекта описано в [руководстве по миграциям](MIGRATIONS.md).
+Локальный пакет контекста собирается командой `pwsh ./scripts/build-context.ps1 -Profile standard -Check` без сетевых запросов.
 
 ## Лицензирование шаблона
 
