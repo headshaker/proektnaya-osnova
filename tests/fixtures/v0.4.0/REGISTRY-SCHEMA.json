@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "compatibleTemplateVersions": ["0.1.0", "0.1.1", "0.1.2", "0.2.0", "0.3.0", "0.4.0"],
+  "registries": [
+    {
+      "path": "DECISIONS.md",
+      "formats": [
+        { "name": "decision-v1", "idPattern": "^D-\\d+$", "columns": [7] },
+        { "name": "assumption-v1", "idPattern": "^A-\\d+$", "columns": [6] }
+      ]
+    },
+    {
+      "path": "OPEN-QUESTIONS.md",
+      "formats": [
+        { "name": "open-question-v1", "idPattern": "^Q-\\d+$", "columns": [7] },
+        { "name": "closed-question-v1", "idPattern": "^Q-\\d+$", "columns": [4] }
+      ]
+    },
+    {
+      "path": "SOURCES.md",
+      "formats": [
+        { "name": "project-source-v1", "idPattern": "^S-\\d+$", "columns": [8] },
+        { "name": "external-source-v1", "idPattern": "^S-\\d+$", "columns": [7] }
+      ]
+    }
+  ]
+}
