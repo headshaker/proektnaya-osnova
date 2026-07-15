@@ -7,7 +7,7 @@ param(
     [string[]]$SourceQuery = @(),
     [ValidateRange(1024, 1000000)]
     [int]$TokenBudget,
-    [ValidateRange(256, 500000)]
+    [ValidateRange(0, 500000)]
     [int]$SourceTokenBudget,
     [string]$OutputPath = '.project/context/ai-package.md',
     [string]$ReportPath = '.project/context/ai-package-report.json',
@@ -92,6 +92,15 @@ foreach ($required in @($profilesPath, $sourceConfigPath, $contextBuilder, $inge
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "Не найден обязательный файл: $required" }
 }
 
+$sourceIds = @($ExpandSource |
+    ForEach-Object { $_ -split ',' } |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+    ForEach-Object { $_.Trim().ToUpperInvariant() } |
+    Select-Object -Unique)
+foreach ($id in $sourceIds) {
+    if ($id -notmatch '^S-\d+$') { throw "Некорректный ID источника: $id" }
+}
+
 $profiles = [System.IO.File]::ReadAllText($profilesPath) | ConvertFrom-Json
 if ([string]::IsNullOrWhiteSpace($Profile)) { $Profile = [string]$profiles.defaultProfile }
 $selectedProfile = @($profiles.profiles | Where-Object name -CEQ $Profile)
@@ -104,7 +113,10 @@ $sourceProfileProperty = $sourceConfiguration.profiles.PSObject.Properties[$Prof
 if ($null -eq $sourceProfileProperty) { throw "Для профиля '$Profile' не задан бюджет источников." }
 $sourceProfile = $sourceProfileProperty.Value
 if (-not $PSBoundParameters.ContainsKey('SourceTokenBudget')) {
-    $SourceTokenBudget = [int]$sourceProfile.sourceTokenBudget
+    $SourceTokenBudget = if ($sourceIds.Count -gt 0) { [int]$sourceProfile.sourceTokenBudget } else { 0 }
+}
+if ($sourceIds.Count -gt 0 -and $SourceTokenBudget -lt 256) {
+    throw 'Для раскрытия источников укажите SourceTokenBudget не менее 256 токенов.'
 }
 if ($SourceTokenBudget -ge $TokenBudget - 512) {
     throw 'Бюджет источников должен оставлять не менее 512 токенов базовому контексту.'
@@ -120,14 +132,6 @@ if ($Export -and -not $Force) {
     }
 }
 
-$sourceIds = @($ExpandSource |
-    ForEach-Object { $_ -split ',' } |
-    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-    ForEach-Object { $_.Trim().ToUpperInvariant() } |
-    Select-Object -Unique)
-foreach ($id in $sourceIds) {
-    if ($id -notmatch '^S-\d+$') { throw "Некорректный ID источника: $id" }
-}
 $combinedIds = @($IncludeId + $sourceIds | ForEach-Object { $_ -split ',' } |
     Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
     ForEach-Object { $_.Trim().ToUpperInvariant() } |
@@ -184,7 +188,10 @@ for ($index = 0; $index -lt $sourceIds.Count; $index++) {
         $remainingSourceBudget = [Math]::Max(0, $remainingSourceBudget - [int]$result.includedTokens)
     }
     elseif ($SourceQuery.Count -gt 0) {
-        $sourceErrors.Add("$sourceId: по заданному запросу не найдено фрагментов")
+        $sourceErrors.Add("${sourceId}: по заданному запросу не найдено фрагментов")
+    }
+    else {
+        $sourceErrors.Add("${sourceId}: не выбрано ни одного фрагмента")
     }
 }
 
