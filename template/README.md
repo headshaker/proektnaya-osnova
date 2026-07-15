@@ -21,6 +21,8 @@ tags:
 
 Требуется PowerShell 7 (`pwsh`).
 
+Файл `TEMPLATE-VERSION` фиксирует версию исходной основы и должен сохраняться для будущих миграций.
+
 1. Скопируйте содержимое папки `template` из репозитория «Проектная основа» в новый репозиторий.
 2. Выполните `pwsh ./scripts/init-project.ps1 -Title "Название проекта" -Slug "project-slug"`.
 3. Заполните [бриф](PROJECT-BRIEF.md), затем [решения](DECISIONS.md) и [открытые вопросы](OPEN-QUESTIONS.md).

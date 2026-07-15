@@ -1,6 +1,7 @@
 dist/
 .tmp-template-test*/
 .tmp-template-outside-*.md
+.tmp-release-test*/
 .DS_Store
 Thumbs.db
 desktop.ini
