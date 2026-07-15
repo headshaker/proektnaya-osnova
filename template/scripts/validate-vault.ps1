@@ -8,7 +8,7 @@ $errors = [System.Collections.Generic.List[string]]::new()
 $requiredFiles = @(
     'README.md', 'AGENTS.md', 'PROJECT-BRIEF.md', 'DECISIONS.md',
     'OPEN-QUESTIONS.md', 'SOURCES.md', 'GLOSSARY.md', 'HANDOFF.md',
-    'CHANGELOG.md', 'OBSIDIAN.md'
+    'CHANGELOG.md', 'OBSIDIAN.md', 'TEMPLATE-LICENSE', 'TEMPLATE-VERSION'
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
 
@@ -39,6 +39,14 @@ function Test-IsoDate([string]$Value) {
 foreach ($file in $requiredFiles) {
     if (-not (Test-Path -LiteralPath (Join-Path $root $file) -PathType Leaf)) {
         $errors.Add("Отсутствует обязательный файл: $file")
+    }
+}
+
+$templateVersionPath = Join-Path $root 'TEMPLATE-VERSION'
+if (Test-Path -LiteralPath $templateVersionPath -PathType Leaf) {
+    $templateVersion = [System.IO.File]::ReadAllText($templateVersionPath).Trim()
+    if ($templateVersion -notmatch '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
+        $errors.Add('TEMPLATE-VERSION: некорректная семантическая версия')
     }
 }
 

@@ -32,34 +32,99 @@ if ([System.IO.Path]::GetExtension($OutputPath) -ne '.zip') {
 if ($OutputPath.StartsWith($sourcePrefix, $comparison)) {
     throw 'Нельзя создавать архив внутри папки template.'
 }
+$checksumPath = $OutputPath + '.sha256'
+
+foreach ($target in @($OutputPath, $checksumPath)) {
+    if (-not (Test-Path -LiteralPath $target)) { continue }
+    if (-not (Test-Path -LiteralPath $target -PathType Leaf)) {
+        throw "Выходной путь не является файлом: $target"
+    }
+    if (-not $Force) {
+        throw "Файл уже существует: $target. Для замены укажите -Force."
+    }
+}
 
 & (Join-Path $PSScriptRoot 'test-template.ps1')
 
 $parent = Split-Path -Parent $OutputPath
 New-Item -ItemType Directory -Path $parent -Force | Out-Null
-if (Test-Path -LiteralPath $OutputPath) {
-    if (-not $Force) {
-        throw "Файл уже существует: $OutputPath. Для замены укажите -Force."
-    }
-    if (-not (Test-Path -LiteralPath $OutputPath -PathType Leaf)) {
-        throw "Выходной путь не является файлом: $OutputPath"
-    }
-    Remove-Item -LiteralPath $OutputPath -Force
-}
-[System.IO.Compression.ZipFile]::CreateFromDirectory(
-    $source,
-    $OutputPath,
-    [System.IO.Compression.CompressionLevel]::Optimal,
-    $false
-)
-
-$archive = [System.IO.Compression.ZipFile]::OpenRead($OutputPath)
+$temporaryId = [Guid]::NewGuid().ToString('N')
+$temporaryArchive = Join-Path $parent ('.' + [System.IO.Path]::GetFileName($OutputPath) + ".$temporaryId.tmp")
+$temporaryChecksum = $temporaryArchive + '.sha256'
 try {
-    if ($archive.Entries.Count -eq 0) {
-        throw 'Создан пустой архив.'
+    $archiveStream = [System.IO.File]::Open(
+        $temporaryArchive,
+        [System.IO.FileMode]::CreateNew,
+        [System.IO.FileAccess]::Write,
+        [System.IO.FileShare]::None
+    )
+    try {
+        $writer = [System.IO.Compression.ZipArchive]::new(
+            $archiveStream,
+            [System.IO.Compression.ZipArchiveMode]::Create,
+            $true
+        )
+        try {
+            $files = Get-ChildItem -LiteralPath $source -Recurse -File -Force |
+                Sort-Object { [System.IO.Path]::GetRelativePath($source, $_.FullName).Replace('\', '/') }
+            $fixedTimestamp = [DateTimeOffset]::new(2000, 1, 1, 0, 0, 0, [TimeSpan]::Zero)
+            foreach ($file in $files) {
+                $relative = [System.IO.Path]::GetRelativePath($source, $file.FullName).Replace('\', '/')
+                $entry = $writer.CreateEntry($relative, [System.IO.Compression.CompressionLevel]::NoCompression)
+                $entry.LastWriteTime = $fixedTimestamp
+                $inputStream = [System.IO.File]::OpenRead($file.FullName)
+                $outputStream = $entry.Open()
+                try {
+                    $inputStream.CopyTo($outputStream)
+                }
+                finally {
+                    $outputStream.Dispose()
+                    $inputStream.Dispose()
+                }
+            }
+        }
+        finally {
+            $writer.Dispose()
+        }
     }
-    Write-Host "Архив создан: $OutputPath ($($archive.Entries.Count) файлов)."
+    finally {
+        $archiveStream.Dispose()
+    }
+
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($temporaryArchive)
+    try {
+        if ($archive.Entries.Count -eq 0) {
+            throw 'Создан пустой архив.'
+        }
+        $entryCount = $archive.Entries.Count
+    }
+    finally {
+        $archive.Dispose()
+    }
+
+    $hash = (Get-FileHash -LiteralPath $temporaryArchive -Algorithm SHA256).Hash
+    $checksumLine = $hash + '  ' + [System.IO.Path]::GetFileName($OutputPath) + "`n"
+    [System.IO.File]::WriteAllText(
+        $temporaryChecksum,
+        $checksumLine,
+        [System.Text.UTF8Encoding]::new($false)
+    )
+
+    foreach ($target in @($OutputPath, $checksumPath)) {
+        if (Test-Path -LiteralPath $target -PathType Leaf) {
+            Remove-Item -LiteralPath $target -Force
+        }
+    }
+
+    Move-Item -LiteralPath $temporaryArchive -Destination $OutputPath
+    Move-Item -LiteralPath $temporaryChecksum -Destination $checksumPath
+    Write-Host "Архив создан: $OutputPath ($entryCount файлов)."
+    Write-Host "SHA-256: $checksumPath"
 }
 finally {
-    $archive.Dispose()
+    foreach ($temporary in @($temporaryArchive, $temporaryChecksum)) {
+        if (Test-Path -LiteralPath $temporary -PathType Leaf) {
+            Remove-Item -LiteralPath $temporary -Force
+        }
+    }
 }
