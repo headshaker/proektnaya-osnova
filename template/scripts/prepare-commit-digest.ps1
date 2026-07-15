@@ -86,7 +86,7 @@ if ($null -eq $ChangedFile -or $ChangedFile.Count -eq 0) {
 $changedBlock = ConvertTo-Bullets $ChangedFile 'Изменённых файлов нет.'
 $checkBlock = ConvertTo-Bullets $Check 'Проверки ещё не указаны.'
 $text = [System.IO.File]::ReadAllText($templatePath)
-$dateToken = '{{' + 'DATE' + '}}'
+$dateToken = '{{' + 'DIGEST_DATE' + '}}'
 $changedFilesToken = '{{' + 'CHANGED_FILES' + '}}'
 $checksToken = '{{' + 'CHECKS' + '}}'
 $text = $text.Replace($dateToken, $Date)

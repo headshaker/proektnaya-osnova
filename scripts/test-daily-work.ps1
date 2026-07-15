@@ -150,16 +150,22 @@ tags:
     if ($archiveMatches.Count -ne 1) { throw 'Повторная ротация продублировала архивную запись.' }
 
     $digest = Join-Path $test 'scripts/prepare-commit-digest.ps1'
-    & $digest -Date $Date -ChangedFile @('DECISIONS.md', 'OPEN-QUESTIONS.md') `
+    $digestDate = [DateTime]::ParseExact(
+        $Date,
+        'yyyy-MM-dd',
+        [System.Globalization.CultureInfo]::InvariantCulture
+    ).AddDays(1).ToString('yyyy-MM-dd')
+    & $digest -Date $digestDate -ChangedFile @('DECISIONS.md', 'OPEN-QUESTIONS.md') `
         -Check @('validate-vault: успешно', 'build-project-dossier --check: успешно')
     $digestPath = Join-Path $test '.project/commit-digest.md'
+    Assert-Contains $digestPath ([regex]::Escape("Дайджест перед коммитом — $digestDate")) 'дайджест использует текущую, а не начальную дату проекта'
     Assert-Contains $digestPath 'DECISIONS\.md' 'дайджест содержит изменённый файл'
     Assert-Contains $digestPath 'validate-vault: успешно' 'дайджест содержит результат проверки'
     Assert-Throws {
-        & $digest -Date $Date -ChangedFile 'README.md'
+        & $digest -Date $digestDate -ChangedFile 'README.md'
     } 'уже существует' 'дайджест не заменяется без -Force'
     Assert-Throws {
-        & $digest -Date $Date -ChangedFile 'README.md' -OutputPath $outside
+        & $digest -Date $digestDate -ChangedFile 'README.md' -OutputPath $outside
     } 'выходит за пределы проекта' 'дайджест нельзя записать за пределы проекта'
 
     & (Join-Path $test 'scripts/build-project-dossier.ps1')
