@@ -12,6 +12,30 @@ $requiredFiles = @(
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
 
+function Test-PathInsideRoot([string]$Root, [string]$Candidate) {
+    $rootFull = [System.IO.Path]::GetFullPath($Root).TrimEnd([char[]]@('\', '/'))
+    $candidateFull = [System.IO.Path]::GetFullPath($Candidate)
+    $comparison = if ($IsWindows) {
+        [System.StringComparison]::OrdinalIgnoreCase
+    }
+    else {
+        [System.StringComparison]::Ordinal
+    }
+    return $candidateFull.Equals($rootFull, $comparison) -or
+        $candidateFull.StartsWith($rootFull + [System.IO.Path]::DirectorySeparatorChar, $comparison)
+}
+
+function Test-IsoDate([string]$Value) {
+    [DateTime]$parsed = [DateTime]::MinValue
+    return [DateTime]::TryParseExact(
+        $Value,
+        'yyyy-MM-dd',
+        [System.Globalization.CultureInfo]::InvariantCulture,
+        [System.Globalization.DateTimeStyles]::None,
+        [ref]$parsed
+    )
+}
+
 foreach ($file in $requiredFiles) {
     if (-not (Test-Path -LiteralPath (Join-Path $root $file) -PathType Leaf)) {
         $errors.Add("Отсутствует обязательный файл: $file")
@@ -37,23 +61,80 @@ foreach ($file in $markdown) {
         if ($lines[$i].Trim() -eq '---') { $end = $i; break }
     }
     if ($end -lt 0) { $errors.Add("${relative}: YAML-заголовок не закрыт"); continue }
+    $fields = @{}
+    for ($i = 1; $i -lt $end; $i++) {
+        if ($lines[$i] -match '^([A-Za-z0-9_-]+):\s*(.*?)\s*$') {
+            $field = $Matches[1]
+            if ($fields.ContainsKey($field)) {
+                $errors.Add("${relative}: свойство $field встречается более одного раза")
+            }
+            else {
+                $fields[$field] = $Matches[2].Trim()
+            }
+        }
+    }
     foreach ($property in $requiredProperties) {
-        if (-not ($lines[1..($end - 1)] -match ('^' + [regex]::Escape($property) + ':'))) {
+        if (-not $fields.ContainsKey($property)) {
             $errors.Add("${relative}: отсутствует свойство $property")
+        }
+    }
+    if ($fields.ContainsKey('title')) {
+        $title = $fields['title']
+        if ([string]::IsNullOrWhiteSpace($title)) {
+            $errors.Add("${relative}: свойство title не должно быть пустым")
+        }
+        elseif ($title.StartsWith('"') -and
+            $title -notmatch '^"(?:[^"\\]|\\["\\/bfnrt]|\\u[0-9A-Fa-f]{4})*"$') {
+            $errors.Add("${relative}: некорректная строка YAML в свойстве title")
+        }
+        elseif ($title.StartsWith("'") -and $title -notmatch "^'(?:[^']|'')*'$") {
+            $errors.Add("${relative}: некорректная строка YAML в свойстве title")
+        }
+    }
+    foreach ($property in @('created', 'updated')) {
+        if (-not $fields.ContainsKey($property)) { continue }
+        $date = $fields[$property]
+        if ($date.StartsWith('"')) {
+            if ($date -notmatch '^"(?<value>[^"]*)"$') {
+                $errors.Add("${relative}: некорректная строка YAML в свойстве $property")
+                continue
+            }
+            $date = $Matches['value']
+        }
+        elseif ($date.StartsWith("'")) {
+            if ($date -notmatch "^'(?<value>[^']*)'$") {
+                $errors.Add("${relative}: некорректная строка YAML в свойстве $property")
+                continue
+            }
+            $date = $Matches['value']
+        }
+        if (-not (Test-IsoDate $date)) {
+            $errors.Add("${relative}: свойство $property должно быть календарной датой ГГГГ-ММ-ДД")
         }
     }
     foreach ($match in [regex]::Matches($text, '\[[^\]]+\]\((?<target>[^)]+)\)')) {
         $target = $match.Groups['target'].Value.Split('#')[0]
         if ([string]::IsNullOrWhiteSpace($target) -or $target -match '^(https?://|mailto:|#)') { continue }
-        $decoded = [System.Uri]::UnescapeDataString($target)
-        $full = [System.IO.Path]::GetFullPath((Join-Path $file.DirectoryName $decoded))
-        if (-not (Test-Path -LiteralPath $full)) { $errors.Add("${relative}: битая ссылка -> $target") }
+        try {
+            $decoded = [System.Uri]::UnescapeDataString($target)
+            $full = [System.IO.Path]::GetFullPath((Join-Path $file.DirectoryName $decoded))
+            if (-not (Test-PathInsideRoot $root $full)) {
+                $errors.Add("${relative}: ссылка выходит за пределы проекта -> $target")
+            }
+            elseif (-not (Test-Path -LiteralPath $full)) {
+                $errors.Add("${relative}: битая ссылка -> $target")
+            }
+        }
+        catch {
+            $errors.Add("${relative}: некорректная ссылка -> $target")
+        }
     }
 }
 
 foreach ($entry in @(
     @{ File = 'DECISIONS.md'; Pattern = '^\|\s*(?<id>[DA]-\d+)\s*\|' },
-    @{ File = 'OPEN-QUESTIONS.md'; Pattern = '^\|\s*(?<id>Q-\d+)\s*\|' }
+    @{ File = 'OPEN-QUESTIONS.md'; Pattern = '^\|\s*(?<id>Q-\d+)\s*\|' },
+    @{ File = 'SOURCES.md'; Pattern = '^\|\s*(?<id>S-\d+)\s*\|' }
 )) {
     $seen = @{}
     $path = Join-Path $root $entry.File
@@ -69,6 +150,6 @@ foreach ($entry in @(
 
 if ($errors.Count -gt 0) {
     $errors | ForEach-Object { Write-Error $_ -ErrorAction Continue }
-    throw "Проверка не пройдена: ошибок — $($errors.Count)."
+    throw "Проверка не пройдена: ошибок — $($errors.Count). $($errors -join '; ')"
 }
 Write-Host "Проверка пройдена: файлов — $($markdown.Count), ошибок нет."

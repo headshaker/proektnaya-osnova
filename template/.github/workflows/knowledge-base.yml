@@ -8,13 +8,24 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   knowledge-base:
-    runs-on: ubuntu-latest
+    name: База проверяется (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
     steps:
       - name: Получить репозиторий
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
       - name: Проверить структуру и ссылки
         shell: pwsh
@@ -25,5 +36,4 @@ jobs:
         run: ./scripts/build-project-dossier.ps1 --check
 
       - name: Проверить бюджет контекста
-        run: python3 scripts/context-budget.py
-
+        run: python scripts/context-budget.py --strict

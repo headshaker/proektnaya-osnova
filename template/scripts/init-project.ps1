@@ -8,16 +8,40 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+if ([string]::IsNullOrWhiteSpace($Title)) {
+    throw 'Title не должен быть пустым.'
+}
+if ($Title.Length -gt 200) {
+    throw 'Title не должен превышать 200 символов.'
+}
+if ($Title -match '[\x00-\x08\x0B\x0C\x0E-\x1F]') {
+    throw 'Title не должен содержать управляющие символы или переносы строк.'
+}
+if ($Title -match '\{\{(PROJECT_TITLE|PROJECT_SLUG|DATE)\}\}') {
+    throw 'Title не должен содержать служебные маркеры шаблона.'
+}
 if ($Slug -notmatch '^[a-z0-9][a-z0-9-]*$') {
     throw 'Slug должен содержать только строчные латинские буквы, цифры и дефисы.'
 }
-if ($Date -notmatch '^\d{4}-\d{2}-\d{2}$') {
-    throw 'Date должен иметь формат ГГГГ-ММ-ДД.'
+if ($Slug.Length -gt 63) {
+    throw 'Slug не должен превышать 63 символа.'
+}
+[DateTime]$parsedDate = [DateTime]::MinValue
+if (-not [DateTime]::TryParseExact(
+        $Date,
+        'yyyy-MM-dd',
+        [System.Globalization.CultureInfo]::InvariantCulture,
+        [System.Globalization.DateTimeStyles]::None,
+        [ref]$parsedDate
+    )) {
+    throw 'Date должен быть существующей календарной датой в формате ГГГГ-ММ-ДД.'
 }
 
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$projectTitleToken = '{{' + 'PROJECT_TITLE' + '}}'
+$yamlProjectTitleToken = '"' + $projectTitleToken + '"'
+$yamlTitle = $Title.Replace('\', '\\').Replace('"', '\"')
 $tokens = @{
-    ('{{' + 'PROJECT_TITLE' + '}}') = $Title
     ('{{' + 'PROJECT_SLUG' + '}}')  = $Slug
     ('{{' + 'DATE' + '}}')          = $Date
 }
@@ -29,7 +53,8 @@ Get-ChildItem -LiteralPath $root -Recurse -File | ForEach-Object {
         return
     }
     $text = [System.IO.File]::ReadAllText($_.FullName)
-    $updated = $text
+    $updated = $text.Replace($yamlProjectTitleToken, '"' + $yamlTitle + '"')
+    $updated = $updated.Replace($projectTitleToken, $Title)
     foreach ($token in $tokens.Keys) {
         $updated = $updated.Replace($token, $tokens[$token])
     }
