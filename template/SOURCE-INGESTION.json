@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "allowedExtensions": [
+    ".md",
+    ".txt",
+    ".pdf",
+    ".docx",
+    ".pptx",
+    ".xlsx",
+    ".xls",
+    ".msg",
+    ".html",
+    ".htm",
+    ".csv",
+    ".json",
+    ".xml",
+    ".epub"
+  ],
+  "maxInputBytes": 52428800,
+  "maxOutputCharacters": 5000000,
+  "chunkTargetTokens": 900,
+  "profiles": {
+    "compact": {
+      "sourceTokenBudget": 3000,
+      "maxChunks": 8
+    },
+    "standard": {
+      "sourceTokenBudget": 10000,
+      "maxChunks": 30
+    },
+    "extended": {
+      "sourceTokenBudget": 40000,
+      "maxChunks": 100
+    }
+  }
+}
