@@ -51,7 +51,7 @@ tags:
 
        $env:OPENAI_API_KEY="ваш-ключ"
 
-- Документация API: <https://platform.openai.com/docs/quickstart>.
+- Документация API: <https://developers.openai.com/api/docs/quickstart>.
 
 ## Claude и Anthropic
 
@@ -61,7 +61,7 @@ tags:
 - Создайте отдельный Project, если эта возможность доступна вашему тарифу.
 - Добавьте `ai-package.md` в материалы проекта или прикрепите его к новому чату.
 
-Официальная справка: <https://support.anthropic.com/>.
+Официальная справка: <https://support.claude.com/en/>.
 
 ### Через API
 
@@ -70,7 +70,7 @@ tags:
 
        $env:ANTHROPIC_API_KEY="ваш-ключ"
 
-- Документация API: <https://docs.anthropic.com/en/api/getting-started>.
+- Документация API: <https://platform.claude.com/docs/en/api/overview>.
 
 ## Gemini и Google
 
@@ -107,15 +107,15 @@ Azure OpenAI обычно настраивает администратор об
 
 ## YandexGPT
 
-- Веб-доступ и облачные сценарии настраиваются через Yandex Cloud.
-- Быстрый старт: <https://yandex.cloud/ru/docs/foundation-models/quickstart/yandexgpt>.
+- Веб-доступ и облачные сценарии настраиваются через Yandex AI Studio.
+- Официальная документация: <https://aistudio.yandex.ru/docs/ru/>.
 - Для автоматизации используйте сервисный аккаунт и механизм авторизации, рекомендованный Yandex Cloud.
 
 Не сохраняйте IAM-токены и авторизованные ключи в репозитории.
 
 ## GigaChat
 
-- Документация для разработчиков: <https://developers.sber.ru/docs/ru/gigachat/api/overview>.
+- Документация для разработчиков: <https://developers.sber.ru/docs/ru/gigachat/guides/main>.
 - Для API зарегистрируйте приложение в официальном кабинете разработчика.
 - Секрет авторизации храните вне проекта.
 
