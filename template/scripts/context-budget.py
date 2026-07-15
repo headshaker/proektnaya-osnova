@@ -2,6 +2,7 @@
 """Оценочный контроль размера контекста без сети и внешних зависимостей."""
 
 from pathlib import Path
+import argparse
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -17,6 +18,13 @@ def tokens(text: str) -> int:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="завершиться с ошибкой при предупреждениях",
+    )
+    args = parser.parse_args()
     rows = []
     warnings = []
     for path in sorted(ROOT.rglob("*.md")):
@@ -39,9 +47,8 @@ def main() -> int:
         warnings.append("базовое погружение превысило мягкий бюджет")
     for warning in warnings:
         print(f"ПРЕДУПРЕЖДЕНИЕ: {warning}")
-    return 0
+    return 1 if args.strict and warnings else 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

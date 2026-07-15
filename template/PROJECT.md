@@ -3,7 +3,7 @@ title: "Единая книга проекта"
 aliases: []
 type: generated-dossier
 status: active
-created: "2026-07-15"
+created: "{{DATE}}"
 updated: "{{DATE}}"
 tags:
   - project/dossier
@@ -25,7 +25,9 @@ tags:
 
 ### Быстрый старт
 
-1. Скопируйте папку `starter-kit` в новый репозиторий.
+Требуется PowerShell 7 (`pwsh`).
+
+1. Скопируйте содержимое папки `template` из репозитория «Проектная основа» в новый репозиторий.
 2. Выполните `pwsh ./scripts/init-project.ps1 -Title "Название проекта" -Slug "project-slug"`.
 3. Заполните [бриф](PROJECT-BRIEF.md), затем [решения](DECISIONS.md) и [открытые вопросы](OPEN-QUESTIONS.md).
 4. Настройте состав [единой книги](scripts/project-dossier.manifest.json).

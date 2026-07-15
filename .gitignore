@@ -1,7 +1,7 @@
 dist/
-.tmp-template-test/
+.tmp-template-test*/
+.tmp-template-outside-*.md
 .DS_Store
 Thumbs.db
 desktop.ini
 __pycache__/
-

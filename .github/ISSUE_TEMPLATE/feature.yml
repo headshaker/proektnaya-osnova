@@ -1,0 +1,38 @@
+name: Улучшение
+description: Предложить совместимое улучшение методики, структуры или автоматизации
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Проблема пользователя
+      description: Какой реальный сценарий сейчас неудобен или невозможен?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Предлагаемое решение
+      description: Опишите минимальное изменение и ожидаемый результат.
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Совместимость и миграция
+      description: Какие существующие проекты и форматы будут затронуты?
+    validations:
+      required: true
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Область применения
+      options:
+        - Все проекты
+        - Лёгкий профиль
+        - Основной профиль
+        - Регулируемый профиль
+    validations:
+      required: true

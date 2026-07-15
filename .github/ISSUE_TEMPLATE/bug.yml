@@ -1,0 +1,35 @@
+name: Ошибка
+description: Сообщить о воспроизводимой проблеме в шаблоне или автоматизации
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Спасибо за сообщение. Не прикладывайте секреты и закрытые материалы проекта.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Что произошло
+      description: Опишите фактическое и ожидаемое поведение.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Как воспроизвести
+      description: Укажите минимальную последовательность действий и использованную команду.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Окружение
+      description: ОС, версия PowerShell и версия шаблона.
+    validations:
+      required: true
+  - type: textarea
+    id: checks
+    attributes:
+      label: Результаты проверок
+      description: Приложите безопасный фрагмент вывода без токенов и персональных данных.
