@@ -75,7 +75,7 @@ try {
                 $entry.FullName -match '^[A-Za-z]:') {
                 throw "Небезопасный путь в архиве: $($entry.FullName)"
             }
-            $mode = (([uint32]$entry.ExternalAttributes -shr 16) -band 0xF000)
+            $mode = (([int64]$entry.ExternalAttributes -shr 16) -band 0xF000)
             if ($mode -eq 0xA000) { throw "Символьная ссылка в архиве: $($entry.FullName)" }
         }
 
