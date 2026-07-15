@@ -1,0 +1,7 @@
+dist/
+.tmp-template-test/
+.DS_Store
+Thumbs.db
+desktop.ini
+__pycache__/
+

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "output": "PROJECT.md",
+  "title": "Единая книга проекта",
+  "parts": [
+    {
+      "title": "Исполнительная картина",
+      "documents": ["README.md", "PROJECT-BRIEF.md", "HANDOFF.md"]
+    },
+    {
+      "title": "Продукт и реализация",
+      "documents": [
+        "docs/01-product.md",
+        "docs/02-architecture.md",
+        "docs/03-delivery.md",
+        "docs/04-governance-risks.md"
+      ]
+    },
+    {
+      "title": "Реестры",
+      "documents": ["DECISIONS.md", "OPEN-QUESTIONS.md", "SOURCES.md", "GLOSSARY.md"]
+    },
+    {
+      "title": "Служебные материалы",
+      "documents": ["AGENTS.md", "OBSIDIAN.md", "CHANGELOG.md"]
+    }
+  ]
+}
+

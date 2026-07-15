@@ -1,0 +1,29 @@
+name: Проверка проектной базы
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  knowledge-base:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Получить репозиторий
+        uses: actions/checkout@v5
+
+      - name: Проверить структуру и ссылки
+        shell: pwsh
+        run: ./scripts/validate-vault.ps1
+
+      - name: Проверить единую книгу
+        shell: pwsh
+        run: ./scripts/build-project-dossier.ps1 --check
+
+      - name: Проверить бюджет контекста
+        run: python3 scripts/context-budget.py
+

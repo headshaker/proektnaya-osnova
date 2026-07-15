@@ -1,0 +1,23 @@
+name: Проверка репозитория шаблона
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  template:
+    name: Шаблон разворачивается
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Получить репозиторий
+        uses: actions/checkout@v5
+
+      - name: Выполнить сквозную проверку
+        shell: pwsh
+        run: ./scripts/test-template.ps1
+
