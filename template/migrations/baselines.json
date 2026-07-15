@@ -7,7 +7,7 @@
       "scripts/init-project.ps1": "3edcf2d468132566ecf5992b1da8d1f07125e55ffc22baeaa7d0fbb38e4c23bb",
       "scripts/validate-vault.ps1": "9ca9c923b247e772f34a6932f3f1e14f375bf709b2dbc6d840601deb57b80e2a",
       "scripts/build-project-dossier.ps1": "b273d3e59bbe322f28bff8c3adf64e73e7cba3169e16481f462333f40f6bcafe",
-      "scripts/context-budget.py": "bcb547b1957ce0c21ae0c90956b41b095722b76adfbd46f3a6e29a00b733502b"
+      "scripts/context-budget.py": "bcb547b1957ce0c21ae97e54a2dd1fe20af789d2dbc6d840601deb57b80e2a"
     },
     "0.1.1": {
       ".github/workflows/knowledge-base.yml": "585d9fb981d0e9079e52cff42c6b29f7595119c4bafab0aea9deefbb95291c3f",
@@ -40,6 +40,7 @@
     },
     "0.4.0": {
       ".github/workflows/knowledge-base.yml": "52909b16ffa913c58e514de1de1eb4e6e78dc3fe1922e829c809c59ad373c052",
+      "REGISTRY-SCHEMA.json": "a40393d66ab87bb1a257a7d46a2fa4bb16e3014aa08a09792eb7c8e166de3ee6",
       "migrations/baselines.json": "48571623920bc5be4901083560c98aa254efc76d6e63cc5753ba1b2274b76f2c",
       "migrations/manifest.json": "0e250ba8ebf7e58f1e4a88f8f3611bcf890beffb3e5b5740cf14f69f4e1bf0d3"
     }
