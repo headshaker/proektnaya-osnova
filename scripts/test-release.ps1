@@ -71,7 +71,7 @@ try {
 
         foreach ($entry in $entries) {
             if ([System.IO.Path]::IsPathRooted($entry.FullName) -or
-                $entry.FullName -match '(^|[\\/])\.\.([\\/]|$)' -or
+                $entry.FullName -match '(^|[\/])\.\.([\/]|$)' -or
                 $entry.FullName -match '^[A-Za-z]:') {
                 throw "Небезопасный путь в архиве: $($entry.FullName)"
             }
@@ -81,6 +81,10 @@ try {
 
         $required = @(
             'README.md',
+            'START-HERE.md',
+            'AI-CONNECTIONS.md',
+            'INGESTION-WORKFLOW.md',
+            'SOURCE-INGESTION.json',
             'TEMPLATE-LICENSE',
             'TEMPLATE-VERSION',
             'DAILY-WORK.md',
@@ -93,7 +97,10 @@ try {
             'migrations/baselines.json',
             'migrations/manifest.json',
             'scripts/add-entry.ps1',
+            'scripts/build-ai-package.ps1',
             'scripts/build-context.ps1',
+            'scripts/ingest-sources.ps1',
+            'scripts/source-ingestion.py',
             'scripts/init-project.ps1',
             'scripts/prepare-commit-digest.ps1',
             'scripts/rotate-history.ps1',
@@ -122,6 +129,7 @@ try {
 
     [System.IO.Compression.ZipFile]::ExtractToDirectory($output, $extractPath)
     & (Join-Path $extractPath 'scripts/init-project.ps1') -Title 'Проверка выпускного архива' -Slug 'release-package-test' -Date '2000-02-29'
+    & (Join-Path $PSScriptRoot 'test-ingestion.ps1') -Date '2026-07-16'
     & (Join-Path $PSScriptRoot 'test-migrations.ps1')
 
     Write-Host 'Выпускной архив и SHA-256 прошли проверку.'
