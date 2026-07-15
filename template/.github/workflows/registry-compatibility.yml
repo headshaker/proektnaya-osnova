@@ -1,0 +1,26 @@
+name: Совместимость реестров
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  registries:
+    name: Форматы реестров совместимы
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Получить репозиторий
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Проверить решения, вопросы и источники
+        shell: pwsh
+        run: ./scripts/validate-registries.ps1

@@ -22,7 +22,7 @@
     },
     {
       "title": "Служебные материалы",
-      "documents": ["AGENTS.md", "OBSIDIAN.md", "DAILY-WORK.md", "CHANGELOG.md"]
+      "documents": ["AGENTS.md", "OBSIDIAN.md", "DAILY-WORK.md", "MIGRATIONS.md", "CHANGELOG.md"]
     }
   ]
 }

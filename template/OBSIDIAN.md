@@ -40,6 +40,7 @@ tags:
 ## Команды контроля
 
     pwsh ./scripts/validate-vault.ps1
+    pwsh ./scripts/validate-registries.ps1
     pwsh ./scripts/build-project-dossier.ps1
     pwsh ./scripts/build-project-dossier.ps1 --check
     pwsh ./scripts/rotate-history.ps1
@@ -49,3 +50,4 @@ tags:
 `PROJECT.md` создаётся автоматически и вручную не редактируется.
 
 Команды безопасного добавления решений, вопросов и источников описаны в [ежедневном протоколе](DAILY-WORK.md). Примеры глубины управления приведены в [рабочих профилях](WORK-PROFILES.md).
+Обновление самой основы выполняется из отдельного распакованного выпуска по инструкции [MIGRATIONS.md](MIGRATIONS.md).
