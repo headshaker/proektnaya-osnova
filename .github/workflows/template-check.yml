@@ -34,7 +34,7 @@ jobs:
   package:
     name: Выпускной пакет
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Получить репозиторий
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
