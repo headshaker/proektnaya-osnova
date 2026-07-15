@@ -37,7 +37,3 @@ jobs:
 
       - name: Проверить бюджет контекста
         run: python scripts/context-budget.py --strict
-
-      - name: Проверить локальный пакет контекста
-        shell: pwsh
-        run: ./scripts/build-context.ps1 -Profile compact -IncludeId D-001,Q-001 -Check

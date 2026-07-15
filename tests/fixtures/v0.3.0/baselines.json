@@ -29,14 +29,6 @@
       "scripts/validate-vault.ps1": "ea1b6135910cfb9d0b769f40395fe16713cba0c6444ee332207879bf950df333",
       "scripts/build-project-dossier.ps1": "51176023e3e3b82aeed944c2526986f2916a295d21459ec669832e125dcb30ab",
       "scripts/context-budget.py": "965e9f19de6e1c98bf7f945e4430c8824576d279e83f1aa55c3c4c8e9fa14ad1"
-    },
-    "0.3.0": {
-      ".github/workflows/knowledge-base.yml": "585d9fb981d0e9079e52cff42c6b29f7595119c4bafab0aea9deefbb95291c3f",
-      "REGISTRY-SCHEMA.json": "014ea1332d739c3fb96df79e5dd4bfa1be69ce2c46ca215152078e5ab1191251",
-      "migrations/baselines.json": "c1745f737b7a0f822dfb03336405cadd5109630936113b3bb56e51c2b349e636",
-      "migrations/manifest.json": "dcb87a5c928146c74c20f187d00b83d0cec477b5b67883d2ff3251004e856b64",
-      "scripts/context-budget.py": "965e9f19de6e1c98bf7f945e4430c8824576d279e83f1aa55c3c4c8e9fa14ad1",
-      "scripts/validate-vault.ps1": "ec62b4fd604f38c04f4a21282bacafc0c1614d942b0bac81c305da39d4b74dd3"
     }
   }
 }

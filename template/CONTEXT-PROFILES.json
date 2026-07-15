@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "defaultProfile": "standard",
+  "profiles": [
+    {
+      "name": "compact",
+      "description": "Короткое погружение для небольшого окна контекста или узкой задачи.",
+      "tokenBudget": 8000,
+      "reserveTokens": 2000,
+      "documents": ["AGENTS.md", "README.md", "HANDOFF.md", "PROJECT-BRIEF.md"],
+      "registryLimits": {
+        "DECISIONS.md": 8,
+        "OPEN-QUESTIONS.md": 8,
+        "SOURCES.md": 0
+      }
+    },
+    {
+      "name": "standard",
+      "description": "Основное погружение для проектной или инженерной задачи.",
+      "tokenBudget": 32000,
+      "reserveTokens": 8000,
+      "documents": [
+        "AGENTS.md",
+        "README.md",
+        "HANDOFF.md",
+        "PROJECT-BRIEF.md",
+        "docs/01-product.md",
+        "docs/02-architecture.md",
+        "docs/03-delivery.md",
+        "docs/04-governance-risks.md"
+      ],
+      "registryLimits": {
+        "DECISIONS.md": 30,
+        "OPEN-QUESTIONS.md": 30,
+        "SOURCES.md": 20
+      }
+    },
+    {
+      "name": "extended",
+      "description": "Расширенное погружение для большого окна контекста и междисциплинарной работы.",
+      "tokenBudget": 128000,
+      "reserveTokens": 32000,
+      "documents": [
+        "AGENTS.md",
+        "README.md",
+        "HANDOFF.md",
+        "PROJECT-BRIEF.md",
+        "WORK-PROFILES.md",
+        "DAILY-WORK.md",
+        "CONTEXT-WORKFLOW.md",
+        "docs/01-product.md",
+        "docs/02-architecture.md",
+        "docs/03-delivery.md",
+        "docs/04-governance-risks.md",
+        "GLOSSARY.md",
+        "CHANGELOG.md"
+      ],
+      "registryLimits": {
+        "DECISIONS.md": 200,
+        "OPEN-QUESTIONS.md": 200,
+        "SOURCES.md": 100
+      }
+    }
+  ]
+}

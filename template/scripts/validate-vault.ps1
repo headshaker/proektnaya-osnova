@@ -5,12 +5,14 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $errors = [System.Collections.Generic.List[string]]::new()
+$datePlaceholder = '{{' + 'DATE' + '}}'
 $requiredFiles = @(
     'README.md', 'AGENTS.md', 'PROJECT-BRIEF.md', 'DECISIONS.md',
     'OPEN-QUESTIONS.md', 'SOURCES.md', 'GLOSSARY.md', 'HANDOFF.md',
     'CHANGELOG.md', 'OBSIDIAN.md', 'DAILY-WORK.md', 'MIGRATIONS.md',
-    'WORK-PROFILES.md', 'REGISTRY-SCHEMA.json', 'TEMPLATE-LICENSE',
-    'TEMPLATE-STATE.json', 'TEMPLATE-VERSION'
+    'WORK-PROFILES.md', 'CONTEXT-WORKFLOW.md', 'CONTEXT-PROFILES.json',
+    'REGISTRY-SCHEMA.json', 'TEMPLATE-LICENSE', 'TEMPLATE-STATE.json',
+    'TEMPLATE-VERSION', 'scripts/build-context.ps1'
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
 
@@ -28,6 +30,7 @@ function Test-PathInsideRoot([string]$Root, [string]$Candidate) {
 }
 
 function Test-IsoDate([string]$Value) {
+    if ($AllowPlaceholders -and $Value -ceq $datePlaceholder) { return $true }
     [DateTime]$parsed = [DateTime]::MinValue
     return [DateTime]::TryParseExact(
         $Value,
@@ -72,6 +75,45 @@ if (Test-Path -LiteralPath $templateStatePath -PathType Leaf) {
     }
     catch {
         $errors.Add("TEMPLATE-STATE.json: некорректный JSON или структура — $($_.Exception.Message)")
+    }
+}
+
+$contextProfilesPath = Join-Path $root 'CONTEXT-PROFILES.json'
+if (Test-Path -LiteralPath $contextProfilesPath -PathType Leaf) {
+    try {
+        $contextProfiles = [System.IO.File]::ReadAllText($contextProfilesPath) | ConvertFrom-Json
+        if ($contextProfiles.schemaVersion -ne 1) {
+            $errors.Add('CONTEXT-PROFILES.json: поддерживается только schemaVersion = 1')
+        }
+        $profileNames = @($contextProfiles.profiles | ForEach-Object name)
+        if ([string]::IsNullOrWhiteSpace([string]$contextProfiles.defaultProfile) -or
+            $profileNames -cnotcontains [string]$contextProfiles.defaultProfile) {
+            $errors.Add('CONTEXT-PROFILES.json: defaultProfile не найден среди profiles')
+        }
+        $duplicates = @($profileNames | Group-Object -CaseSensitive | Where-Object Count -gt 1)
+        if ($duplicates.Count -gt 0) { $errors.Add('CONTEXT-PROFILES.json: имена профилей должны быть уникальны') }
+        foreach ($profile in @($contextProfiles.profiles)) {
+            if ([string]::IsNullOrWhiteSpace([string]$profile.name) -or
+                [int]$profile.tokenBudget -lt 512 -or [int]$profile.reserveTokens -lt 0 -or
+                [int]$profile.reserveTokens -ge [int]$profile.tokenBudget) {
+                $errors.Add("CONTEXT-PROFILES.json: профиль '$($profile.name)' содержит некорректный бюджет")
+            }
+            foreach ($document in @($profile.documents)) {
+                try {
+                    $full = [System.IO.Path]::GetFullPath((Join-Path $root ([string]$document)))
+                    if (-not (Test-PathInsideRoot $root $full) -or
+                        -not (Test-Path -LiteralPath $full -PathType Leaf)) {
+                        $errors.Add("CONTEXT-PROFILES.json: документ профиля отсутствует или выходит за пределы проекта -> $document")
+                    }
+                }
+                catch {
+                    $errors.Add("CONTEXT-PROFILES.json: некорректный путь документа -> $document")
+                }
+            }
+        }
+    }
+    catch {
+        $errors.Add("CONTEXT-PROFILES.json: некорректный JSON или структура — $($_.Exception.Message)")
     }
 }
 
