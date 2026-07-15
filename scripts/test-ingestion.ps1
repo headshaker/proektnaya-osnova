@@ -40,13 +40,14 @@ try {
 
     & (Join-Path $test 'scripts/ingest-sources.ps1') -SourceId S-002
     & (Join-Path $test 'scripts/build-ai-package.ps1') `
-        -Profile compact -ExpandSource S-002 -SourceQuery 'SLA' -RefreshSources -Check
+        -Profile compact -TokenBudget 16000 -SourceTokenBudget 2000 `
+        -ExpandSource S-002 -SourceQuery 'SLA' -RefreshSources -Check
 
     $package = [System.IO.File]::ReadAllText((Join-Path $test '.project/context/ai-package.md'))
     $report = [System.IO.File]::ReadAllText((Join-Path $test '.project/context/ai-package-report.json')) | ConvertFrom-Json
     if ($package -notmatch 'S-002-C\d+' -or $package -notmatch 'Доступность 99,9' -or
-        -not $report.complete -or $report.sourceIncludedTokens -le 0 -or
-        $report.sourceReductionPercent -lt 0) {
+        -not $report.complete -or $report.sourceAvailableTokens -le 0 -or
+        $report.sourceIncludedTokens -le 0 -or $report.sourceReductionPercent -lt 0) {
         throw 'AI-пакет не содержит выбранный фрагмент или некорректный отчёт.'
     }
 
