@@ -84,12 +84,20 @@ try {
             'TEMPLATE-LICENSE',
             'TEMPLATE-VERSION',
             'DAILY-WORK.md',
+            'MIGRATIONS.md',
+            'REGISTRY-SCHEMA.json',
+            'TEMPLATE-STATE.json',
             'WORK-PROFILES.md',
+            'migrations/baselines.json',
+            'migrations/manifest.json',
             'scripts/add-entry.ps1',
             'scripts/init-project.ps1',
             'scripts/prepare-commit-digest.ps1',
             'scripts/rotate-history.ps1',
-            '.github/workflows/knowledge-base.yml'
+            'scripts/update-project.ps1',
+            'scripts/validate-registries.ps1',
+            '.github/workflows/knowledge-base.yml',
+            '.github/workflows/registry-compatibility.yml'
         )
         foreach ($path in $required) {
             if ($entries.FullName -notcontains $path) {
@@ -111,6 +119,7 @@ try {
 
     [System.IO.Compression.ZipFile]::ExtractToDirectory($output, $extractPath)
     & (Join-Path $extractPath 'scripts/init-project.ps1') -Title 'Проверка выпускного архива' -Slug 'release-package-test' -Date '2000-02-29'
+    & (Join-Path $PSScriptRoot 'test-migrations.ps1')
 
     Write-Host 'Выпускной архив и SHA-256 прошли проверку.'
 }

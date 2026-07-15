@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "templateVersion": "0.3.0",
+  "registrySchemaVersion": 1,
+  "initializedAt": "{{DATE}}",
+  "lastUpdatedAt": "{{DATE}}",
+  "previousTemplateVersion": null
+}

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "targetVersion": "0.3.0",
+  "supportedFromVersions": ["0.1.0", "0.1.1", "0.1.2", "0.2.0"],
+  "baselineFile": "migrations/baselines.json",
+  "managedFiles": [
+    ".github/workflows/knowledge-base.yml",
+    ".github/workflows/registry-compatibility.yml",
+    "REGISTRY-SCHEMA.json",
+    "TEMPLATE-LICENSE",
+    "migrations/baselines.json",
+    "migrations/manifest.json",
+    "scripts/build-project-dossier.ps1",
+    "scripts/context-budget.py",
+    "scripts/init-project.ps1",
+    "scripts/update-project.ps1",
+    "scripts/validate-registries.ps1",
+    "scripts/validate-vault.ps1"
+  ],
+  "additiveFiles": [
+    "DAILY-WORK.md",
+    "MIGRATIONS.md",
+    "WORK-PROFILES.md",
+    "_templates/Commit digest.md",
+    "scripts/add-entry.ps1",
+    "scripts/prepare-commit-digest.ps1",
+    "scripts/rotate-history.ps1"
+  ],
+  "preservedFiles": [
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "DECISIONS.md",
+    "GLOSSARY.md",
+    "HANDOFF.md",
+    "OBSIDIAN.md",
+    "OPEN-QUESTIONS.md",
+    "PROJECT-BRIEF.md",
+    "README.md",
+    "SOURCES.md",
+    "docs",
+    "scripts/project-dossier.manifest.json"
+  ]
+}

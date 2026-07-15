@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "hashAlgorithm": "SHA256-normalized-text-v1",
+  "versions": {
+    "0.1.0": {
+      ".github/workflows/knowledge-base.yml": "9afa240490326ad7714dc5b3c71899eee55602d393049f6655bb4b59162a53d8",
+      "scripts/init-project.ps1": "3edcf2d468132566ecf5992b1da8d1f07125e55ffc22baeaa7d0fbb38e4c23bb",
+      "scripts/validate-vault.ps1": "9ca9c923b247e772f34a6932f3f1e14f375bf709b2dbc6d840601deb57b80e2a",
+      "scripts/build-project-dossier.ps1": "b273d3e59bbe322f28bff8c3adf64e73e7cba3169e16481f462333f40f6bcafe",
+      "scripts/context-budget.py": "bcb547b1957ce0c21ae0c90956b41b095722b76adfbd46f3a6e29a00b733502b"
+    },
+    "0.1.1": {
+      ".github/workflows/knowledge-base.yml": "585d9fb981d0e9079e52cff42c6b29f7595119c4bafab0aea9deefbb95291c3f",
+      "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
+      "scripts/validate-vault.ps1": "92145cd0b7773dfd3ce0ee37598f8aac957365b5e71b236a361b5e92bfaf5213",
+      "scripts/build-project-dossier.ps1": "73121520daf21bcb0f4b7d0ecf090ef8d3209314cbfe9ac0220949f8b8a4bd0f",
+      "scripts/context-budget.py": "965e9f19de6e1c98bf7f945e4430c8824576d279e83f1aa55c3c4c8e9fa14ad1"
+    },
+    "0.1.2": {
+      ".github/workflows/knowledge-base.yml": "585d9fb981d0e9079e52cff42c6b29f7595119c4bafab0aea9deefbb95291c3f",
+      "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
+      "scripts/validate-vault.ps1": "a236f81290a0bd33f2574ca376d4747d415f90b431aa6645552290697d3e2b43",
+      "scripts/build-project-dossier.ps1": "73121520daf21bcb0f4b7d0ecf090ef8d3209314cbfe9ac0220949f8b8a4bd0f",
+      "scripts/context-budget.py": "965e9f19de6e1c98bf7f945e4430c8824576d279e83f1aa55c3c4c8e9fa14ad1"
+    },
+    "0.2.0": {
+      ".github/workflows/knowledge-base.yml": "585d9fb981d0e9079e52cff42c6b29f7595119c4bafab0aea9deefbb95291c3f",
+      "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
+      "scripts/validate-vault.ps1": "ea1b6135910cfb9d0b769f40395fe16713cba0c6444ee332207879bf950df333",
+      "scripts/build-project-dossier.ps1": "51176023e3e3b82aeed944c2526986f2916a295d21459ec669832e125dcb30ab",
+      "scripts/context-budget.py": "965e9f19de6e1c98bf7f945e4430c8824576d279e83f1aa55c3c4c8e9fa14ad1"
+    }
+  }
+}

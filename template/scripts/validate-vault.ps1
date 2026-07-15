@@ -8,8 +8,9 @@ $errors = [System.Collections.Generic.List[string]]::new()
 $requiredFiles = @(
     'README.md', 'AGENTS.md', 'PROJECT-BRIEF.md', 'DECISIONS.md',
     'OPEN-QUESTIONS.md', 'SOURCES.md', 'GLOSSARY.md', 'HANDOFF.md',
-    'CHANGELOG.md', 'OBSIDIAN.md', 'DAILY-WORK.md', 'WORK-PROFILES.md',
-    'TEMPLATE-LICENSE', 'TEMPLATE-VERSION'
+    'CHANGELOG.md', 'OBSIDIAN.md', 'DAILY-WORK.md', 'MIGRATIONS.md',
+    'WORK-PROFILES.md', 'REGISTRY-SCHEMA.json', 'TEMPLATE-LICENSE',
+    'TEMPLATE-STATE.json', 'TEMPLATE-VERSION'
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
 
@@ -44,10 +45,33 @@ foreach ($file in $requiredFiles) {
 }
 
 $templateVersionPath = Join-Path $root 'TEMPLATE-VERSION'
+$templateVersion = $null
 if (Test-Path -LiteralPath $templateVersionPath -PathType Leaf) {
     $templateVersion = [System.IO.File]::ReadAllText($templateVersionPath).Trim()
     if ($templateVersion -notmatch '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
         $errors.Add('TEMPLATE-VERSION: некорректная семантическая версия')
+    }
+}
+
+$templateStatePath = Join-Path $root 'TEMPLATE-STATE.json'
+if (Test-Path -LiteralPath $templateStatePath -PathType Leaf) {
+    try {
+        $templateState = [System.IO.File]::ReadAllText($templateStatePath) | ConvertFrom-Json
+        if ($templateState.schemaVersion -ne 1) { $errors.Add('TEMPLATE-STATE.json: поддерживается только schemaVersion = 1') }
+        if ($templateState.templateVersion -cne $templateVersion) {
+            $errors.Add('TEMPLATE-STATE.json: templateVersion не совпадает с TEMPLATE-VERSION')
+        }
+        if ($templateState.registrySchemaVersion -ne 1) {
+            $errors.Add('TEMPLATE-STATE.json: поддерживается только registrySchemaVersion = 1')
+        }
+        foreach ($property in @('initializedAt', 'lastUpdatedAt')) {
+            if (-not (Test-IsoDate ([string]$templateState.$property))) {
+                $errors.Add("TEMPLATE-STATE.json: $property должен быть календарной датой ГГГГ-ММ-ДД")
+            }
+        }
+    }
+    catch {
+        $errors.Add("TEMPLATE-STATE.json: некорректный JSON или структура — $($_.Exception.Message)")
     }
 }
 
@@ -190,4 +214,5 @@ if ($errors.Count -gt 0) {
     $errors | ForEach-Object { Write-Error $_ -ErrorAction Continue }
     throw "Проверка не пройдена: ошибок — $($errors.Count). $($errors -join '; ')"
 }
+& (Join-Path $PSScriptRoot 'validate-registries.ps1') -ProjectPath $root
 Write-Host "Проверка пройдена: файлов — $($markdown.Count), ошибок нет."
