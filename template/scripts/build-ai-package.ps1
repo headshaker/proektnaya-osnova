@@ -115,13 +115,6 @@ $sourceProfile = $sourceProfileProperty.Value
 if (-not $PSBoundParameters.ContainsKey('SourceTokenBudget')) {
     $SourceTokenBudget = if ($sourceIds.Count -gt 0) { [int]$sourceProfile.sourceTokenBudget } else { 0 }
 }
-if ($sourceIds.Count -gt 0 -and $SourceTokenBudget -lt 256) {
-    throw 'Для раскрытия источников укажите SourceTokenBudget не менее 256 токенов.'
-}
-if ($SourceTokenBudget -ge $TokenBudget - 512) {
-    throw 'Бюджет источников должен оставлять не менее 512 токенов базовому контексту.'
-}
-$baseTokenBudget = $TokenBudget - $SourceTokenBudget
 
 $outputFull = Get-SafePath $OutputPath 'OutputPath' -LocalContextOnly:(-not $Export) -ExportTarget:$Export
 $reportFull = Get-SafePath $ReportPath 'ReportPath' -LocalContextOnly:(-not $Export) -ExportTarget:$Export
@@ -132,18 +125,13 @@ if ($Export -and -not $Force) {
     }
 }
 
-$combinedIds = @($IncludeId + $sourceIds | ForEach-Object { $_ -split ',' } |
-    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-    ForEach-Object { $_.Trim().ToUpperInvariant() } |
-    Select-Object -Unique)
-
 $baseOutputRelative = '.project/context/base-context.md'
 $baseReportRelative = '.project/context/base-context-report.json'
 $contextArguments = @{
     Profile = $Profile
-    IncludeId = $combinedIds
+    IncludeId = $IncludeId
     Query = $Query
-    TokenBudget = $baseTokenBudget
+    TokenBudget = $TokenBudget
     OutputPath = $baseOutputRelative
     ReportPath = $baseReportRelative
 }
@@ -154,44 +142,51 @@ $baseOutputFull = Get-SafePath $baseOutputRelative 'Базовый пакет' -
 $baseReportFull = Get-SafePath $baseReportRelative 'Отчёт базового пакета' -LocalContextOnly
 $baseText = [System.IO.File]::ReadAllText($baseOutputFull)
 $baseReport = [System.IO.File]::ReadAllText($baseReportFull) | ConvertFrom-Json
+$freeContentTokens = [Math]::Max(0, [int]$baseReport.contentBudget - [int]$baseReport.estimatedTokens)
+$availableSourceBudget = [Math]::Min($SourceTokenBudget, $freeContentTokens)
 
 $python = if ($sourceIds.Count -gt 0) { Get-PythonCommand } else { $null }
-$remainingSourceBudget = $SourceTokenBudget
+$remainingSourceBudget = $availableSourceBudget
 $sourceResults = [System.Collections.Generic.List[object]]::new()
 $sourceErrors = [System.Collections.Generic.List[string]]::new()
 $sourceMarkdown = [System.Text.StringBuilder]::new()
 
-for ($index = 0; $index -lt $sourceIds.Count; $index++) {
-    $sourceId = $sourceIds[$index]
-    $remainingCount = $sourceIds.Count - $index
-    $perSourceBudget = [Math]::Max(1, [int][Math]::Floor($remainingSourceBudget / $remainingCount))
-    $arguments = @($python.Prefix) + @(
-        $ingestionScript, 'select', '--source-id', $sourceId,
-        '--token-budget', [string]$perSourceBudget,
-        '--max-chunks', [string][int]$sourceProfile.maxChunks
-    )
-    foreach ($term in @($SourceQuery | ForEach-Object { $_ -split ',' } | Where-Object { $_ })) {
-        $arguments += @('--query', $term.Trim())
-    }
-    if ($RefreshSources) { $arguments += '--refresh' }
-    $output = @(& $python.Path @arguments 2>&1)
-    if ($LASTEXITCODE -ne 0) {
-        $sourceErrors.Add("${sourceId}: $($output -join [Environment]::NewLine)")
-        continue
-    }
-    $result = ($output -join "`n") | ConvertFrom-Json
-    $sourceResults.Add($result)
-    if ($result.matched -and -not [string]::IsNullOrWhiteSpace([string]$result.markdown)) {
-        [void]$sourceMarkdown.AppendLine()
-        [void]$sourceMarkdown.Append(([string]$result.markdown).TrimEnd())
-        [void]$sourceMarkdown.AppendLine()
-        $remainingSourceBudget = [Math]::Max(0, $remainingSourceBudget - [int]$result.includedTokens)
-    }
-    elseif ($SourceQuery.Count -gt 0) {
-        $sourceErrors.Add("${sourceId}: по заданному запросу не найдено фрагментов")
-    }
-    else {
-        $sourceErrors.Add("${sourceId}: не выбрано ни одного фрагмента")
+if ($sourceIds.Count -gt 0 -and $availableSourceBudget -le 0) {
+    $sourceErrors.Add('В выбранном профиле не осталось свободного бюджета для вложений. Увеличьте TokenBudget или используйте более крупный профиль.')
+}
+else {
+    for ($index = 0; $index -lt $sourceIds.Count; $index++) {
+        $sourceId = $sourceIds[$index]
+        $remainingCount = $sourceIds.Count - $index
+        $perSourceBudget = [Math]::Max(1, [int][Math]::Floor($remainingSourceBudget / $remainingCount))
+        $arguments = @($python.Prefix) + @(
+            $ingestionScript, 'select', '--source-id', $sourceId,
+            '--token-budget', [string]$perSourceBudget,
+            '--max-chunks', [string][int]$sourceProfile.maxChunks
+        )
+        foreach ($term in @($SourceQuery | ForEach-Object { $_ -split ',' } | Where-Object { $_ })) {
+            $arguments += @('--query', $term.Trim())
+        }
+        if ($RefreshSources) { $arguments += '--refresh' }
+        $output = @(& $python.Path @arguments 2>&1)
+        if ($LASTEXITCODE -ne 0) {
+            $sourceErrors.Add("${sourceId}: $($output -join [Environment]::NewLine)")
+            continue
+        }
+        $result = ($output -join "`n") | ConvertFrom-Json
+        $sourceResults.Add($result)
+        if ($result.matched -and -not [string]::IsNullOrWhiteSpace([string]$result.markdown)) {
+            [void]$sourceMarkdown.AppendLine()
+            [void]$sourceMarkdown.Append(([string]$result.markdown).TrimEnd())
+            [void]$sourceMarkdown.AppendLine()
+            $remainingSourceBudget = [Math]::Max(0, $remainingSourceBudget - [int]$result.includedTokens)
+        }
+        elseif ($SourceQuery.Count -gt 0) {
+            $sourceErrors.Add("${sourceId}: по заданному запросу не найдено фрагментов")
+        }
+        else {
+            $sourceErrors.Add("${sourceId}: не выбрано ни одного фрагмента")
+        }
     }
 }
 
@@ -203,7 +198,7 @@ if ($sourceMarkdown.Length -gt 0) {
 $sourceIncludedTokens = [int](($sourceResults | Measure-Object -Property includedTokens -Sum).Sum)
 $sourceFullTokens = [int](($sourceResults | Measure-Object -Property fullEstimatedTokens -Sum).Sum)
 $estimatedTokens = [int]$baseReport.estimatedTokens + $sourceIncludedTokens
-$complete = [bool]$baseReport.complete -and $sourceErrors.Count -eq 0 -and $estimatedTokens -le $TokenBudget
+$complete = [bool]$baseReport.complete -and $sourceErrors.Count -eq 0 -and $estimatedTokens -le [int]$baseReport.contentBudget
 $reduction = if ($sourceFullTokens -le 0) { 0.0 } else {
     [Math]::Max(0.0, [Math]::Round(100 * (1 - $sourceIncludedTokens / $sourceFullTokens), 1))
 }
@@ -216,8 +211,9 @@ $report = [ordered]@{
     transmissionPerformed = $false
     networkRequests = 0
     tokenBudget = $TokenBudget
-    baseTokenBudget = $baseTokenBudget
+    contentBudget = [int]$baseReport.contentBudget
     sourceTokenBudget = $SourceTokenBudget
+    sourceAvailableTokens = $availableSourceBudget
     estimatedTokens = $estimatedTokens
     complete = $complete
     baseReportPath = $baseReportRelative
@@ -238,6 +234,6 @@ if ($Check -and -not $complete) {
     $reasons = [System.Collections.Generic.List[string]]::new()
     if (-not $baseReport.complete) { $reasons.Add('базовый контекст неполон') }
     if ($sourceErrors.Count -gt 0) { $reasons.Add($sourceErrors -join '; ') }
-    if ($estimatedTokens -gt $TokenBudget) { $reasons.Add('общий пакет превышает бюджет') }
+    if ($estimatedTokens -gt [int]$baseReport.contentBudget) { $reasons.Add('содержимое пакета превышает бюджет после резерва ответа') }
     throw 'AI-пакет неполон: ' + ($reasons -join '; ')
 }
