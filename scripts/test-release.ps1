@@ -82,7 +82,16 @@ try {
         $required = @(
             'README.md',
             'START-HERE.md',
+            'AI-OPERATING-MODEL.md',
+            'VIRTUAL-SPECIALISTS.md',
+            'PROMPTING-GUIDE.md',
             'AI-CONNECTIONS.md',
+            'OBSIDIAN.md',
+            'AGENTS.md',
+            'AGENTS.override.md',
+            'CLAUDE.md',
+            'GEMINI.md',
+            '.github/copilot-instructions.md',
             'INGESTION-WORKFLOW.md',
             'SOURCE-INGESTION.json',
             'TEMPLATE-LICENSE',
@@ -129,10 +138,11 @@ try {
 
     [System.IO.Compression.ZipFile]::ExtractToDirectory($output, $extractPath)
     & (Join-Path $extractPath 'scripts/init-project.ps1') -Title 'Проверка выпускного архива' -Slug 'release-package-test' -Date '2000-02-29'
+    & (Join-Path $PSScriptRoot 'test-agent-guides.ps1') -Date '2026-07-16'
     & (Join-Path $PSScriptRoot 'test-ingestion.ps1') -Date '2026-07-16'
     & (Join-Path $PSScriptRoot 'test-migrations.ps1')
 
-    Write-Host 'Выпускной архив и SHA-256 прошли проверку.'
+    Write-Host 'Выпускной архив, агентные инструкции и SHA-256 прошли проверку.'
 }
 finally {
     if (Test-Path -LiteralPath $testRoot) {
