@@ -7,7 +7,7 @@
       "scripts/init-project.ps1": "3edcf2d468132566ecf5992b1da8d1f07125e55ffc22baeaa7d0fbb38e4c23bb",
       "scripts/validate-vault.ps1": "9ca9c923b247e772f34a6932f3f1e14f375bf709b2dbc6d840601deb57b80e2a",
       "scripts/build-project-dossier.ps1": "b273d3e59bbe322f28bff8c3adf64e73e7cba3169e16481f462333f40f6bcafe",
-      "scripts/context-budget.py": "bcb547b1957ce0c21ae97e54a2dd1fe20af789d2dbc6d840601deb57b80e2a"
+      "scripts/context-budget.py": "bcb547b1957ce0c21ae0c90956b41b095722b76adfbd46f3a6e29a00b733502b"
     },
     "0.1.1": {
       ".github/workflows/knowledge-base.yml": "585d9fb981d0e9079e52cff42c6b29f7595119c4bafab0aea9deefbb95291c3f",
@@ -45,15 +45,9 @@
       "migrations/manifest.json": "0e250ba8ebf7e58f1e4a88f8f3611bcf890beffb3e5b5740cf14f69f4e1bf0d3"
     },
     "0.5.0": {
-      "AGENTS.md": "a3aa623fd7436a697994ef5cd1face2188de13db7e7fd78c316f69f62e85bec6",
-      "AI-CONNECTIONS.md": "2447bbd9a85ce8e91ca8860cc7a23deb79abe2e28c3e04305c0a67be55539262",
-      "DAILY-WORK.md": "90a12f11f2e4e1c64b85792c3e60a979611175a12e42cb34b4fe83dc3f520f21",
-      "OBSIDIAN.md": "11d2d3e0809215b2754c645c551bed3b807e203e785ea5e06d1cdfd274b518e7",
       "REGISTRY-SCHEMA.json": "4424add3dc79802131f7e06fb82d902dcd55c9d33c47cc71c6338f7f2d1faf5e",
-      "START-HERE.md": "30071b2e2d497b34b26dc060118a883eae6e634ece26bb3c84a55b52a71b991f",
-      "migrations/baselines.json": "8ba2df80d31971a5f2ba0da5eea685d46029940cca8540447faeaab9df5b1f4d",
-      "migrations/manifest.json": "f966c17b74d1396e08f6a63d2774ab7e9b135d04891eeedd176a23d5174d73ad",
-      "scripts/project-dossier.manifest.json": "5883f17b7f9c2201ebb96e4959ead63c9256a3ae8049721a39e67f17f803c8c1"
+      "migrations/baselines.json": "acca9cd37500ee9c764fc667e19f9ee1a1c2e192f0a976c8bb902bef7aa4a2cb",
+      "migrations/manifest.json": "f966c17b74d1396e08f6a63d2774ab7e9b135d04891eeedd176a23d5174d73ad"
     }
   }
 }
