@@ -43,6 +43,17 @@
       "REGISTRY-SCHEMA.json": "a40393d66ab87bb1a257a7d46a2fa4bb16e3014aa08a09792eb7c8e166de3ee6",
       "migrations/baselines.json": "48571623920bc5be4901083560c98aa254efc76d6e63cc5753ba1b2274b76f2c",
       "migrations/manifest.json": "0e250ba8ebf7e58f1e4a88f8f3611bcf890beffb3e5b5740cf14f69f4e1bf0d3"
+    },
+    "0.5.0": {
+      "AGENTS.md": "a3aa623fd7436a697994ef5cd1face2188de13db7e7fd78c316f69f62e85bec6",
+      "AI-CONNECTIONS.md": "2447bbd9a85ce8e91ca8860cc7a23deb79abe2e28c3e04305c0a67be55539262",
+      "DAILY-WORK.md": "90a12f11f2e4e1c64b85792c3e60a979611175a12e42cb34b4fe83dc3f520f21",
+      "OBSIDIAN.md": "11d2d3e0809215b2754c645c551bed3b807e203e785ea5e06d1cdfd274b518e7",
+      "REGISTRY-SCHEMA.json": "4424add3dc79802131f7e06fb82d902dcd55c9d33c47cc71c6338f7f2d1faf5e",
+      "START-HERE.md": "30071b2e2d497b34b26dc060118a883eae6e634ece26bb3c84a55b52a71b991f",
+      "migrations/baselines.json": "8ba2df80d31971a5f2ba0da5eea685d46029940cca8540447faeaab9df5b1f4d",
+      "migrations/manifest.json": "f966c17b74d1396e08f6a63d2774ab7e9b135d04891eeedd176a23d5174d73ad",
+      "scripts/project-dossier.manifest.json": "5883f17b7f9c2201ebb96e4959ead63c9256a3ae8049721a39e67f17f803c8c1"
     }
   }
 }
