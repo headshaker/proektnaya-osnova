@@ -1,8 +1,8 @@
-# Одноразовая диагностика токена и запуск восстановления через специальный PR владельца.
+# Одноразовая диагностика токена и запуск восстановления через специальный PR.
 name: Одноразовый запуск восстановления релизов
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
 
@@ -14,7 +14,6 @@ permissions:
 jobs:
   dispatch:
     if: >-
-      github.event.pull_request.user.login == github.repository_owner &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.title == 'RUN: восстановить релизы'
     name: Проверить токен и запустить восстановление
