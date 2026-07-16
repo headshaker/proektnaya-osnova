@@ -73,25 +73,23 @@ def resolve_reference(
     if normalized.startswith("./"):
         normalized = normalized[2:]
 
-    candidates: list[str] = []
     current_dir = current_file.parent.relative_to(root).as_posix()
     if current_dir == ".":
         current_dir = ""
 
+    # A path relative to the current document is the least surprising result.
     relative_candidate = Path(current_dir, normalized).as_posix() if current_dir else normalized
     if relative_candidate in all_files:
-        candidates.append(relative_candidate)
-    if normalized in all_files and normalized not in candidates:
-        candidates.append(normalized)
-    if "/" not in normalized:
-        for candidate in by_name.get(normalized, []):
-            if candidate not in candidates:
-                candidates.append(candidate)
-
-    if len(candidates) != 1:
+        target = relative_candidate
+    # An explicit repository-root path has the next priority.
+    elif normalized in all_files:
+        target = normalized
+    # A bare basename is accepted only when it is unique in the repository.
+    elif "/" not in normalized and len(by_name.get(normalized, [])) == 1:
+        target = by_name[normalized][0]
+    else:
         return None
 
-    target = candidates[0]
     relative_target = os.path.relpath(root / target, current_file.parent).replace(os.sep, "/")
     if not relative_target.startswith("."):
         relative_target = f"./{relative_target}"
@@ -179,7 +177,7 @@ def main() -> int:
         return 0
 
     if pending:
-        print("Unlinked references to existing files:", file=sys.stderr)
+        print("Unlinked code-formatted references to existing files:", file=sys.stderr)
         for path, _, changes in pending:
             relative = path.relative_to(root).as_posix()
             for line_number, target in changes:
