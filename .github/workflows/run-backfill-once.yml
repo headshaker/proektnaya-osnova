@@ -1,10 +1,10 @@
-# Одноразовая диагностика наличия токена и запуск восстановления по команде в PR №11.
+# Одноразовая диагностика токена и запуск восстановления через специальный PR владельца.
 name: Одноразовый запуск восстановления релизов
 
 on:
-  issue_comment:
+  pull_request_target:
     types:
-      - created
+      - opened
 
 permissions:
   actions: write
@@ -13,7 +13,10 @@ permissions:
 
 jobs:
   dispatch:
-    if: github.event.issue.number == 11 && github.event.comment.body == '/run-release-backfill'
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.title == 'RUN: восстановить релизы'
     name: Проверить токен и запустить восстановление
     runs-on: ubuntu-latest
     timeout-minutes: 5
