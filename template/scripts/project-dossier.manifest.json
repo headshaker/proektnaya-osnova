@@ -8,10 +8,21 @@
       "documents": [
         "README.md",
         "START-HERE.md",
+        "AI-OPERATING-MODEL.md",
         "PROJECT-BRIEF.md",
         "HANDOFF.md",
         "WORK-PROFILES.md",
         "CONTEXT-WORKFLOW.md"
+      ]
+    },
+    {
+      "title": "Работа руководителя с ИИ",
+      "documents": [
+        "PROMPTING-GUIDE.md",
+        "VIRTUAL-SPECIALISTS.md",
+        "AI-CONNECTIONS.md",
+        "OBSIDIAN.md",
+        "DAILY-WORK.md"
       ]
     },
     {
@@ -30,11 +41,8 @@
     {
       "title": "Служебные материалы",
       "documents": [
-        "AI-CONNECTIONS.md",
         "INGESTION-WORKFLOW.md",
         "AGENTS.md",
-        "OBSIDIAN.md",
-        "DAILY-WORK.md",
         "MIGRATIONS.md",
         "CHANGELOG.md"
       ]
