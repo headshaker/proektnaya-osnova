@@ -1,0 +1,53 @@
+name: Подготовка 0.7.0 в PR
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Получить ветку
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          ref: agent/interactive-registry-references
+          fetch-depth: 0
+
+      - name: Выполнить подготовку версии
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          workflow = Path('.github/workflows/bump-070.yml').read_text(encoding='utf-8')
+          marker = "          python - <<'PY'\n"
+          start = workflow.index(marker) + len(marker)
+          end = workflow.index("\n          PY", start)
+          lines = workflow[start:end].splitlines()
+          script = '\n'.join(line[10:] if line.startswith('          ') else line for line in lines)
+          exec(compile(script, 'bump-070.py', 'exec'))
+          PY
+
+      - name: Проверить выпуск
+        shell: pwsh
+        run: ./scripts/test-release.ps1
+
+      - name: Зафиксировать изменения
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Изменений нет."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Подготовить выпуск 0.7.0"
+          git push origin HEAD:agent/interactive-registry-references
