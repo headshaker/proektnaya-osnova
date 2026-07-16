@@ -38,6 +38,7 @@ jobs:
       - name: Восстановить цепочку выпусков
         shell: bash
         run: |
+          exec > >(tee "$RUNNER_TEMP/backfill.log") 2>&1
           set -euo pipefail
 
           git fetch --force --tags origin
@@ -156,4 +157,15 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          gh pr comment 11 --body "Восстановление релизов завершилось ошибкой: [GitHub Actions run #${GITHUB_RUN_NUMBER}, попытка ${GITHUB_RUN_ATTEMPT}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
+          {
+            echo "Восстановление релизов завершилось ошибкой: [GitHub Actions run #${GITHUB_RUN_NUMBER}, попытка ${GITHUB_RUN_ATTEMPT}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
+            echo
+            echo '```text'
+            if [[ -f "$RUNNER_TEMP/backfill.log" ]]; then
+              tail -n 80 "$RUNNER_TEMP/backfill.log"
+            else
+              echo "Локальный лог шага не создан."
+            fi
+            echo '```'
+          } > "$RUNNER_TEMP/backfill-failure.md"
+          gh pr comment 11 --body-file "$RUNNER_TEMP/backfill-failure.md"
