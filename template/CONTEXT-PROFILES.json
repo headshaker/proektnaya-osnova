@@ -4,10 +4,10 @@
   "profiles": [
     {
       "name": "compact",
-      "description": "Короткое погружение для небольшого окна контекста или узкой задачи.",
+      "description": "Короткое погружение в полномочия ИИ, состояние и границы проекта для узкой задачи.",
       "tokenBudget": 8000,
       "reserveTokens": 2000,
-      "documents": ["AGENTS.md", "README.md", "HANDOFF.md", "PROJECT-BRIEF.md"],
+      "documents": ["AGENTS.override.md", "README.md", "HANDOFF.md", "PROJECT-BRIEF.md"],
       "registryLimits": {
         "DECISIONS.md": 8,
         "OPEN-QUESTIONS.md": 8,
@@ -16,11 +16,12 @@
     },
     {
       "name": "standard",
-      "description": "Основное погружение для проектной или инженерной задачи.",
+      "description": "Основное погружение ИИ-оператора для проектной или инженерной задачи.",
       "tokenBudget": 32000,
       "reserveTokens": 8000,
       "documents": [
         "AGENTS.md",
+        "AI-OPERATING-MODEL.md",
         "README.md",
         "HANDOFF.md",
         "PROJECT-BRIEF.md",
@@ -37,11 +38,14 @@
     },
     {
       "name": "extended",
-      "description": "Расширенное погружение для большого окна контекста и междисциплинарной работы.",
+      "description": "Расширенное междисциплинарное погружение с правилами оркестрации и рабочими руководствами.",
       "tokenBudget": 128000,
       "reserveTokens": 32000,
       "documents": [
         "AGENTS.md",
+        "AI-OPERATING-MODEL.md",
+        "VIRTUAL-SPECIALISTS.md",
+        "PROMPTING-GUIDE.md",
         "README.md",
         "HANDOFF.md",
         "PROJECT-BRIEF.md",
