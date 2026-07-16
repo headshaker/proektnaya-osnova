@@ -48,11 +48,6 @@
       "REGISTRY-SCHEMA.json": "4424add3dc79802131f7e06fb82d902dcd55c9d33c47cc71c6338f7f2d1faf5e",
       "migrations/baselines.json": "acca9cd37500ee9c764fc667e19f9ee1a1c2e192f0a976c8bb902bef7aa4a2cb",
       "migrations/manifest.json": "f966c17b74d1396e08f6a63d2774ab7e9b135d04891eeedd176a23d5174d73ad"
-    },
-    "0.6.0": {
-      "REGISTRY-SCHEMA.json": "4c80ade9fad28149fd41d0dfdfc279163c9bf923da76d26936e6648564808457",
-      "migrations/baselines.json": "535153f04510571254685c686bbad55eb187c697722332a202d1cb38330de032",
-      "migrations/manifest.json": "d6a42062d1951ae6230d7c49590411f41142efbb492a9720ca7f092feba46abf"
     }
   }
 }
