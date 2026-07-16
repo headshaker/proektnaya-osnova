@@ -29,6 +29,7 @@ try {
         'OBSIDIAN.md',
         'AI-CONNECTIONS.md',
         'AGENTS.md',
+        'AGENTS.override.md',
         'CLAUDE.md',
         'GEMINI.md',
         '.github/copilot-instructions.md'
@@ -52,6 +53,13 @@ try {
         }
     }
 
+    $override = [System.IO.File]::ReadAllText((Join-Path $test 'AGENTS.override.md'))
+    foreach ($phrase in @('ИИ-оператор проекта', 'Границы полномочий', 'draft pull request')) {
+        if ($override -notmatch [regex]::Escape($phrase)) {
+            throw "AGENTS.override.md не содержит обязательное правило: $phrase"
+        }
+    }
+
     $start = [System.IO.File]::ReadAllText((Join-Path $test 'START-HERE.md'))
     foreach ($phrase in @('Первая сессия с нейросетью', 'Как правильно ставить задачи', 'Как использовать Obsidian')) {
         if ($start -notmatch [regex]::Escape($phrase)) {
@@ -63,6 +71,13 @@ try {
     foreach ($phrase in @('OpenAI Codex', 'Claude Code', 'Gemini CLI', 'GitHub Copilot')) {
         if ($connections -notmatch [regex]::Escape($phrase)) {
             throw "AI-CONNECTIONS.md не описывает агентный инструмент: $phrase"
+        }
+    }
+
+    foreach ($relative in @('CLAUDE.md', 'GEMINI.md', '.github/copilot-instructions.md')) {
+        $adapter = [System.IO.File]::ReadAllText((Join-Path $test $relative))
+        if ($adapter -notmatch 'AGENTS\.md' -or $adapter -notmatch 'AI-OPERATING-MODEL\.md') {
+            throw "$relative не направляет агент к общему контракту и модели ИИ-оператора."
         }
     }
 
