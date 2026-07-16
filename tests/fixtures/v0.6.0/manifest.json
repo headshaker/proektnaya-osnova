@@ -1,16 +1,7 @@
 {
   "schemaVersion": 1,
-  "targetVersion": "0.7.0",
-  "supportedFromVersions": [
-    "0.1.0",
-    "0.1.1",
-    "0.1.2",
-    "0.2.0",
-    "0.3.0",
-    "0.4.0",
-    "0.5.0",
-    "0.6.0"
-  ],
+  "targetVersion": "0.6.0",
+  "supportedFromVersions": ["0.1.0", "0.1.1", "0.1.2", "0.2.0", "0.3.0", "0.4.0", "0.5.0"],
   "baselineFile": "migrations/baselines.json",
   "managedFiles": [
     ".github/workflows/knowledge-base.yml",
@@ -50,8 +41,7 @@
     "scripts/ingest-sources.ps1",
     "scripts/prepare-commit-digest.ps1",
     "scripts/rotate-history.ps1",
-    "scripts/source-ingestion.py",
-    "scripts/link-registry-references.py"
+    "scripts/source-ingestion.py"
   ],
   "preservedFiles": [
     "AGENTS.md",

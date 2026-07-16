@@ -110,6 +110,7 @@ try {
             'scripts/build-context.ps1',
             'scripts/ingest-sources.ps1',
             'scripts/source-ingestion.py',
+            'scripts/link-registry-references.py',
             'scripts/init-project.ps1',
             'scripts/prepare-commit-digest.ps1',
             'scripts/rotate-history.ps1',
