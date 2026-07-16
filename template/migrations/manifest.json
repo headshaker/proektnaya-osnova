@@ -6,9 +6,7 @@
   "managedFiles": [
     ".github/workflows/knowledge-base.yml",
     ".github/workflows/registry-compatibility.yml",
-    "AI-CONNECTIONS.md",
     "REGISTRY-SCHEMA.json",
-    "START-HERE.md",
     "TEMPLATE-LICENSE",
     "migrations/baselines.json",
     "migrations/manifest.json",
@@ -22,6 +20,7 @@
   "additiveFiles": [
     ".github/copilot-instructions.md",
     "AGENTS.override.md",
+    "AI-CONNECTIONS.md",
     "AI-OPERATING-MODEL.md",
     "CLAUDE.md",
     "CONTEXT-PROFILES.json",
@@ -32,6 +31,7 @@
     "MIGRATIONS.md",
     "PROMPTING-GUIDE.md",
     "SOURCE-INGESTION.json",
+    "START-HERE.md",
     "VIRTUAL-SPECIALISTS.md",
     "WORK-PROFILES.md",
     "_templates/Commit digest.md",
