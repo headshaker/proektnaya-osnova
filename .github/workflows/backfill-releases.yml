@@ -1,3 +1,4 @@
+# Диагностируемый и повторяемый процесс восстановления исторических выпусков.
 name: Восстановление пропущенных выпусков
 
 on:
@@ -21,7 +22,13 @@ jobs:
     timeout-minutes: 60
     env:
       GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
     steps:
+      - name: Отметить запуск
+        shell: bash
+        run: |
+          gh pr comment 11 --body "Запущено восстановление релизов: [GitHub Actions run #${GITHUB_RUN_NUMBER}, попытка ${GITHUB_RUN_ATTEMPT}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
+
       - name: Получить полную историю
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
@@ -132,3 +139,9 @@ jobs:
             gh release view "$tag" --json tagName,url,assets \
               --jq '{tag: .tagName, url: .url, assets: [.assets[].name]}'
           done
+
+      - name: Сообщить об ошибке
+        if: failure()
+        shell: bash
+        run: |
+          gh pr comment 11 --body "Восстановление релизов завершилось ошибкой: [GitHub Actions run #${GITHUB_RUN_NUMBER}, попытка ${GITHUB_RUN_ATTEMPT}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
