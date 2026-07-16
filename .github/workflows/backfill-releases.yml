@@ -65,7 +65,9 @@ jobs:
               exit 1
             fi
 
+            tag_exists=false
             if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+              tag_exists=true
               git fetch --force origin "refs/tags/${tag}:refs/tags/${tag}"
               existing_target="$(git rev-list -n 1 "$tag")"
               if [[ "$existing_target" != "$target_sha" ]]; then
@@ -73,12 +75,6 @@ jobs:
                 exit 1
               fi
               echo "Тег $tag уже существует и указывает на правильный коммит."
-            else
-              gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
-                -f ref="refs/tags/${tag}" \
-                -f sha="${target_sha}" >/dev/null
-              git fetch --force origin "refs/tags/${tag}:refs/tags/${tag}"
-              echo "Создан тег $tag на $target_sha."
             fi
 
             rebuild_release=false
@@ -107,10 +103,26 @@ jobs:
               package="$RUNNER_TEMP/$expected_zip"
               rm -f "$package" "$package.sha256"
               pwsh -NoProfile -File ./scripts/export-template.ps1 -OutputPath "$package"
-              gh release create "$tag" "$package" "$package.sha256" \
-                --verify-tag \
-                --generate-notes \
-                --title "Проектная основа $tag"
+
+              if [[ "$tag_exists" == "true" ]]; then
+                gh release create "$tag" "$package" "$package.sha256" \
+                  --verify-tag \
+                  --generate-notes \
+                  --title "Проектная основа $tag"
+              else
+                gh release create "$tag" "$package" "$package.sha256" \
+                  --target "$target_sha" \
+                  --generate-notes \
+                  --title "Проектная основа $tag"
+                tag_exists=true
+              fi
+            fi
+
+            git fetch --force origin "refs/tags/${tag}:refs/tags/${tag}"
+            existing_target="$(git rev-list -n 1 "$tag")"
+            if [[ "$existing_target" != "$target_sha" ]]; then
+              echo "После создания Release тег $tag указывает на $existing_target вместо $target_sha." >&2
+              exit 1
             fi
 
             release_json="$(gh release view "$tag" --json tagName,url,isDraft,isPrerelease,assets)"
