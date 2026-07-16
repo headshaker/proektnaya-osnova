@@ -1,14 +1,11 @@
-# Диагностируемый и повторяемый процесс восстановления исторических выпусков.
+# Ручной и повторяемый процесс восстановления исторических выпусков.
 name: Восстановление пропущенных выпусков
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 concurrency:
@@ -21,12 +18,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Отметить запуск
+      - name: Проверить токен публикации
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
+          set -euo pipefail
+          if [[ -z "$RELEASE_TOKEN" ]]; then
+            gh pr comment 11 --body "Восстановление не запущено: добавьте Actions secret \`RELEASE_TOKEN\` с правами на создание тегов и GitHub Releases, затем повторно запустите workflow \`Восстановление пропущенных выпусков\`."
+            exit 1
+          fi
           gh pr comment 11 --body "Запущено восстановление релизов: [GitHub Actions run #${GITHUB_RUN_NUMBER}, попытка ${GITHUB_RUN_ATTEMPT}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
 
       - name: Получить полную историю
@@ -37,6 +41,8 @@ jobs:
 
       - name: Восстановить цепочку выпусков
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           exec > >(tee "$RUNNER_TEMP/backfill.log") 2>&1
           set -euo pipefail
@@ -141,10 +147,10 @@ jobs:
             echo "Release $tag проверен."
           done < "$RUNNER_TEMP/releases.tsv"
 
-          gh pr comment 11 --body-file "$RUNNER_TEMP/release-summary.md"
-
       - name: Итоговая проверка цепочки
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           set -euo pipefail
           for tag in v0.5.0 v0.6.0 v0.7.0; do
@@ -153,9 +159,18 @@ jobs:
               --jq '{tag: .tagName, url: .url, assets: [.assets[].name]}'
           done
 
+      - name: Сообщить об успехе
+        if: success()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment 11 --body-file "$RUNNER_TEMP/release-summary.md"
+
       - name: Сообщить об ошибке
         if: failure()
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           {
             echo "Восстановление релизов завершилось ошибкой: [GitHub Actions run #${GITHUB_RUN_NUMBER}, попытка ${GITHUB_RUN_ATTEMPT}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
