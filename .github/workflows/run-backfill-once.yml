@@ -10,15 +10,31 @@ on:
 permissions:
   actions: write
   contents: read
+  pull-requests: write
 
 jobs:
   dispatch:
-    name: Запустить восстановление
+    name: Проверить токен и запустить восстановление
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Запустить основной workflow
+      - name: Проверить RELEASE_TOKEN
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run backfill-releases.yml --ref main
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$RELEASE_TOKEN" ]]; then
+            gh pr comment 11 --body "Одноразовый запуск остановлен: Actions secret \`RELEASE_TOKEN\` отсутствует. Значение секрета не раскрывалось."
+            exit 1
+          fi
+          gh pr comment 11 --body "Actions secret \`RELEASE_TOKEN\` найден. Запускаю workflow восстановления релизов."
+
+      - name: Запустить основной workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run backfill-releases.yml --ref main
+          gh pr comment 11 --body "Workflow восстановления релизов успешно поставлен в очередь."
