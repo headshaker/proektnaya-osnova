@@ -28,8 +28,10 @@ jobs:
         run: python template/scripts/link-registry-references.py --write
 
       - name: Проверить результат
-        shell: pwsh
-        run: ./scripts/test-registry-links.ps1
+        shell: bash
+        run: |
+          set -o pipefail
+          pwsh -NoProfile -File ./scripts/test-registry-links.ps1 2>&1 | tail -80
 
       - name: Зафиксировать изменения
         shell: bash
