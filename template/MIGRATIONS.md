@@ -37,11 +37,11 @@ tags:
 - пользовательские и канонические документы не заменяются новыми файлами шаблона;
 - перед записью создаётся резервная копия в `.project/backups`;
 - при ошибке проверки применённые операции откатываются;
-- `TEMPLATE-VERSION` изменяется только в рамках применяемой транзакции.
+- [`TEMPLATE-VERSION`](./TEMPLATE-VERSION) изменяется только в рамках применяемой транзакции.
 
 ## Старые проекты без маркера версии
 
-Версии `0.1.0` и `0.1.1` могли не содержать `TEMPLATE-VERSION`. Для них версия не угадывается:
+Версии `0.1.0` и `0.1.1` могли не содержать [`TEMPLATE-VERSION`](./TEMPLATE-VERSION). Для них версия не угадывается:
 
     pwsh ./scripts/update-project.ps1 -ProjectPath "../old-project" -FromVersion 0.1.1
 
@@ -49,7 +49,7 @@ tags:
 
 ## Совместимость реестров
 
-Файл `REGISTRY-SCHEMA.json` описывает поддерживаемые строки решений, допущений, вопросов и источников. Проверка принимает исторические ID с любым количеством цифр (`D-1` и `D-001`) и форматы таблиц версий `0.1.x–0.6.x`, но отклоняет повторяющиеся ID и неизвестное число колонок.
+Файл [`REGISTRY-SCHEMA.json`](./REGISTRY-SCHEMA.json) описывает поддерживаемые строки решений, допущений, вопросов и источников. Проверка принимает исторические ID с любым количеством цифр (`D-1` и `D-001`) и форматы таблиц версий `0.1.x–0.6.x`, но отклоняет повторяющиеся ID и неизвестное число колонок.
 
     pwsh ./scripts/validate-registries.ps1
 
@@ -57,11 +57,11 @@ tags:
 
 Версия `0.5.0` добавляет обработку вложений и единый AI-пакет:
 
-- `START-HERE.md` — старт для нетехнического пользователя;
-- `AI-CONNECTIONS.md` — подключение нейросетей;
-- `INGESTION-WORKFLOW.md` и `SOURCE-INGESTION.json` — правила обработки вложений;
-- `scripts/source-ingestion.py` и `scripts/ingest-sources.ps1` — локальный кэш MarkItDown;
-- `scripts/build-ai-package.ps1` — единый пакет контекста с выбранными фрагментами.
+- [`START-HERE.md`](./START-HERE.md) — старт для нетехнического пользователя;
+- [`AI-CONNECTIONS.md`](./AI-CONNECTIONS.md) — подключение нейросетей;
+- [`INGESTION-WORKFLOW.md`](./INGESTION-WORKFLOW.md) и [`SOURCE-INGESTION.json`](./SOURCE-INGESTION.json) — правила обработки вложений;
+- [`scripts/source-ingestion.py`](./scripts/source-ingestion.py) и [`scripts/ingest-sources.ps1`](./scripts/ingest-sources.ps1) — локальный кэш MarkItDown;
+- [`scripts/build-ai-package.ps1`](./scripts/build-ai-package.ps1) — единый пакет контекста с выбранными фрагментами.
 
 MarkItDown устанавливается только при необходимости обработки PDF, Word, PowerPoint, Excel или Outlook:
 
@@ -73,22 +73,22 @@ MarkItDown устанавливается только при необходим
 
 Добавляются:
 
-- `AI-OPERATING-MODEL.md` — роль, полномочия и рабочий цикл ИИ-оператора;
-- `VIRTUAL-SPECIALISTS.md` — профессиональные роли и протокол их оркестрации;
-- `PROMPTING-GUIDE.md` — лучшие практики постановки проектных задач;
-- `AGENTS.override.md` — обязательные операторские правила для инструментов, поддерживающих override;
-- `CLAUDE.md`, `GEMINI.md` и `.github/copilot-instructions.md` — адаптеры конкретных агентных инструментов.
+- [`AI-OPERATING-MODEL.md`](./AI-OPERATING-MODEL.md) — роль, полномочия и рабочий цикл ИИ-оператора;
+- [`VIRTUAL-SPECIALISTS.md`](./VIRTUAL-SPECIALISTS.md) — профессиональные роли и протокол их оркестрации;
+- [`PROMPTING-GUIDE.md`](./PROMPTING-GUIDE.md) — лучшие практики постановки проектных задач;
+- [`AGENTS.override.md`](./AGENTS.override.md) — обязательные операторские правила для инструментов, поддерживающих override;
+- [`CLAUDE.md`](./CLAUDE.md), [`GEMINI.md`](./GEMINI.md) и [`.github/copilot-instructions.md`](.github/copilot-instructions.md) — адаптеры конкретных агентных инструментов.
 
-### Почему `AGENTS.md` не заменяется
+### Почему [`AGENTS.md`](./AGENTS.md) не заменяется
 
-Команда могла адаптировать `AGENTS.md`, `OBSIDIAN.md`, `DAILY-WORK.md` и другие инструкции под свой проект. Миграция сохраняет эти файлы. Новая модель подключается через добавочный `AGENTS.override.md` и отдельные руководства.
+Команда могла адаптировать [`AGENTS.md`](./AGENTS.md), [`OBSIDIAN.md`](./OBSIDIAN.md), [`DAILY-WORK.md`](./DAILY-WORK.md) и другие инструкции под свой проект. Миграция сохраняет эти файлы. Новая модель подключается через добавочный [`AGENTS.override.md`](./AGENTS.override.md) и отдельные руководства.
 
 После обновления:
 
 1. сравните новые документы с собственными правилами проекта;
 2. при необходимости вручную перенесите полезные разделы из новой редакции шаблона;
-3. подключите агентный инструмент по `AI-CONNECTIONS.md`;
-4. попросите агента провести первичную диагностику по `AI-OPERATING-MODEL.md`;
+3. подключите агентный инструмент по [`AI-CONNECTIONS.md`](./AI-CONNECTIONS.md);
+4. попросите агента провести первичную диагностику по [`AI-OPERATING-MODEL.md`](./AI-OPERATING-MODEL.md);
 5. проверьте результат через отдельную ветку и draft pull request.
 
 Если в проекте уже существует файл с тем же именем, additive-файл не заменяется автоматически. Сравнение и объединение выполняются вручную.

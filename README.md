@@ -22,9 +22,9 @@
 ## Как работает система
 
 1. Руководитель ставит задачу естественным языком.
-2. ИИ читает `AGENTS.md`, состояние проекта, решения, вопросы и источники.
+2. ИИ читает [`AGENTS.md`](./template/AGENTS.md), состояние проекта, решения, вопросы и источники.
 3. ИИ выбирает виртуальных специалистов и проводит профессиональный анализ.
-4. ИИ самостоятельно изменяет нужные файлы и обновляет `HANDOFF.md`.
+4. ИИ самостоятельно изменяет нужные файлы и обновляет [`HANDOFF.md`](./template/HANDOFF.md).
 5. ИИ запускает проверки и показывает управленческий итог.
 6. Руководитель утверждает существенные решения и публикацию.
 7. Obsidian используется для удобного чтения и навигации, GitHub — для истории и проверки изменений.
@@ -42,17 +42,17 @@
 
 | Путь | Назначение |
 |---|---|
-| `template/START-HERE.md` | пошаговый старт для руководителя без технической подготовки |
-| `template/AI-OPERATING-MODEL.md` | полномочия и рабочий цикл ИИ-оператора |
-| `template/VIRTUAL-SPECIALISTS.md` | каталог профессиональных ролей и правила их оркестрации |
-| `template/PROMPTING-GUIDE.md` | лучшие практики постановки задач в привязке к проекту |
-| `template/OBSIDIAN.md` | настройка и эффективное использование Obsidian |
-| `template/AI-CONNECTIONS.md` | подключение Codex, Claude Code, Gemini CLI, Copilot и чатовых моделей |
-| `template/AGENTS.md` | общий контракт для агентных нейросетей |
-| `template/CLAUDE.md` | входные инструкции Claude Code |
-| `template/GEMINI.md` | входные инструкции Gemini CLI |
-| `template/.github/copilot-instructions.md` | инструкции GitHub Copilot |
-| `template/INGESTION-WORKFLOW.md` | обработка PDF, DOCX, PPTX, XLSX и других вложений через MarkItDown |
+| [`template/START-HERE.md`](./template/START-HERE.md) | пошаговый старт для руководителя без технической подготовки |
+| [`template/AI-OPERATING-MODEL.md`](./template/AI-OPERATING-MODEL.md) | полномочия и рабочий цикл ИИ-оператора |
+| [`template/VIRTUAL-SPECIALISTS.md`](./template/VIRTUAL-SPECIALISTS.md) | каталог профессиональных ролей и правила их оркестрации |
+| [`template/PROMPTING-GUIDE.md`](./template/PROMPTING-GUIDE.md) | лучшие практики постановки задач в привязке к проекту |
+| [`template/OBSIDIAN.md`](./template/OBSIDIAN.md) | настройка и эффективное использование Obsidian |
+| [`template/AI-CONNECTIONS.md`](./template/AI-CONNECTIONS.md) | подключение Codex, Claude Code, Gemini CLI, Copilot и чатовых моделей |
+| [`template/AGENTS.md`](./template/AGENTS.md) | общий контракт для агентных нейросетей |
+| [`template/CLAUDE.md`](./template/CLAUDE.md) | входные инструкции Claude Code |
+| [`template/GEMINI.md`](./template/GEMINI.md) | входные инструкции Gemini CLI |
+| [`template/.github/copilot-instructions.md`](./template/.github/copilot-instructions.md) | инструкции GitHub Copilot |
+| [`template/INGESTION-WORKFLOW.md`](./template/INGESTION-WORKFLOW.md) | обработка PDF, DOCX, PPTX, XLSX и других вложений через MarkItDown |
 
 ## Быстрый старт нового проекта
 
@@ -63,13 +63,13 @@
 
        pwsh ./scripts/init-project.ps1 -Title "Название проекта" -Slug "project-slug"
 
-3. Подключите агентную нейросеть по `AI-CONNECTIONS.md`.
+3. Подключите агентную нейросеть по [`AI-CONNECTIONS.md`](./template/AI-CONNECTIONS.md).
 4. Откройте проект как vault в Obsidian.
-5. Передайте агенту первую задачу из `START-HERE.md`.
+5. Передайте агенту первую задачу из [`START-HERE.md`](./template/START-HERE.md).
 
 ## Пример задачи руководителя
 
-> Подготовь проект к выбору варианта реализации. Сам изучи репозиторий, выбери нужных виртуальных специалистов, сравни варианты, обнови канонические файлы и `HANDOFF.md`, добавь недостающие вопросы и запусти проверки. Не меняй цель, границы, бюджет и обязательства без моего подтверждения. В конце покажи рекомендацию, риски, изменённые файлы и решения, которые нужны от меня.
+> Подготовь проект к выбору варианта реализации. Сам изучи репозиторий, выбери нужных виртуальных специалистов, сравни варианты, обнови канонические файлы и [`HANDOFF.md`](./template/HANDOFF.md), добавь недостающие вопросы и запусти проверки. Не меняй цель, границы, бюджет и обязательства без моего подтверждения. В конце покажи рекомендацию, риски, изменённые файлы и решения, которые нужны от меня.
 
 ## Контекст и вложения
 
@@ -77,7 +77,7 @@
 
     pwsh ./scripts/build-context.ps1 -Profile compact -IncludeId D-001,Q-001 -Check
 
-PDF, DOCX, PPTX, XLSX и другие файлы хранятся в `_attachments`, регистрируются в `SOURCES.md` и локально преобразуются Microsoft MarkItDown:
+PDF, DOCX, PPTX, XLSX и другие файлы хранятся в `_attachments`, регистрируются в [`SOURCES.md`](./template/SOURCES.md) и локально преобразуются Microsoft MarkItDown:
 
     python -m pip install "markitdown[pdf,docx,pptx,xlsx,xls,outlook]"
     pwsh ./scripts/ingest-sources.ps1 -SourceId S-014
@@ -106,7 +106,7 @@ PDF, DOCX, PPTX, XLSX и другие файлы хранятся в `_attachmen
 
     pwsh ./scripts/export-template.ps1
 
-Готовый архив и SHA-256 появляются в `dist`. Тег вида `v0.6.0`, совпадающий с `VERSION`, автоматически создаёт GitHub Release.
+Готовый архив и SHA-256 появляются в `dist`. Тег вида `v0.6.0`, совпадающий с [`VERSION`](./VERSION), автоматически создаёт GitHub Release.
 
 ## Принципы
 
@@ -120,4 +120,4 @@ PDF, DOCX, PPTX, XLSX и другие файлы хранятся в `_attachmen
 
 ## Лицензия
 
-Исходный код, документация и шаблон распространяются по [лицензии MIT](LICENSE). При создании нового проекта сохраняйте `TEMPLATE-LICENSE`; лицензию собственных материалов определяет владелец проекта.
+Исходный код, документация и шаблон распространяются по [лицензии MIT](LICENSE). При создании нового проекта сохраняйте [`TEMPLATE-LICENSE`](./template/TEMPLATE-LICENSE); лицензию собственных материалов определяет владелец проекта.

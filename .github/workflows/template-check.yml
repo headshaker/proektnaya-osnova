@@ -27,6 +27,9 @@ jobs:
       - name: Получить репозиторий
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
+      - name: Проверить интерактивные ссылки на файлы
+        run: python scripts/link-file-references.py --check
+
       - name: Выполнить сквозную проверку
         shell: pwsh
         run: |
