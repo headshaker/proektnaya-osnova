@@ -16,7 +16,7 @@ jobs:
   template:
     name: Шаблон разворачивается (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -29,12 +29,14 @@ jobs:
 
       - name: Выполнить сквозную проверку
         shell: pwsh
-        run: ./scripts/test-template.ps1
+        run: |
+          ./scripts/test-template.ps1
+          ./scripts/test-agent-guides.ps1
 
   package:
     name: Выпускной пакет
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Получить репозиторий
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
