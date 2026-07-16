@@ -4,13 +4,11 @@ on:
   push:
     branches:
       - main
-    paths:
-      - .github/workflows/backfill-releases.yml
   workflow_dispatch:
 
 permissions:
   contents: write
-  actions: write
+  pull-requests: write
 
 concurrency:
   group: backfill-releases
@@ -35,8 +33,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch --force --tags origin
 
           cat > "$RUNNER_TEMP/releases.tsv" <<'EOF'
@@ -44,6 +40,12 @@ jobs:
           v0.6.0 a63d1a61e5ffff20521433b32bc3edad78a727ec
           v0.7.0 0737f2fe652b4330f6c802cf0cc2a5fa6f244b4d
           EOF
+
+          : > "$RUNNER_TEMP/release-summary.md"
+          {
+            echo "Восстановление цепочки релизов завершено."
+            echo
+          } >> "$RUNNER_TEMP/release-summary.md"
 
           while read -r tag target_sha; do
             version="${tag#v}"
@@ -56,8 +58,7 @@ jobs:
               exit 1
             fi
 
-            remote_target="$(git ls-remote --tags origin "refs/tags/${tag}" | awk '{print $1}')"
-            if [[ -n "$remote_target" ]]; then
+            if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
               git fetch --force origin "refs/tags/${tag}:refs/tags/${tag}"
               existing_target="$(git rev-list -n 1 "$tag")"
               if [[ "$existing_target" != "$target_sha" ]]; then
@@ -66,8 +67,10 @@ jobs:
               fi
               echo "Тег $tag уже существует и указывает на правильный коммит."
             else
-              git tag -a "$tag" "$target_sha" -m "Проектная основа $tag"
-              git push origin "refs/tags/${tag}"
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
+                -f ref="refs/tags/${tag}" \
+                -f sha="${target_sha}" >/dev/null
+              git fetch --force origin "refs/tags/${tag}:refs/tags/${tag}"
               echo "Создан тег $tag на $target_sha."
             fi
 
@@ -90,33 +93,20 @@ jobs:
             fi
 
             if [[ "$rebuild_release" == "true" ]]; then
-              started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-              gh workflow run release.yml --ref "$tag"
+              git checkout --detach "$target_sha"
+              pwsh -NoProfile -File ./scripts/check-version.ps1 -Tag "$tag"
+              pwsh -NoProfile -File ./scripts/test-release.ps1
 
-              run_id=""
-              for _ in $(seq 1 60); do
-                run_id="$(gh run list \
-                  --workflow release.yml \
-                  --event workflow_dispatch \
-                  --limit 100 \
-                  --json databaseId,headSha,createdAt \
-                  --jq ".[] | select(.headSha == \"${target_sha}\" and .createdAt >= \"${started_at}\") | .databaseId" \
-                  | head -n 1)"
-                if [[ -n "$run_id" ]]; then
-                  break
-                fi
-                sleep 5
-              done
-
-              if [[ -z "$run_id" ]]; then
-                echo "Не найден запущенный workflow выпуска для $tag." >&2
-                exit 1
-              fi
-
-              gh run watch "$run_id" --exit-status
+              package="$RUNNER_TEMP/$expected_zip"
+              rm -f "$package" "$package.sha256"
+              pwsh -NoProfile -File ./scripts/export-template.ps1 -OutputPath "$package"
+              gh release create "$tag" "$package" "$package.sha256" \
+                --verify-tag \
+                --generate-notes \
+                --title "Проектная основа $tag"
             fi
 
-            release_json="$(gh release view "$tag" --json tagName,isDraft,isPrerelease,assets)"
+            release_json="$(gh release view "$tag" --json tagName,url,isDraft,isPrerelease,assets)"
             jq -e --arg tag "$tag" --arg zip "$expected_zip" --arg checksum "$expected_checksum" '
               .tagName == $tag and
               .isDraft == false and
@@ -124,8 +114,14 @@ jobs:
               ([.assets[].name] | index($zip) != null) and
               ([.assets[].name] | index($checksum) != null)
             ' <<<"$release_json" >/dev/null
+
+            release_url="$(jq -r '.url' <<<"$release_json")"
+            echo "- [$tag]($release_url) → \`$target_sha\`; файлы: \`$expected_zip\`, \`$expected_checksum\`." \
+              >> "$RUNNER_TEMP/release-summary.md"
             echo "Release $tag проверен."
           done < "$RUNNER_TEMP/releases.tsv"
+
+          gh pr comment 11 --body-file "$RUNNER_TEMP/release-summary.md"
 
       - name: Итоговая проверка цепочки
         shell: bash
