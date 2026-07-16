@@ -46,7 +46,7 @@ try {
 
     $handoffPath = Join-Path $test 'HANDOFF.md'
     $handoff = [System.IO.File]::ReadAllText($handoffPath)
-    $handoff += @"
+    $handoff += @'
 
 ## Проверка ссылок реестров
 
@@ -54,7 +54,7 @@ try {
 Новое решение D-002 также должно стать интерактивным. Несуществующий ID D-999 остаётся обычным текстом.
 
     pwsh ./scripts/build-context.ps1 -Profile compact -IncludeId D-001,Q-001 -Check
-"@
+'@
     [System.IO.File]::WriteAllText($handoffPath, $handoff.TrimEnd() + "`n", $utf8)
 
     Assert-Throws {
