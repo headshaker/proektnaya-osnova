@@ -1,12 +1,10 @@
-# Одноразовая диагностика наличия токена и запуск восстановления.
+# Одноразовая диагностика наличия токена и запуск восстановления по команде в PR №11.
 name: Одноразовый запуск восстановления релизов
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/run-backfill-once.yml
+  issue_comment:
+    types:
+      - created
 
 permissions:
   actions: write
@@ -15,6 +13,7 @@ permissions:
 
 jobs:
   dispatch:
+    if: github.event.issue.number == 11 && github.event.comment.body == '/run-release-backfill'
     name: Проверить токен и запустить восстановление
     runs-on: ubuntu-latest
     timeout-minutes: 5
