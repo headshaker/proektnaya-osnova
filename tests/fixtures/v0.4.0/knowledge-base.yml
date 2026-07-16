@@ -41,8 +41,3 @@ jobs:
       - name: Проверить локальный пакет контекста
         shell: pwsh
         run: ./scripts/build-context.ps1 -Profile compact -IncludeId D-001,Q-001 -Check
-
-      - name: Проверить обработчик вложений
-        run: |
-          python -m py_compile scripts/source-ingestion.py
-          python scripts/source-ingestion.py verify

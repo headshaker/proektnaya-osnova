@@ -5,7 +5,14 @@
   "parts": [
     {
       "title": "Исполнительная картина",
-      "documents": ["README.md", "PROJECT-BRIEF.md", "HANDOFF.md", "WORK-PROFILES.md", "CONTEXT-WORKFLOW.md"]
+      "documents": [
+        "README.md",
+        "START-HERE.md",
+        "PROJECT-BRIEF.md",
+        "HANDOFF.md",
+        "WORK-PROFILES.md",
+        "CONTEXT-WORKFLOW.md"
+      ]
     },
     {
       "title": "Продукт и реализация",
@@ -22,7 +29,15 @@
     },
     {
       "title": "Служебные материалы",
-      "documents": ["AGENTS.md", "OBSIDIAN.md", "DAILY-WORK.md", "MIGRATIONS.md", "CHANGELOG.md"]
+      "documents": [
+        "AI-CONNECTIONS.md",
+        "INGESTION-WORKFLOW.md",
+        "AGENTS.md",
+        "OBSIDIAN.md",
+        "DAILY-WORK.md",
+        "MIGRATIONS.md",
+        "CHANGELOG.md"
+      ]
     }
   ]
 }
