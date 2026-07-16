@@ -44,7 +44,7 @@ tags:
 
        _attachments/contracts/agreement.docx
 
-2. Добавьте строку в `SOURCES.md`. В колонке «Источник» укажите относительный путь:
+2. Добавьте строку в [`SOURCES.md`](./SOURCES.md). В колонке «Источник» укажите относительный путь:
 
        _attachments/contracts/agreement.docx
 
@@ -82,12 +82,12 @@ tags:
 - `-Profile compact|standard|extended` — общий объём пакета.
 - `-Check` — завершиться ошибкой при пропуске или превышении бюджета.
 
-Настройки форматов, размеров и бюджетов находятся в `SOURCE-INGESTION.json`.
+Настройки форматов, размеров и бюджетов находятся в [`SOURCE-INGESTION.json`](./SOURCE-INGESTION.json).
 
 ## Безопасность
 
 - обрабатываются только файлы внутри `_attachments`;
-- URL из `SOURCES.md` не загружаются;
+- URL из [`SOURCES.md`](./SOURCES.md) не загружаются;
 - плагины MarkItDown выключены;
 - облачный OCR и внешние анализаторы не вызываются;
 - символьные ссылки и выход за пределы проекта запрещены;
