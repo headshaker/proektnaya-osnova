@@ -31,7 +31,7 @@
 
 ## Правило выпуска
 
-1. Обновить [`VERSION`](./VERSION), [`template/TEMPLATE-VERSION`](./template/TEMPLATE-VERSION) и `CHANGELOG.md` в одном pull request.
+1. Обновить [`VERSION`](./VERSION), [`template/TEMPLATE-VERSION`](./template/TEMPLATE-VERSION) и [`CHANGELOG.md`](./CHANGELOG.md) в одном pull request.
 2. Выполнить `pwsh ./scripts/test-release.ps1`.
 3. После слияния создать тег `vX.Y.Z`, точно совпадающий с [`VERSION`](./VERSION).
 4. Workflow `Выпуск шаблона` создаст ZIP, SHA-256 и GitHub Release.

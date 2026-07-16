@@ -48,7 +48,7 @@ tags:
 До содержательной работы прочитай:
 
 1. [`AGENTS.md`](./AGENTS.md);
-2. `README.md`;
+2. [`README.md`](./README.md);
 3. [`AI-OPERATING-MODEL.md`](./AI-OPERATING-MODEL.md);
 4. [`HANDOFF.md`](./HANDOFF.md);
 5. [`PROJECT-BRIEF.md`](./PROJECT-BRIEF.md);

@@ -11,7 +11,7 @@
 3. Изменить минимально необходимый набор файлов в `template`.
 4. Обновить корневые инструкции, если меняется пользовательский сценарий.
 5. Выполнить `pwsh ./scripts/test-template.ps1`: команда также запускает сценарии ежедневной работы и управления контекстом.
-6. Для выпускных изменений выполнить `pwsh ./scripts/test-release.ps1` и согласовать [`VERSION`](./VERSION), [`template/TEMPLATE-VERSION`](./template/TEMPLATE-VERSION) и `CHANGELOG.md`.
+6. Для выпускных изменений выполнить `pwsh ./scripts/test-release.ps1` и согласовать [`VERSION`](./VERSION), [`template/TEMPLATE-VERSION`](./template/TEMPLATE-VERSION) и [`CHANGELOG.md`](./CHANGELOG.md).
 7. При изменении управляемого файла обновить исторические SHA-256 или миграционный сценарий и выполнить `pwsh ./scripts/test-migrations.ps1`.
 8. При изменении профилей или пакета контекста выполнить `pwsh ./scripts/test-context.ps1` и сохранить отсутствие обязательной сетевой зависимости.
 9. В pull request описать совместимость, миграцию и результат проверки.

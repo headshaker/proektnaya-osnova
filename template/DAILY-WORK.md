@@ -113,7 +113,7 @@ tags:
 
     - 2026-07-15: завершена проверка первого прототипа.
 
-Записи старше окна переносятся в `CHANGELOG.md`:
+Записи старше окна переносятся в [`CHANGELOG.md`](./CHANGELOG.md):
 
     pwsh ./scripts/rotate-history.ps1
 
