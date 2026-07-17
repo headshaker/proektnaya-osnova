@@ -2,7 +2,7 @@
 
 **Project Control Plane для сложных проектов: управляемая база знаний, замкнутый контур контроля и безопасная работа руководителя с ИИ-оператором.**
 
-Текущая версия шаблона: **0.8.1**.
+Текущая версия шаблона: **0.9.0**.
 
 «Проектная основа» превращает репозиторий в долговременную память и контур управления проектом. Она не заменяет Jira, GitHub Issues или другую систему выполнения работ: задачи остаются там, а репозиторий связывает стратегию, выгоды, контрольные точки, риски, доказательства, обзоры и решения. Агентная нейросеть работает как личный ассистент, технический писатель и оркестратор виртуальных специалистов, но существенные полномочия остаются у руководителя.
 
@@ -50,6 +50,7 @@
 |---|---|
 | [`template/HOME.md`](./template/HOME.md) | единый пульт руководителя и частые действия |
 | [`template/START-HERE.md`](./template/START-HERE.md) | пошаговый старт для руководителя без технической подготовки |
+| [`template/START-PROJECT.cmd`](./template/START-PROJECT.cmd) | запуск мастера настройки двойным щелчком в Windows |
 | [`template/ADMIN-SETUP.md`](./template/ADMIN-SETUP.md) | установка и обслуживание для технического специалиста |
 | [`template/PROJECT-CONFIG.json`](./template/PROJECT-CONFIG.json) | профиль управления, поставки, ритмов и допусков |
 | [`template/STATUS.md`](./template/STATUS.md) | генерируемый управленческий снимок проекта |
@@ -69,16 +70,16 @@
 
 ## Быстрый старт нового проекта
 
-Руководитель начинает с [`template/HOME.md`](./template/HOME.md) и [`template/START-HERE.md`](./template/START-HERE.md). Техническую настройку один раз выполняет специалист по [`template/ADMIN-SETUP.md`](./template/ADMIN-SETUP.md).
+В Windows первоначальную настройку можно запустить двойным щелчком по [`template/START-PROJECT.cmd`](./template/START-PROJECT.cmd). Мастер показывает план, задаёт понятные вопросы и заполняет техническую конфигурацию. Руководитель затем начинает с [`template/HOME.md`](./template/HOME.md) и [`template/START-HERE.md`](./template/START-HERE.md).
 
 Для технической настройки требуется PowerShell 7 (`pwsh`). Для автоматической обработки бинарных документов дополнительно требуется Python 3.10+ и Microsoft MarkItDown.
 
 1. Скопируйте содержимое папки `template` в новый репозиторий.
-2. Выполните:
+2. Запустите мастер:
 
-       pwsh ./scripts/init-project.ps1 -Title "Название проекта" -Slug "project-slug"
+       pwsh ./scripts/setup-project.ps1
 
-3. Заполните [`PROJECT-CONFIG.json`](./template/PROJECT-CONFIG.json): выберите рабочую систему, подход к поставке, классификацию данных и допуски.
+3. Ответьте на вопросы и подтвердите показанный план. Мастер заполнит [`PROJECT-CONFIG.json`](./template/PROJECT-CONFIG.json) и выполнит проверки.
 4. Добавьте первую измеримую выгоду в [`OUTCOMES.md`](./template/OUTCOMES.md) и ссылку на ближайшую работу.
 5. Подключите агентную нейросеть по [`AI-CONNECTIONS.md`](./template/AI-CONNECTIONS.md).
 6. При необходимости откройте проект в Obsidian и закрепите [`HOME.md`](./template/HOME.md).
@@ -120,6 +121,7 @@ PDF, DOCX, PPTX, XLSX и другие файлы хранятся в `_attachmen
     pwsh ./scripts/test-ingestion.ps1
     pwsh ./scripts/test-agent-guides.ps1
     pwsh ./scripts/test-human-first.ps1
+    pwsh ./scripts/test-setup-wizard.ps1
     pwsh ./scripts/test-release.ps1
 
 Проверки выполняются на Ubuntu и Windows, проверяют структуру, ссылки, версии, миграции, управленческий цикл, контекст, вложения и наличие инструкций для агентных инструментов.
@@ -128,7 +130,7 @@ PDF, DOCX, PPTX, XLSX и другие файлы хранятся в `_attachmen
 
     pwsh ./scripts/export-template.ps1
 
-Готовый архив и SHA-256 появляются в `dist`. Тег вида `v0.8.1`, совпадающий с [`VERSION`](./VERSION), автоматически создаёт GitHub Release.
+Готовый архив и SHA-256 появляются в `dist`. Тег вида `v0.9.0`, совпадающий с [`VERSION`](./VERSION), автоматически создаёт GitHub Release.
 
 ## Принципы
 

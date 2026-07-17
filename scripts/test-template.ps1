@@ -158,3 +158,4 @@ finally {
 & (Join-Path $PSScriptRoot 'test-context.ps1') -Date '2026-07-15'
 & (Join-Path $PSScriptRoot 'test-project-control.ps1')
 & (Join-Path $PSScriptRoot 'test-human-first.ps1')
+& (Join-Path $PSScriptRoot 'test-setup-wizard.ps1')

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "targetVersion": "0.9.0",
+  "targetVersion": "0.8.1",
   "supportedFromVersions": [
     "0.1.0",
     "0.1.1",
@@ -11,8 +11,7 @@
     "0.5.0",
     "0.6.0",
     "0.7.0",
-    "0.8.0",
-    "0.8.1"
+    "0.8.0"
   ],
   "baselineFile": "migrations/baselines.json",
   "managedFiles": [
@@ -50,7 +49,6 @@
     "PROJECT-CONFIG.json",
     "PROMPTING-GUIDE.md",
     "SOURCE-INGESTION.json",
-    "START-PROJECT.cmd",
     "START-HERE.md",
     "STATUS.md",
     "VIRTUAL-SPECIALISTS.md",
@@ -66,8 +64,7 @@
     "scripts/prepare-commit-digest.ps1",
     "scripts/rotate-history.ps1",
     "scripts/source-ingestion.py",
-    "scripts/link-registry-references.py",
-    "scripts/setup-project.ps1"
+    "scripts/link-registry-references.py"
   ],
   "preservedFiles": [
     "AGENTS.md",
