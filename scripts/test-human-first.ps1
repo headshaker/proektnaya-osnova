@@ -24,6 +24,7 @@ foreach ($relative in $managerFiles) {
 $start = [System.IO.File]::ReadAllText((Join-Path $template 'START-HERE.md'))
 foreach ($phrase in @(
         'Вам не нужно знать Git',
+        'START-PROJECT.cmd',
         'Первая задача для ИИ',
         'Готовые команды на каждый день',
         'Объясни проблему без технических терминов'
@@ -41,7 +42,10 @@ foreach ($phrase in @('Это ваш главный экран', 'Получит
 }
 
 $admin = [System.IO.File]::ReadAllText((Join-Path $template 'ADMIN-SETUP.md'))
-if ($admin -notmatch 'Техническая инструкция' -or $admin -notmatch 'pwsh ./scripts/init-project.ps1') {
+if ($admin -notmatch 'Техническая инструкция' -or
+    $admin -notmatch 'START-PROJECT.cmd' -or
+    $admin -notmatch 'setup-project.ps1' -or
+    $admin -notmatch 'pwsh ./scripts/init-project.ps1') {
     throw 'ADMIN-SETUP.md не отделяет техническую настройку от пути руководителя.'
 }
 
