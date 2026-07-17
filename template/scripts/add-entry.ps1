@@ -149,22 +149,19 @@ try {
         try {
             $lock = [System.IO.File]::Open(
                 $lockPath,
-                [System.IO.FileMode]::CreateNew,
-                [System.IO.FileAccess]::Write,
+                [System.IO.FileMode]::OpenOrCreate,
+                [System.IO.FileAccess]::ReadWrite,
                 [System.IO.FileShare]::None
             )
         }
         catch [System.IO.IOException] {
-            if ((Test-Path -LiteralPath $lockPath) -and
-                (Get-Item -LiteralPath $lockPath).LastWriteTimeUtc -lt (Get-Date).ToUniversalTime().AddMinutes(-5)) {
-                Remove-Item -LiteralPath $lockPath -Force
-                continue
-            }
             Start-Sleep -Milliseconds 100
         }
     }
     if ($null -eq $lock) { throw 'Не удалось получить блокировку реестров за 5 секунд.' }
 
+    $lock.SetLength(0)
+    $lock.Position = 0
     $writer = [System.IO.StreamWriter]::new($lock, $utf8, 1024, $true)
     try {
         $writer.Write("PID=$PID`nUTC=$((Get-Date).ToUniversalTime().ToString('O'))`n")
@@ -217,8 +214,5 @@ try {
 finally {
     if ($null -ne $lock) {
         $lock.Dispose()
-        if (Test-Path -LiteralPath $lockPath) {
-            Remove-Item -LiteralPath $lockPath -Force
-        }
     }
 }

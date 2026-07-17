@@ -41,6 +41,10 @@ if (-not $test.StartsWith(
 
 try {
     Copy-Item -LiteralPath $source -Destination $test -Recurse
+    $copiedProjectState = Join-Path $test '.project'
+    if (Test-Path -LiteralPath $copiedProjectState) {
+        Remove-Item -LiteralPath $copiedProjectState -Recurse -Force
+    }
     & (Join-Path $test 'scripts/init-project.ps1') -Title 'Проверка ежедневной работы' -Slug 'daily-work-test' -Date $Date
 
     $addEntry = Join-Path $test 'scripts/add-entry.ps1'
@@ -63,20 +67,24 @@ try {
         & $addEntry decision -Title 'Повреждение | таблицы' -Date $Date
     } 'вертикальную черту' 'разделитель Markdown-таблицы во вводе отклоняется'
 
-    foreach ($number in 1..4) {
-        $job = Start-Job -ScriptBlock {
-            param($ScriptPath, $Index, $EntryDate)
-            & $ScriptPath question -Title "Параллельный вопрос $Index" -Date $EntryDate `
-                -Priority P1 -Importance 'Проверка блокировки' -Owner 'Тест' `
-                -NextStep 'Проверить ID' -Closure 'ID уникален' -Due 'Не задан'
-        } -ArgumentList $addEntry, $number, $Date
-        $jobs.Add($job)
-    }
-    $jobs | Wait-Job | Out-Null
-    $failedJobs = @($jobs | Where-Object State -ne 'Completed')
-    $jobOutput = @($jobs | Receive-Job -ErrorAction Continue 2>&1)
-    if ($failedJobs.Count -gt 0) {
-        throw "Параллельное добавление завершилось ошибкой: $($jobOutput -join '; ')"
+    foreach ($round in 1..3) {
+        $roundJobs = [System.Collections.Generic.List[object]]::new()
+        foreach ($number in 1..6) {
+            $job = Start-Job -ScriptBlock {
+                param($ScriptPath, $Round, $Index, $EntryDate)
+                & $ScriptPath question -Title "Параллельный вопрос $Round-$Index" -Date $EntryDate `
+                    -Priority P1 -Importance 'Проверка блокировки' -Owner 'Тест' `
+                    -NextStep 'Проверить ID' -Closure 'ID уникален' -Due 'Не задан'
+            } -ArgumentList $addEntry, $round, $number, $Date
+            $jobs.Add($job)
+            $roundJobs.Add($job)
+        }
+        $roundJobs | Wait-Job | Out-Null
+        $failedJobs = @($roundJobs | Where-Object State -ne 'Completed')
+        $jobOutput = @($roundJobs | Receive-Job -ErrorAction Continue 2>&1)
+        if ($failedJobs.Count -gt 0) {
+            throw "Параллельное добавление завершилось ошибкой в раунде ${round}: $($jobOutput -join '; ')"
+        }
     }
     $questionIds = @([regex]::Matches(
             [System.IO.File]::ReadAllText((Join-Path $test 'OPEN-QUESTIONS.md')),
