@@ -32,6 +32,13 @@ function Normalize-Text([string]$Text) {
     return (($Text -replace "`r`n", "`n") -replace "`r", "`n")
 }
 
+function Get-TextSha256([string]$Text) {
+    $normalized = (Normalize-Text $Text).TrimEnd() + "`n"
+    return [Convert]::ToHexString(
+        [System.Security.Cryptography.SHA256]::HashData($utf8.GetBytes($normalized))
+    ).ToLowerInvariant()
+}
+
 function Get-SafePath([string]$Relative, [string]$Label, [switch]$LocalContextOnly, [switch]$ExportTarget) {
     if ([string]::IsNullOrWhiteSpace($Relative) -or [System.IO.Path]::IsPathRooted($Relative)) {
         throw "$Label должен быть относительным путём внутри проекта: $Relative"
@@ -142,6 +149,9 @@ $baseOutputFull = Get-SafePath $baseOutputRelative 'Базовый пакет' -
 $baseReportFull = Get-SafePath $baseReportRelative 'Отчёт базового пакета' -LocalContextOnly
 $baseText = [System.IO.File]::ReadAllText($baseOutputFull)
 $baseReport = [System.IO.File]::ReadAllText($baseReportFull) | ConvertFrom-Json
+if ($baseReport.schemaVersion -ne 2) {
+    throw 'Базовый отчёт создан устаревшим сборщиком контекста.'
+}
 $freeContentTokens = [Math]::Max(0, [int]$baseReport.contentBudget - [int]$baseReport.estimatedTokens)
 $availableSourceBudget = [Math]::Min($SourceTokenBudget, $freeContentTokens)
 
@@ -208,25 +218,57 @@ else {
     [int](($sourceResults | Measure-Object -Property fullEstimatedTokens -Sum).Sum)
 }
 $estimatedTokens = [int]$baseReport.estimatedTokens + $sourceIncludedTokens
-$complete = [bool]$baseReport.complete -and $sourceErrors.Count -eq 0 -and $estimatedTokens -le [int]$baseReport.contentBudget
+$complete = [bool]$baseReport.complete -and $sourceErrors.Count -eq 0 -and
+    $estimatedTokens -le [int]$baseReport.contentBudget
 $reduction = if ($sourceFullTokens -le 0) { 0.0 } else {
     [Math]::Max(0.0, [Math]::Round(100 * (1 - $sourceIncludedTokens / $sourceFullTokens), 1))
 }
+$utilizationPercent = if ([int]$baseReport.contentBudget -eq 0) { 100 } else {
+    [Math]::Round(100 * $estimatedTokens / [int]$baseReport.contentBudget, 1)
+}
+$warningUtilizationPercent = [int]$baseReport.healthPolicy.warningUtilizationPercent
+$criticalUtilizationPercent = [int]$baseReport.healthPolicy.criticalUtilizationPercent
+$healthReasons = [System.Collections.Generic.List[string]]::new()
+if (-not $complete) { $healthReasons.Add('AI-пакет технически неполон') }
+if ([string]$baseReport.healthStatus -ceq 'critical') {
+    $healthReasons.Add('базовый контекст имеет критический статус')
+}
+if ($utilizationPercent -ge $criticalUtilizationPercent) {
+    $healthReasons.Add("заполнение $utilizationPercent% достигло критического порога $criticalUtilizationPercent%")
+}
+$healthStatus = if ($healthReasons.Count -gt 0) {
+    'critical'
+}
+elseif ([string]$baseReport.healthStatus -ceq 'warning' -or $utilizationPercent -ge $warningUtilizationPercent) {
+    'warning'
+}
+else { 'healthy' }
+$packageText = (Normalize-Text $package).TrimEnd() + "`n"
 
 $report = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
+    generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
     profile = $Profile
     mode = if ($Export) { 'export' } else { 'local' }
     localOnly = -not [bool]$Export
     transmissionPerformed = $false
     networkRequests = 0
+    outputPath = $OutputPath.Replace('\', '/')
     tokenBudget = $TokenBudget
     contentBudget = [int]$baseReport.contentBudget
     sourceTokenBudget = $SourceTokenBudget
     sourceAvailableTokens = $availableSourceBudget
     estimatedTokens = $estimatedTokens
+    utilizationPercent = $utilizationPercent
     complete = $complete
+    healthStatus = $healthStatus
+    healthReasons = @($healthReasons)
+    contextFingerprint = Get-TextSha256 $packageText
     baseReportPath = $baseReportRelative
+    baseContextFingerprint = [string]$baseReport.contextFingerprint
+    baseSourceFingerprint = [string]$baseReport.sourceFingerprint
+    baseHealthStatus = [string]$baseReport.healthStatus
+    baseUtilizationPercent = [decimal]$baseReport.utilizationPercent
     requestedSources = @($sourceIds)
     sources = @($sourceResults)
     sourceErrors = @($sourceErrors)
@@ -235,15 +277,20 @@ $report = [ordered]@{
     sourceReductionPercent = $reduction
 }
 
-Write-AtomicUtf8 $outputFull $package
+Write-AtomicUtf8 $outputFull $packageText
 Write-AtomicUtf8 $reportFull ($report | ConvertTo-Json -Depth 10)
-Write-Host "AI-пакет создан: $OutputPath (~$estimatedTokens токенов; сокращение вложений $reduction%)."
+Write-Host "AI-пакет создан: $OutputPath (~$estimatedTokens токенов; заполнение $utilizationPercent%; сокращение вложений $reduction%)."
 Write-Host "Отчёт: $ReportPath"
+if ($healthStatus -eq 'warning') {
+    Write-Warning "AI-пакет приближается к пределу: заполнение $utilizationPercent%."
+}
 
-if ($Check -and -not $complete) {
+if ($Check -and $healthStatus -eq 'critical') {
     $reasons = [System.Collections.Generic.List[string]]::new()
     if (-not $baseReport.complete) { $reasons.Add('базовый контекст неполон') }
+    if ([string]$baseReport.healthStatus -ceq 'critical') { $reasons.Add('базовый контекст имеет критический статус') }
     if ($sourceErrors.Count -gt 0) { $reasons.Add($sourceErrors -join '; ') }
     if ($estimatedTokens -gt [int]$baseReport.contentBudget) { $reasons.Add('содержимое пакета превышает бюджет после резерва ответа') }
-    throw 'AI-пакет неполон: ' + ($reasons -join '; ')
+    if ($utilizationPercent -ge $criticalUtilizationPercent) { $reasons.Add("критическое заполнение AI-пакета: $utilizationPercent%") }
+    throw 'AI-пакет неполон или деградировал: ' + ($reasons -join '; ')
 }

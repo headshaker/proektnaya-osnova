@@ -42,6 +42,21 @@ function Normalize-Text([string]$Text) {
     return (($Text -replace "`r`n", "`n") -replace "`r", "`n")
 }
 
+function Get-TextSha256([string]$Text) {
+    $normalized = (Normalize-Text $Text).TrimEnd() + "`n"
+    $bytes = $utf8.GetBytes($normalized)
+    return [Convert]::ToHexString(
+        [System.Security.Cryptography.SHA256]::HashData($bytes)
+    ).ToLowerInvariant()
+}
+
+function Get-PolicyInteger([object]$Policy, [string]$Name, [int]$DefaultValue) {
+    if ($null -eq $Policy) { return $DefaultValue }
+    $property = $Policy.PSObject.Properties[$Name]
+    if ($null -eq $property) { return $DefaultValue }
+    return [int]$property.Value
+}
+
 function Get-SafePath([string]$Relative, [string]$Label, [switch]$LocalContextOnly, [switch]$ExportTarget) {
     if ([string]::IsNullOrWhiteSpace($Relative) -or [System.IO.Path]::IsPathRooted($Relative)) {
         throw "$Label должен быть относительным путём внутри проекта: $Relative"
@@ -146,6 +161,16 @@ $selectedProfile = $selectedProfile[0]
 if ($selectedProfile.tokenBudget -lt 512 -or $selectedProfile.reserveTokens -lt 0 -or
     $selectedProfile.reserveTokens -ge $selectedProfile.tokenBudget) {
     throw "Профиль '$Profile' содержит некорректный бюджет."
+}
+$healthPolicyProperty = $configuration.PSObject.Properties['healthPolicy']
+$healthPolicy = if ($null -eq $healthPolicyProperty) { $null } else { $healthPolicyProperty.Value }
+$warningUtilizationPercent = Get-PolicyInteger $healthPolicy 'warningUtilizationPercent' 75
+$criticalUtilizationPercent = Get-PolicyInteger $healthPolicy 'criticalUtilizationPercent' 90
+$minimumCompletenessScore = Get-PolicyInteger $healthPolicy 'minimumCompletenessScore' 100
+if ($warningUtilizationPercent -lt 1 -or $criticalUtilizationPercent -gt 100 -or
+    $warningUtilizationPercent -ge $criticalUtilizationPercent -or
+    $minimumCompletenessScore -lt 1 -or $minimumCompletenessScore -gt 100) {
+    throw 'CONTEXT-PROFILES.json содержит некорректную политику здоровья контекста.'
 }
 if (-not $PSBoundParameters.ContainsKey('TokenBudget')) { $TokenBudget = [int]$selectedProfile.tokenBudget }
 $reserveTokens = [Math]::Min([int]$selectedProfile.reserveTokens, [int][Math]::Floor($TokenBudget * 0.25))
@@ -287,20 +312,77 @@ $checksPassed = $includedDocuments.Count + $presentHandoffSections.Count + ($nor
 $score = if ($checksTotal -eq 0) { 100 } else { [int][Math]::Round(100 * $checksPassed / $checksTotal) }
 $complete = $missingDocuments.Count -eq 0 -and $omittedDocuments.Count -eq 0 -and
     $missingIds.Count -eq 0 -and $missingQueries.Count -eq 0 -and $missingHandoffSections.Count -eq 0
+$utilizationPercent = if ($contentBudget -eq 0) { 100 } else {
+    [Math]::Round(100 * $usedTokens / $contentBudget, 1)
+}
+
+$sourceFiles = [System.Collections.Generic.List[object]]::new()
+$sourceRelativePaths = @(
+    @('CONTEXT-PROFILES.json') + @($selectedProfile.documents) + $registryPaths |
+        ForEach-Object { [string]$_ } |
+        Sort-Object -Unique
+)
+foreach ($relative in $sourceRelativePaths) {
+    $path = Get-SafePath $relative "Источник контекста $relative"
+    $exists = Test-Path -LiteralPath $path -PathType Leaf
+    $sha256 = if ($exists) { Get-TextSha256 ([System.IO.File]::ReadAllText($path)) } else { $null }
+    $sourceFiles.Add([ordered]@{
+            path = $relative.Replace('\', '/')
+            exists = $exists
+            sha256 = $sha256
+        })
+}
+$sourceFingerprintMaterial = @($sourceFiles | Sort-Object path | ForEach-Object {
+        "$($_.path)|$($_.exists)|$($_.sha256)"
+    }) -join "`n"
+$sourceFingerprint = Get-TextSha256 $sourceFingerprintMaterial
+$contextText = (Normalize-Text $builder.ToString()).TrimEnd() + "`n"
+$contextFingerprint = Get-TextSha256 $contextText
+
+$healthReasons = [System.Collections.Generic.List[string]]::new()
+if (-not $complete) { $healthReasons.Add('пакет технически неполон') }
+if ($score -lt $minimumCompletenessScore) {
+    $healthReasons.Add("полнота $score% ниже минимума $minimumCompletenessScore%")
+}
+if ($utilizationPercent -ge $criticalUtilizationPercent) {
+    $healthReasons.Add("заполнение $utilizationPercent% достигло критического порога $criticalUtilizationPercent%")
+}
+$healthStatus = if ($healthReasons.Count -gt 0) {
+    'critical'
+}
+elseif ($utilizationPercent -ge $warningUtilizationPercent) {
+    'warning'
+}
+else {
+    'healthy'
+}
 
 $report = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
+    generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
     profile = $Profile
     mode = $mode
     localOnly = -not [bool]$Export
     transmissionPerformed = $false
     networkRequests = 0
+    outputPath = $OutputPath.Replace('\', '/')
     tokenBudget = $TokenBudget
     reserveTokens = $reserveTokens
     contentBudget = $contentBudget
     estimatedTokens = $usedTokens
+    utilizationPercent = $utilizationPercent
     completenessScore = $score
     complete = $complete
+    healthStatus = $healthStatus
+    healthReasons = @($healthReasons)
+    healthPolicy = [ordered]@{
+        warningUtilizationPercent = $warningUtilizationPercent
+        criticalUtilizationPercent = $criticalUtilizationPercent
+        minimumCompletenessScore = $minimumCompletenessScore
+    }
+    contextFingerprint = $contextFingerprint
+    sourceFingerprint = $sourceFingerprint
+    sourceFiles = @($sourceFiles)
     requiredDocuments = @($documentPieces.Path)
     includedDocuments = @($includedDocuments)
     missingDocuments = @($missingDocuments)
@@ -314,17 +396,23 @@ $report = [ordered]@{
     missingHandoffSections = @($missingHandoffSections)
 }
 
-Write-AtomicUtf8 $outputFull $builder.ToString()
+Write-AtomicUtf8 $outputFull $contextText
 Write-AtomicUtf8 $reportFull ($report | ConvertTo-Json -Depth 8)
-Write-Host "Пакет контекста создан: $OutputPath (~$usedTokens токенов, полнота $score%)."
+Write-Host "Пакет контекста создан: $OutputPath (~$usedTokens токенов, полнота $score%, заполнение $utilizationPercent%)."
 Write-Host "Отчёт: $ReportPath"
+if ($healthStatus -eq 'warning') {
+    Write-Warning "Контекст приближается к пределу: заполнение $utilizationPercent% (порог $warningUtilizationPercent%)."
+}
 
-if ($Check -and -not $complete) {
+if ($Check -and $healthStatus -eq 'critical') {
     $reasons = [System.Collections.Generic.List[string]]::new()
     if ($missingDocuments.Count -gt 0) { $reasons.Add('нет документов: ' + ($missingDocuments -join ', ')) }
     if ($omittedDocuments.Count -gt 0) { $reasons.Add('не вошли в бюджет: ' + ($omittedDocuments -join ', ')) }
     if ($missingIds.Count -gt 0) { $reasons.Add('не найдены ID: ' + ($missingIds -join ', ')) }
     if ($missingQueries.Count -gt 0) { $reasons.Add('нет совпадений: ' + ($missingQueries -join ', ')) }
     if ($missingHandoffSections.Count -gt 0) { $reasons.Add('неполный HANDOFF.md: ' + ($missingHandoffSections -join ', ')) }
+    if ($utilizationPercent -ge $criticalUtilizationPercent) {
+        $reasons.Add("критическое заполнение контекста: $utilizationPercent%")
+    }
     throw 'Пакет контекста неполон: ' + ($reasons -join '; ')
 }

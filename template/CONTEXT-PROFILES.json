@@ -1,6 +1,14 @@
 {
   "schemaVersion": 1,
   "defaultProfile": "standard",
+  "healthPolicy": {
+    "warningUtilizationPercent": 75,
+    "criticalUtilizationPercent": 90,
+    "minimumCompletenessScore": 100,
+    "maxHandoffAgeDays": 14,
+    "maxStatusAgeDays": 7,
+    "warningUtilizationIncreasePoints": 10
+  },
   "profiles": [
     {
       "name": "compact",

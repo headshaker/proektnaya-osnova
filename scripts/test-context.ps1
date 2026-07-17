@@ -28,8 +28,13 @@ if (-not $test.StartsWith($root + [System.IO.Path]::DirectorySeparatorChar, [Sys
 
 try {
     Copy-Item -LiteralPath $source -Destination $test -Recurse
+    $copiedProjectState = Join-Path $test '.project'
+    if (Test-Path -LiteralPath $copiedProjectState) {
+        Remove-Item -LiteralPath $copiedProjectState -Recurse -Force
+    }
     & (Join-Path $test 'scripts/init-project.ps1') -Title 'Проверка контекста' -Slug 'context-test' -Date $Date
     $builder = Join-Path $test 'scripts/build-context.ps1'
+    $healthChecker = Join-Path $test 'scripts/check-context-health.ps1'
 
     $decisionsPath = Join-Path $test 'DECISIONS.md'
     $decisions = [System.IO.File]::ReadAllText($decisionsPath)
@@ -51,6 +56,63 @@ try {
         -not $report.localOnly -or $report.transmissionPerformed -or $report.networkRequests -ne 0) {
         throw 'Отчёт локального пакета содержит неверную полноту или режим передачи.'
     }
+    if ($report.schemaVersion -ne 2 -or
+        [string]::IsNullOrWhiteSpace([string]$report.sourceFingerprint) -or
+        [string]::IsNullOrWhiteSpace([string]$report.contextFingerprint) -or
+        $null -eq $report.utilizationPercent -or @($report.sourceFiles).Count -eq 0) {
+        throw 'Отчёт локального пакета не содержит метрики и отпечатки здоровья контекста.'
+    }
+
+    & $healthChecker -Date $Date -UpdateBaseline -Check
+    $healthPath = Join-Path $test '.project/context/context-health.json'
+    $baselinePath = Join-Path $test '.project/context/context-baseline.json'
+    $health = [System.IO.File]::ReadAllText($healthPath) | ConvertFrom-Json
+    if ($health.status -eq 'critical' -or @($health.errors).Count -gt 0 -or
+        -not (Test-Path -LiteralPath $baselinePath -PathType Leaf)) {
+        throw 'Проверка здоровья не подтвердила исходный пакет или не создала эталон.'
+    }
+
+    $briefPath = Join-Path $test 'PROJECT-BRIEF.md'
+    $briefOriginal = [System.IO.File]::ReadAllText($briefPath)
+    [System.IO.File]::WriteAllText($briefPath, $briefOriginal + "`n<!-- CONTEXT-STALE -->`n", $utf8)
+    Assert-Throws {
+        & $healthChecker -Date $Date -Check
+    } 'контекст устарел.*PROJECT-BRIEF\.md' 'изменение канонического источника делает пакет устаревшим'
+    [System.IO.File]::WriteAllText($briefPath, $briefOriginal, $utf8)
+
+    $contextOriginal = [System.IO.File]::ReadAllText($outputPath)
+    [System.IO.File]::WriteAllText($outputPath, $contextOriginal + "`n<!-- CONTEXT-TAMPER -->`n", $utf8)
+    Assert-Throws {
+        & $healthChecker -Date $Date -Check
+    } 'пакет изменён после формирования отчёта' 'изменение собранного пакета обнаруживается'
+    [System.IO.File]::WriteAllText($outputPath, $contextOriginal, $utf8)
+
+    $handoffPath = Join-Path $test 'HANDOFF.md'
+    $handoffOriginal = [System.IO.File]::ReadAllText($handoffPath)
+    $oldDate = [DateTime]::ParseExact(
+        $Date,
+        'yyyy-MM-dd',
+        [System.Globalization.CultureInfo]::InvariantCulture
+    ).AddDays(-30).ToString('yyyy-MM-dd')
+    $oldHandoff = $handoffOriginal -replace '(?m)^updated:\s*.*$', "updated: `"$oldDate`""
+    [System.IO.File]::WriteAllText($handoffPath, $oldHandoff, $utf8)
+    & $builder -Profile compact -IncludeId D-040,Q-001 -Query 'утверждает бриф' -Check
+    Assert-Throws {
+        & $healthChecker -Date $Date -Check
+    } 'HANDOFF\.md устарел' 'просроченная точка передачи обнаруживается'
+    [System.IO.File]::WriteAllText($handoffPath, $handoffOriginal, $utf8)
+    & $builder -Profile compact -IncludeId D-040,Q-001 -Query 'утверждает бриф' -Check
+    & $healthChecker -Date $Date -UpdateBaseline -Check
+
+    $baseline = [System.IO.File]::ReadAllText($baselinePath) | ConvertFrom-Json
+    $baseline.utilizationPercent = [Math]::Max(0, [decimal]$baseline.utilizationPercent - 20)
+    [System.IO.File]::WriteAllText($baselinePath, ($baseline | ConvertTo-Json -Depth 5) + "`n", $utf8)
+    & $healthChecker -Date $Date
+    $regressionHealth = [System.IO.File]::ReadAllText($healthPath) | ConvertFrom-Json
+    if (@($regressionHealth.regressions) -notmatch 'заполнение выросло') {
+        throw 'Проверка здоровья не обнаружила ухудшение относительно эталона.'
+    }
+    & $healthChecker -Date $Date -UpdateBaseline -Check
 
     & pwsh -NoProfile -File $builder -Profile compact -IncludeId 'D-040,Q-001' `
         -OutputPath '.project/context/cli-context.md' `
@@ -74,7 +136,6 @@ try {
         & $builder -Profile compact -Export -OutputPath 'README.md' -ReportPath 'exports/report.json'
     } 'внутри exports' 'экспорт не заменяет канонический файл'
 
-    $handoffPath = Join-Path $test 'HANDOFF.md'
     $handoff = [System.IO.File]::ReadAllText($handoffPath)
     $handoff = $handoff -replace '(?m)^## 6\. Что остаётся неподтверждённым\s*$', '### Раздел временно утрачен'
     [System.IO.File]::WriteAllText($handoffPath, $handoff, $utf8)
@@ -82,7 +143,12 @@ try {
         & $builder -Profile compact -IncludeId D-001 -Check
     } 'неполный HANDOFF' 'неполная передача контекста обнаруживается'
 
-    $scriptText = [System.IO.File]::ReadAllText($builder)
+    [System.IO.File]::WriteAllText($handoffPath, $handoffOriginal, $utf8)
+    Assert-Throws {
+        & $builder -Profile compact -TokenBudget 512 -IncludeId D-001 -Check
+    } 'не вошли в бюджет|критическое заполнение' 'опасное усечение по бюджету блокируется'
+
+    $scriptText = [System.IO.File]::ReadAllText($builder) + [System.IO.File]::ReadAllText($healthChecker)
     if ($scriptText -match '(?i)Invoke-WebRequest|Invoke-RestMethod|System\.Net\.Http|curl\b|wget\b|\bgh\s') {
         throw 'Локальный сборщик содержит сетевую операцию.'
     }

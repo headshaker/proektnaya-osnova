@@ -59,6 +59,7 @@ function New-ProjectFixture(
     Copy-Item -LiteralPath $source -Destination $project -Recurse
     & (Join-Path $project 'scripts/init-project.ps1') `
         -Title "Миграция $Name" -Slug "migration-$Name" -Date '2026-07-01'
+    Remove-SafePath $project 'scripts/check-context-health.ps1'
 
     foreach ($relative in @(
             '.github/copilot-instructions.md',
@@ -271,11 +272,13 @@ try {
     $project081 = New-ProjectFixture 'from-081' '0.8.1'
     & $updater -ProjectPath $project081 -Date '2026-07-17' -Apply
     Assert-Version $project081 '0.9.0'
-    foreach ($relative in @('START-PROJECT.cmd', 'scripts/setup-project.ps1')) {
+    foreach ($relative in @('START-PROJECT.cmd', 'scripts/setup-project.ps1', 'scripts/check-context-health.ps1')) {
         if (-not (Test-Path -LiteralPath (Join-Path $project081 $relative) -PathType Leaf)) {
-            throw "Миграция 0.8.1 не добавила файл мастера настройки: $relative"
+            throw "Миграция 0.8.1 не добавила новый файл выпуска: $relative"
         }
     }
+    & (Join-Path $project081 'scripts/build-context.ps1') -Profile compact -IncludeId D-001,Q-001 -Check
+    & (Join-Path $project081 'scripts/check-context-health.ps1') -Date '2026-07-07' -Check
     $state081 = [System.IO.File]::ReadAllText((Join-Path $project081 'TEMPLATE-STATE.json')) | ConvertFrom-Json
     if ($state081.previousTemplateVersion -cne '0.8.1' -or $state081.templateVersion -cne '0.9.0') {
         throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.1 -> 0.9.0.'

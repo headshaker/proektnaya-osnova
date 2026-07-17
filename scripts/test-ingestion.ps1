@@ -46,7 +46,11 @@ try {
     $package = [System.IO.File]::ReadAllText((Join-Path $test '.project/context/ai-package.md'))
     $report = [System.IO.File]::ReadAllText((Join-Path $test '.project/context/ai-package-report.json')) | ConvertFrom-Json
     if ($package -notmatch 'S-002-C\d+' -or $package -notmatch 'Доступность 99,9' -or
-        -not $report.complete -or $report.sourceAvailableTokens -le 0 -or
+        $report.schemaVersion -ne 2 -or -not $report.complete -or
+        $report.healthStatus -ceq 'critical' -or
+        [string]::IsNullOrWhiteSpace([string]$report.contextFingerprint) -or
+        [string]::IsNullOrWhiteSpace([string]$report.baseSourceFingerprint) -or
+        $report.sourceAvailableTokens -le 0 -or
         $report.sourceIncludedTokens -le 0 -or $report.sourceReductionPercent -lt 0) {
         throw 'AI-пакет не содержит выбранный фрагмент или некорректный отчёт.'
     }

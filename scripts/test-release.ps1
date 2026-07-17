@@ -118,6 +118,7 @@ try {
             'scripts/build-ai-package.ps1',
             'scripts/build-context.ps1',
             'scripts/build-status.ps1',
+            'scripts/check-context-health.ps1',
             'scripts/check-project-health.ps1',
             'scripts/ingest-sources.ps1',
             'scripts/source-ingestion.py',
