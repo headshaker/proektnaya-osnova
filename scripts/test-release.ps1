@@ -81,7 +81,9 @@ try {
 
         $required = @(
             'README.md',
+            'HOME.md',
             'START-HERE.md',
+            'ADMIN-SETUP.md',
             'STATUS.md',
             'PROJECT-CONFIG.json',
             'OUTCOMES.md',
@@ -149,6 +151,7 @@ try {
     [System.IO.Compression.ZipFile]::ExtractToDirectory($output, $extractPath)
     & (Join-Path $extractPath 'scripts/init-project.ps1') -Title 'Проверка выпускного архива' -Slug 'release-package-test' -Date '2000-02-29'
     & (Join-Path $PSScriptRoot 'test-agent-guides.ps1') -Date '2026-07-16'
+    & (Join-Path $PSScriptRoot 'test-human-first.ps1')
     & (Join-Path $PSScriptRoot 'test-ingestion.ps1') -Date '2026-07-16'
     & (Join-Path $PSScriptRoot 'test-migrations.ps1')
 
