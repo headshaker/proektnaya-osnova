@@ -21,6 +21,8 @@ jobs:
     timeout-minutes: 5
     env:
       GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
     steps:
       - name: Проверить RELEASE_TOKEN
         shell: bash
@@ -29,14 +31,14 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "$RELEASE_TOKEN" ]]; then
-            gh pr comment 11 --body "Одноразовый запуск остановлен: Actions secret \`RELEASE_TOKEN\` отсутствует. Значение секрета не раскрывалось."
+            gh pr comment "$PR_NUMBER" --body "Одноразовый запуск остановлен: Actions secret \`RELEASE_TOKEN\` отсутствует. Значение секрета не раскрывалось."
             exit 1
           fi
-          gh pr comment 11 --body "Actions secret \`RELEASE_TOKEN\` найден. Запускаю workflow восстановления релизов."
+          gh pr comment "$PR_NUMBER" --body "Actions secret \`RELEASE_TOKEN\` найден. Запускаю workflow восстановления релизов."
 
       - name: Запустить основной workflow
         shell: bash
         run: |
           set -euo pipefail
           gh workflow run backfill-releases.yml --ref main
-          gh pr comment 11 --body "Workflow восстановления релизов успешно поставлен в очередь."
+          gh pr comment "$PR_NUMBER" --body "Workflow восстановления релизов успешно поставлен в очередь."
