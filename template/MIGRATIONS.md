@@ -49,7 +49,7 @@ tags:
 
 ## Совместимость реестров
 
-Файл [`REGISTRY-SCHEMA.json`](./REGISTRY-SCHEMA.json) описывает поддерживаемые строки решений, допущений, вопросов и источников. Проверка принимает исторические ID с любым количеством цифр (`D-1` и [`D-001`](./DECISIONS.md#d-001)) и форматы таблиц версий `0.1.x–0.7.x`, но отклоняет повторяющиеся ID и неизвестное число колонок.
+Файл [`REGISTRY-SCHEMA.json`](./REGISTRY-SCHEMA.json) описывает поддерживаемые строки решений, допущений, вопросов, источников и элементов управления. Проверка принимает исторические ID с любым количеством цифр (`D-1` и [`D-001`](./DECISIONS.md#d-001)) и форматы таблиц версий `0.1.x–0.8.x`, но отклоняет повторяющиеся ID и неизвестное число колонок.
 
     pwsh ./scripts/validate-registries.ps1
 
@@ -101,6 +101,30 @@ MarkItDown устанавливается только при необходим
 - поддерживаются решения `D-xxx`, допущения `A-xxx`, вопросы `Q-xxx`, источники `S-xxx` и будущие форматы из [`REGISTRY-SCHEMA.json`](./REGISTRY-SCHEMA.json);
 - канонические пользовательские файлы не заменяются миграцией;
 - после обновления выполните `python scripts/link-registry-references.py --write`, затем `python scripts/link-registry-references.py --check` и просмотрите diff.
+
+## Переход на 0.8.0
+
+Версия `0.8.0` добавляет замкнутый управленческий цикл поверх существующей базы знаний:
+
+- [`PROJECT-CONFIG.json`](./PROJECT-CONFIG.json) задаёт профиль управления, подход к поставке, внешнюю рабочую систему, ритмы обзора и допуски;
+- [`OUTCOMES.md`](./OUTCOMES.md) связывает выгоды с владельцами, метриками, целями и доказательствами;
+- [`CONTROLS.md`](./CONTROLS.md) объединяет риски, проблемы, зависимости и запросы на изменение;
+- [`STATUS.md`](./STATUS.md) строится из канонических данных командой `pwsh ./scripts/build-status.ps1`;
+- `pwsh ./scripts/check-project-health.ps1` проверяет конфигурацию, сроки, просрочки и обязательные элементы управления;
+- [`AI-GOVERNANCE.md`](./AI-GOVERNANCE.md) определяет уровни риска, требования к доказательствам и человеческому подтверждению;
+- [`.github/workflows/project-health.yml`](.github/workflows/project-health.yml) выполняет проверки статуса и здоровья при изменениях и по расписанию.
+
+Все эти файлы добавляются безопасно: существующий файл с совпадающим именем не заменяется. Миграция также расширяет управляемую схему реестров идентификаторами `B-xxx`, `R-xxx`, `I-xxx`, `X-xxx`, `C-xxx` и `G-xxx`.
+
+После обновления:
+
+1. заполните [`PROJECT-CONFIG.json`](./PROJECT-CONFIG.json), особенно `workSystem`, `dataClassification` и применимые допуски;
+2. внесите минимум одну проверяемую выгоду в [`OUTCOMES.md`](./OUTCOMES.md);
+3. объедините полезные изменения из новой редакции [`AGENTS.md`](./AGENTS.md), [`CONTEXT-PROFILES.json`](./CONTEXT-PROFILES.json), [`scripts/build-context.ps1`](./scripts/build-context.ps1), [`scripts/project-dossier.manifest.json`](./scripts/project-dossier.manifest.json), [`docs/03-delivery.md`](./docs/03-delivery.md) и [`docs/04-governance-risks.md`](./docs/04-governance-risks.md), если они уже были адаптированы в проекте;
+4. выполните `pwsh ./scripts/build-status.ps1`, затем `pwsh ./scripts/check-project-health.ps1`;
+5. проверьте diff и зафиксируйте осознанные изменения отдельным коммитом.
+
+Рабочие задачи по-прежнему остаются в Jira, GitHub Issues или другой выбранной системе. В репозитории хранятся только ссылки, управленческие условия, результаты, доказательства и решения.
 
 ## Восстановление
 

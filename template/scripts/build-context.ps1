@@ -19,7 +19,14 @@ $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')).TrimEnd([c
 $profilesPath = Join-Path $root 'CONTEXT-PROFILES.json'
 $utf8 = [System.Text.UTF8Encoding]::new($false)
 $charsPerToken = 2.2
-$registryPaths = @('DECISIONS.md', 'OPEN-QUESTIONS.md', 'SOURCES.md')
+$registryPaths = @(
+    'DECISIONS.md',
+    'OPEN-QUESTIONS.md',
+    'SOURCES.md',
+    'OUTCOMES.md',
+    'CONTROLS.md',
+    'docs/03-delivery.md'
+)
 $handoffSections = @(
     '1. Текущая позиция',
     '2. Что изменено (последние 14 дней)',
@@ -118,7 +125,7 @@ function Get-RegistryRows([string]$Relative) {
     $rows = [System.Collections.Generic.List[object]]::new()
     foreach ($line in ((Normalize-Text ([System.IO.File]::ReadAllText($path))) -split "`n")) {
         $cells = @(Split-MarkdownRow $line)
-        if ($cells.Count -eq 0 -or $cells[0] -notmatch '^(?:D|A|Q|S)-\d+$') { continue }
+        if ($cells.Count -eq 0 -or $cells[0] -notmatch '^[A-Z]-\d+$') { continue }
         $rows.Add([pscustomobject]@{ Path = $Relative; Id = $cells[0]; Text = $line.Trim(); Search = ($cells -join ' ') })
     }
     return @($rows)
@@ -161,7 +168,7 @@ $normalizedIds = @($IncludeId |
     ForEach-Object { $_.Trim().ToUpperInvariant() } |
     Select-Object -Unique)
 foreach ($id in $normalizedIds) {
-    if ($id -notmatch '^(?:D|A|Q|S)-\d+$') { throw "Некорректный ID для адресной загрузки: $id" }
+    if ($id -notmatch '^[A-Z]-\d+$') { throw "Некорректный ID для адресной загрузки: $id" }
 }
 $normalizedQueries = @($Query |
     ForEach-Object { $_ -split ',' } |

@@ -422,7 +422,9 @@ def main() -> int:
             result = select(args.source_id, args.query, args.token_budget, args.max_chunks, args.refresh)
         else:
             result = verify()
-        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        # Keep CLI JSON ASCII-safe: PowerShell may decode native-process stdout
+        # with a system code page before ConvertFrom-Json sees it.
+        print(json.dumps(result, ensure_ascii=True, indent=2, sort_keys=True))
         return 0
     except (IngestionError, OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"ОШИБКА: {exc}", file=sys.stderr)

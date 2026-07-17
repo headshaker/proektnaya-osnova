@@ -9,8 +9,7 @@
     "0.4.0",
     "0.5.0",
     "0.6.0",
-    "0.7.0",
-    "0.8.0"
+    "0.7.0"
   ],
   "registries": [
     {
@@ -66,64 +65,6 @@
           "idPattern": "^S-\\d+$",
           "columns": [
             7
-          ]
-        }
-      ]
-    },
-    {
-      "path": "OUTCOMES.md",
-      "formats": [
-        {
-          "name": "benefit-v1",
-          "idPattern": "^B-\\d+$",
-          "columns": [
-            10
-          ]
-        }
-      ]
-    },
-    {
-      "path": "CONTROLS.md",
-      "formats": [
-        {
-          "name": "risk-opportunity-v1",
-          "idPattern": "^R-\\d+$",
-          "columns": [
-            11
-          ]
-        },
-        {
-          "name": "issue-v1",
-          "idPattern": "^I-\\d+$",
-          "columns": [
-            8
-          ]
-        },
-        {
-          "name": "dependency-v1",
-          "idPattern": "^X-\\d+$",
-          "columns": [
-            9
-          ]
-        },
-        {
-          "name": "change-request-v1",
-          "idPattern": "^C-\\d+$",
-          "columns": [
-            10
-          ]
-        }
-      ]
-    },
-    {
-      "path": "docs/03-delivery.md",
-      "formats": [
-        {
-          "name": "milestone-v1",
-          "idPattern": "^G-\\d+$",
-          "columns": [
-            6,
-            9
           ]
         }
       ]

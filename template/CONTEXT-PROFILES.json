@@ -7,11 +7,20 @@
       "description": "Короткое погружение в полномочия ИИ, состояние и границы проекта для узкой задачи.",
       "tokenBudget": 8000,
       "reserveTokens": 2000,
-      "documents": ["AGENTS.override.md", "README.md", "HANDOFF.md", "PROJECT-BRIEF.md"],
+      "documents": [
+        "AGENTS.override.md",
+        "PROJECT-CONFIG.json",
+        "STATUS.md",
+        "HANDOFF.md",
+        "PROJECT-BRIEF.md"
+      ],
       "registryLimits": {
         "DECISIONS.md": 8,
         "OPEN-QUESTIONS.md": 8,
-        "SOURCES.md": 0
+        "SOURCES.md": 0,
+        "OUTCOMES.md": 4,
+        "CONTROLS.md": 8,
+        "docs/03-delivery.md": 3
       }
     },
     {
@@ -22,9 +31,14 @@
       "documents": [
         "AGENTS.md",
         "AI-OPERATING-MODEL.md",
+        "AI-GOVERNANCE.md",
         "README.md",
+        "PROJECT-CONFIG.json",
+        "STATUS.md",
         "HANDOFF.md",
         "PROJECT-BRIEF.md",
+        "OUTCOMES.md",
+        "CONTROLS.md",
         "docs/01-product.md",
         "docs/02-architecture.md",
         "docs/03-delivery.md",
@@ -33,7 +47,10 @@
       "registryLimits": {
         "DECISIONS.md": 30,
         "OPEN-QUESTIONS.md": 30,
-        "SOURCES.md": 20
+        "SOURCES.md": 20,
+        "OUTCOMES.md": 20,
+        "CONTROLS.md": 40,
+        "docs/03-delivery.md": 20
       }
     },
     {
@@ -44,11 +61,16 @@
       "documents": [
         "AGENTS.md",
         "AI-OPERATING-MODEL.md",
+        "AI-GOVERNANCE.md",
         "VIRTUAL-SPECIALISTS.md",
         "PROMPTING-GUIDE.md",
         "README.md",
+        "PROJECT-CONFIG.json",
+        "STATUS.md",
         "HANDOFF.md",
         "PROJECT-BRIEF.md",
+        "OUTCOMES.md",
+        "CONTROLS.md",
         "WORK-PROFILES.md",
         "DAILY-WORK.md",
         "CONTEXT-WORKFLOW.md",
@@ -62,7 +84,10 @@
       "registryLimits": {
         "DECISIONS.md": 200,
         "OPEN-QUESTIONS.md": 200,
-        "SOURCES.md": 100
+        "SOURCES.md": 100,
+        "OUTCOMES.md": 100,
+        "CONTROLS.md": 300,
+        "docs/03-delivery.md": 100
       }
     }
   ]
