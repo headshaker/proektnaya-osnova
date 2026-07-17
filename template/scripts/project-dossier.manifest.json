@@ -6,6 +6,7 @@
     {
       "title": "Исполнительная картина",
       "documents": [
+        "HOME.md",
         "README.md",
         "START-HERE.md",
         "STATUS.md",
@@ -50,6 +51,7 @@
     {
       "title": "Служебные материалы",
       "documents": [
+        "ADMIN-SETUP.md",
         "INGESTION-WORKFLOW.md",
         "AGENTS.md",
         "MIGRATIONS.md",

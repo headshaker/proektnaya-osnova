@@ -26,7 +26,9 @@ try {
         'AI-GOVERNANCE.md',
         'VIRTUAL-SPECIALISTS.md',
         'PROMPTING-GUIDE.md',
+        'HOME.md',
         'START-HERE.md',
+        'ADMIN-SETUP.md',
         'OBSIDIAN.md',
         'AI-CONNECTIONS.md',
         'AGENTS.md',
@@ -72,7 +74,7 @@ try {
     }
 
     $start = [System.IO.File]::ReadAllText((Join-Path $test 'START-HERE.md'))
-    foreach ($phrase in @('Первая сессия с нейросетью', 'Как правильно ставить задачи', 'Как использовать Obsidian')) {
+    foreach ($phrase in @('Первая задача для ИИ', 'Первый рабочий день', 'Готовые команды на каждый день')) {
         if ($start -notmatch [regex]::Escape($phrase)) {
             throw "START-HERE.md не содержит раздел: $phrase"
         }
