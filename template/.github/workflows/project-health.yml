@@ -1,0 +1,35 @@
+name: Здоровье проекта
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  health:
+    name: Управленческий контур согласован
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Получить репозиторий
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Проверить исполнительный статус
+        shell: pwsh
+        run: ./scripts/build-status.ps1 -Check
+
+      - name: Проверить здоровье проекта
+        shell: pwsh
+        run: ./scripts/check-project-health.ps1
+
+      - name: Проверить прослеживаемость реестров
+        run: python scripts/link-registry-references.py --check

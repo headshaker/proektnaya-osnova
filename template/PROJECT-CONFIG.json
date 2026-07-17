@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "projectSlug": "{{PROJECT_SLUG}}",
+  "managementProfile": "standard",
+  "deliveryApproach": "hybrid",
+  "workSystem": {
+    "type": "not-configured",
+    "url": ""
+  },
+  "reviewCadence": {
+    "status": "weekly",
+    "risks": "weekly",
+    "benefits": "monthly"
+  },
+  "tolerances": {
+    "scheduleDays": null,
+    "costVariancePercent": null,
+    "scopeChangeRequiresApproval": true
+  },
+  "dataClassification": "not-classified",
+  "aiGovernanceLevel": "standard",
+  "configuredAt": "{{DATE}}"
+}

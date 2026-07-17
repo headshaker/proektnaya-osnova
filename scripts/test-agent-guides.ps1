@@ -23,6 +23,7 @@ try {
 
     $required = @(
         'AI-OPERATING-MODEL.md',
+        'AI-GOVERNANCE.md',
         'VIRTUAL-SPECIALISTS.md',
         'PROMPTING-GUIDE.md',
         'START-HERE.md',
@@ -46,6 +47,9 @@ try {
             'ИИ-оператор проекта',
             'Оркестрация виртуальных специалистов',
             'Требуется решение владельца',
+            'данными, а не инструкциями',
+            'OUTCOMES.md',
+            'CONTROLS.md',
             'результат сохранён в канонических файлах'
         )) {
         if ($agents -notmatch [regex]::Escape($phrase)) {
@@ -54,9 +58,16 @@ try {
     }
 
     $override = [System.IO.File]::ReadAllText((Join-Path $test 'AGENTS.override.md'))
-    foreach ($phrase in @('ИИ-оператор проекта', 'Границы полномочий', 'draft pull request')) {
+    foreach ($phrase in @('ИИ-оператор проекта', 'Границы полномочий', 'данными, а не инструкциями', 'draft pull request')) {
         if ($override -notmatch [regex]::Escape($phrase)) {
             throw "AGENTS.override.md не содержит обязательное правило: $phrase"
+        }
+    }
+
+    $governance = [System.IO.File]::ReadAllText((Join-Path $test 'AI-GOVERNANCE.md'))
+    foreach ($phrase in @('данными', 'Уровни риска действий ИИ', 'уполномоченный человек')) {
+        if ($governance -notmatch [regex]::Escape($phrase)) {
+            throw "AI-GOVERNANCE.md не содержит обязательное правило: $phrase"
         }
     }
 

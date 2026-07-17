@@ -82,7 +82,12 @@ try {
         $required = @(
             'README.md',
             'START-HERE.md',
+            'STATUS.md',
+            'PROJECT-CONFIG.json',
+            'OUTCOMES.md',
+            'CONTROLS.md',
             'AI-OPERATING-MODEL.md',
+            'AI-GOVERNANCE.md',
             'VIRTUAL-SPECIALISTS.md',
             'PROMPTING-GUIDE.md',
             'AI-CONNECTIONS.md',
@@ -106,8 +111,11 @@ try {
             'migrations/baselines.json',
             'migrations/manifest.json',
             'scripts/add-entry.ps1',
+            'scripts/add-control.ps1',
             'scripts/build-ai-package.ps1',
             'scripts/build-context.ps1',
+            'scripts/build-status.ps1',
+            'scripts/check-project-health.ps1',
             'scripts/ingest-sources.ps1',
             'scripts/source-ingestion.py',
             'scripts/link-registry-references.py',
@@ -117,6 +125,7 @@ try {
             'scripts/update-project.ps1',
             'scripts/validate-registries.ps1',
             '.github/workflows/knowledge-base.yml',
+            '.github/workflows/project-health.yml',
             '.github/workflows/registry-compatibility.yml'
         )
         foreach ($path in $required) {

@@ -53,20 +53,6 @@
       "REGISTRY-SCHEMA.json": "4c80ade9fad28149fd41d0dfdfc279163c9bf923da76d26936e6648564808457",
       "migrations/baselines.json": "535153f04510571254685c686bbad55eb187c697722332a202d1cb38330de032",
       "migrations/manifest.json": "d6a42062d1951ae6230d7c49590411f41142efbb492a9720ca7f092feba46abf"
-    },
-    "0.7.0": {
-      ".github/workflows/knowledge-base.yml": "0c3f438d43d327165219d6f191333f863f1ff23d03045ef4d37fee6b115ef459",
-      ".github/workflows/registry-compatibility.yml": "489b655c7619aef9844a3f96aef34bc7b93448dd4b742163fb30d52198d8b818",
-      "REGISTRY-SCHEMA.json": "3a50d0dc0d3e1fbd322712a9a5763b339ffa4c312029f1a7a639327684b94754",
-      "TEMPLATE-LICENSE": "0ff3d0abc740f19220b216831596984446b97f830e61570da08171e4e4115baa",
-      "migrations/baselines.json": "ce92ff8a05a99b89cff9694c88f91d03cb790b5fd6ce7ada9c74fca4797f6f65",
-      "migrations/manifest.json": "bfe287d448dd6649eb482cd4ee37c05e341fe5060280dfcb1feee3aa9d1c6c6a",
-      "scripts/build-project-dossier.ps1": "51176023e3e3b82aeed944c2526986f2916a295d21459ec669832e125dcb30ab",
-      "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
-      "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
-      "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
-      "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
-      "scripts/validate-vault.ps1": "ad11cf143be9dd6b8956932f19c442a63b296b2f9dec0ed47356d26bb7823a7d"
     }
   }
 }
