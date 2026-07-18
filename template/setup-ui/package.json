@@ -1,6 +1,6 @@
 {
   "name": "proektnaya-osnova-setup",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "private": true,
   "description": "Визуальный мастер первоначальной настройки Проектной основы",
   "main": "main.js",

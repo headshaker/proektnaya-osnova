@@ -211,6 +211,17 @@
       "setup-ui/setup-contract.js": "388db1e0a56c42d45312ed3cacab1333ed867ac96e3592abea9cee5f7876bb3b",
       "setup-ui/styles.css": "b03040cc007cad9b709f3064477cadf67c73e30622011f8e67bff05b4f8c8d09",
       "setup-ui/test/setup-contract.test.js": "0b32179a018f8f3006bc877b599c428d111bbef58e835ccfc901237d800bf1ed"
+    },
+    "0.13.0": {
+      "REGISTRY-SCHEMA.json": "b993c6d6089fb3775254bba39da6422b4381d47c98bf7671de4b689283c0305a",
+      "migrations/baselines.json": "63570363c26b2612443a8d6d247fb4b9a6f8f8db1ecf67a27f68083174859092",
+      "migrations/manifest.json": "3b437c42362adfc12d92cd8562d9c59dc0e3c1faa97108db5e90b829149f2fef",
+      "scripts/configure-project-tools.ps1": "b04f93055239f8ee87143c6f3ce218bf5567589e6839fdfddacee011d9df7289",
+      "scripts/setup-project.ps1": "a42c462d2f046d2db6eca74a7a5e4a5d7578f78c4d218886713d7066fcebbe2a",
+      "scripts/start-project.ps1": "cb2edafa5b1811befbbd81a35a284d965683ef6923ad95ae83f83cbe12993997",
+      "setup-ui/main.js": "7fa68c77beb040de10b9858db93281396966a9da6cc45a09377d95966c81f6a7",
+      "setup-ui/package-lock.json": "b9cba9debe385d58c56e7aa6279dbcb222f4ba6a8229d53311001276f393b47e",
+      "setup-ui/package.json": "850fa021a4ec023097def645d3295c8e7ee314d32b2ed13e4f91a9845c8fb0db"
     }
   }
 }

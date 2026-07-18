@@ -83,6 +83,19 @@ try {
             throw "Electron-мастер не содержит изолированный обработчик: $pattern"
         }
     }
+    foreach ($pattern in @("PROJECT_SETUP_STDIO_ENCODING: 'utf8'", "new StringDecoder('utf8')")) {
+        if ($mainText -notmatch [regex]::Escape($pattern)) {
+            throw "Electron-мастер не фиксирует безопасное декодирование PowerShell: $pattern"
+        }
+    }
+    foreach ($scriptName in @('configure-project-tools.ps1', 'setup-project.ps1')) {
+        $scriptText = [System.IO.File]::ReadAllText((Join-Path $source "scripts/$scriptName"))
+        foreach ($pattern in @('PROJECT_SETUP_STDIO_ENCODING', '[Console]::OutputEncoding = $utf8')) {
+            if ($scriptText -notmatch [regex]::Escape($pattern)) {
+                throw "$scriptName не фиксирует UTF-8 для Electron-мастера: $pattern"
+            }
+        }
+    }
     foreach ($pattern in @('inspectTools:', 'openGuide:', 'openObsidian:')) {
         if ($preloadText -notmatch [regex]::Escape($pattern)) {
             throw "Preload не содержит безопасный метод: $pattern"
@@ -96,7 +109,42 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'renderer.js не прошёл синтаксическую проверку Node.js.' }
     & node --test (Join-Path $uiRoot 'test/setup-contract.test.js')
     if ($LASTEXITCODE -ne 0) { throw 'Контракт Electron-мастера не прошёл тесты.' }
+
+    $encodingProbe = @'
+const { spawnSync } = require('node:child_process')
+const script = process.argv[1].replaceAll("'", "''")
+const command = "[Console]::OutputEncoding=[Text.Encoding]::GetEncoding(866); & '" + script + "' -AiToolsCsv 'chatgpt,claude,qwen' -ObsidianMode disabled -Date '2026-07-18' -Json"
+const result = spawnSync('pwsh', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command], {
+  encoding: null,
+  env: { ...process.env, PROJECT_SETUP_STDIO_ENCODING: 'utf8' }
+})
+if (result.status !== 0) throw new Error(result.stderr.toString('utf8'))
+const text = new TextDecoder('utf-8', { fatal: true }).decode(result.stdout)
+const value = JSON.parse(text)
+const credentials = value.tools.filter(tool => tool.selected).map(tool => tool.credential)
+if (!credentials.includes('При первом запуске выберите вход через ChatGPT.') ||
+    !credentials.includes('При первом запуске войдите в аккаунт Anthropic.') ||
+    !credentials.some(value => value.includes('Alibaba Cloud Coding Plan'))) {
+  throw new Error('PowerShell вернул повреждённую кириллицу.')
+}
+'@
+    & node -e $encodingProbe (Join-Path $source 'scripts/configure-project-tools.ps1')
+    if ($LASTEXITCODE -ne 0) { throw 'Electron-мастер не защитил кириллицу от системной кодировки CP866.' }
+
     & (Join-Path $source 'scripts/start-project.ps1') -SelfTest | Out-Null
+    $consoleFixture = New-WizardFixture 'console-fallback'
+    [System.IO.File]::WriteAllText(
+        (Join-Path $consoleFixture 'scripts/setup-project.ps1'),
+        "[CmdletBinding()]`nparam()`nWrite-Output 'console-fallback-ok'`n",
+        [System.Text.UTF8Encoding]::new($false)
+    )
+    $powerShellExecutable = (Get-Process -Id $PID).Path
+    $consoleOutput = @(& $powerShellExecutable -NoLogo -NoProfile -NonInteractive -File `
+            (Join-Path $consoleFixture 'scripts/start-project.ps1') -Console 2>&1)
+    $consoleExitCode = $LASTEXITCODE
+    if ($consoleExitCode -ne 0 -or ($consoleOutput -join "`n") -notmatch 'console-fallback-ok') {
+        throw "Запасной текстовый мастер неверно обрабатывает успешный PowerShell-сценарий: $($consoleOutput -join ' ')"
+    }
     if ($IsWindows) {
         & cmd.exe /d /c (Join-Path $source 'START-PROJECT.cmd') --self-test | Out-Null
         if ($LASTEXITCODE -ne 0) { throw 'START-PROJECT.cmd не прошёл реальный запуск через cmd.exe.' }

@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, net, protocol, session, shell } = require('
 const { spawn } = require('node:child_process')
 const fs = require('node:fs')
 const path = require('node:path')
+const { StringDecoder } = require('node:string_decoder')
 const { pathToFileURL } = require('node:url')
 const { toPowerShellArguments, validatePayload } = require('./setup-contract')
 
@@ -127,7 +128,8 @@ function runPowerShellArguments (args, timeoutMilliseconds = 10 * 60 * 1000) {
         ...process.env,
         NO_COLOR: '1',
         TERM: 'dumb',
-        POWERSHELL_TELEMETRY_OPTOUT: '1'
+        POWERSHELL_TELEMETRY_OPTOUT: '1',
+        PROJECT_SETUP_STDIO_ENCODING: 'utf8'
       },
       shell: false,
       windowsHide: true,
@@ -138,15 +140,19 @@ function runPowerShellArguments (args, timeoutMilliseconds = 10 * 60 * 1000) {
     let stderr = ''
     let overflow = false
     const maximumOutput = 512 * 1024
-    const append = (current, chunk) => {
+    const stdoutDecoder = new StringDecoder('utf8')
+    const stderrDecoder = new StringDecoder('utf8')
+    const append = (current, text) => {
       if (current.length >= maximumOutput) {
-        overflow = true
+        if (text.length > 0) overflow = true
         return current
       }
-      return (current + chunk.toString('utf8')).slice(0, maximumOutput)
+      const combined = current + text
+      if (combined.length > maximumOutput) overflow = true
+      return combined.slice(0, maximumOutput)
     }
-    child.stdout.on('data', chunk => { stdout = append(stdout, chunk) })
-    child.stderr.on('data', chunk => { stderr = append(stderr, chunk) })
+    child.stdout.on('data', chunk => { stdout = append(stdout, stdoutDecoder.write(chunk)) })
+    child.stderr.on('data', chunk => { stderr = append(stderr, stderrDecoder.write(chunk)) })
 
     const timeout = setTimeout(() => {
       child.kill()
@@ -161,6 +167,8 @@ function runPowerShellArguments (args, timeoutMilliseconds = 10 * 60 * 1000) {
     })
     child.once('close', code => {
       clearTimeout(timeout)
+      stdout = append(stdout, stdoutDecoder.end())
+      stderr = append(stderr, stderrDecoder.end())
       resolve({
         ok: code === 0,
         exitCode: Number.isInteger(code) ? code : 1,
