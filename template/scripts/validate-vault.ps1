@@ -7,15 +7,20 @@ $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $errors = [System.Collections.Generic.List[string]]::new()
 $datePlaceholder = '{{' + 'DATE' + '}}'
 $requiredFiles = @(
+    '.gitattributes',
     'README.md', 'AGENTS.md', 'PROJECT-BRIEF.md', 'DECISIONS.md',
     'OPEN-QUESTIONS.md', 'SOURCES.md', 'GLOSSARY.md', 'HANDOFF.md',
     'CHANGELOG.md', 'OBSIDIAN.md', 'DAILY-WORK.md', 'MIGRATIONS.md',
     'WORK-PROFILES.md', 'CONTEXT-WORKFLOW.md', 'CONTEXT-PROFILES.json',
     'AI-COORDINATION.md', 'AI-COORDINATION.json', 'AI-INTEGRATION-STATE.json',
+    'AI-TOOLS.json', 'LOCAL-SYNC.json', 'CLAUDE.md', 'GEMINI.md', 'QWEN.md',
     'REGISTRY-SCHEMA.json', 'TEMPLATE-LICENSE', 'TEMPLATE-STATE.json',
     'TEMPLATE-VERSION', 'scripts/build-context.ps1', 'scripts/check-context-health.ps1',
     'scripts/start-ai-work.ps1', 'scripts/sync-ai-work.ps1', 'scripts/check-ai-coordination.ps1',
     'scripts/configure-github-protection.ps1',
+    'scripts/configure-project-tools.ps1',
+    'scripts/refresh-ai-context.ps1', 'scripts/sync-project.ps1', 'scripts/install-local-sync.ps1',
+    '.githooks/post-merge', '.githooks/post-checkout', '.githooks/post-rewrite',
     'TEAM-INPUT.md', 'TEAM-INPUT.json', 'scripts/process-team-input.ps1',
     '.github/ISSUE_TEMPLATE/team-input.yml', '.github/workflows/team-input.yml',
     '.github/workflows/ai-coordination.yml', '.ai-work/README.md'
@@ -85,6 +90,103 @@ if (Test-Path -LiteralPath $templateStatePath -PathType Leaf) {
 }
 
 $aiCoordinationPath = Join-Path $root 'AI-COORDINATION.json'
+$aiToolsPath = Join-Path $root 'AI-TOOLS.json'
+if (Test-Path -LiteralPath $aiToolsPath -PathType Leaf) {
+    try {
+        $aiTools = [System.IO.File]::ReadAllText($aiToolsPath) | ConvertFrom-Json
+        $supportedTools = @('chatgpt', 'claude', 'gemini', 'qwen', 'deepseek', 'grok')
+        $selectedTools = @($aiTools.selectedAiTools)
+        $duplicates = @($selectedTools | Group-Object -CaseSensitive | Where-Object Count -gt 1)
+        $unknown = @($selectedTools | Where-Object { $supportedTools -cnotcontains [string]$_ })
+        if ([int]$aiTools.schemaVersion -ne 1 -or $duplicates.Count -gt 0 -or $unknown.Count -gt 0) {
+            $errors.Add('AI-TOOLS.json: список инструментов содержит неизвестное значение или повтор')
+        }
+        if ([string]$aiTools.instructionContract -cne 'AGENTS.md' -or
+            [string]$aiTools.coordination.mode -cne 'separate-worktree-per-agent' -or
+            [string]$aiTools.coordination.guide -cne 'AI-COORDINATION.md' -or
+            $aiTools.secretsStoredInRepository -ne $false) {
+            $errors.Add('AI-TOOLS.json: небезопасный контракт инструкций, координации или секретов')
+        }
+        if ([string]$aiTools.context.packagePath -cne '.project/context/ai-package.md' -or
+            [string]$aiTools.context.statePath -cne '.project/context/local-context-state.json' -or
+            [string]$aiTools.context.syncPolicy -cne 'LOCAL-SYNC.json' -or
+            [string]$aiTools.context.refreshScript -cne 'scripts/refresh-ai-context.ps1' -or
+            $aiTools.context.refreshBeforeSession -ne $true) {
+            $errors.Add('AI-TOOLS.json: общий автоматически обновляемый контекст настроен неверно')
+        }
+        $adapterNames = @($aiTools.adapters.PSObject.Properties | ForEach-Object { $_.Name })
+        if (@($adapterNames | Where-Object { $selectedTools -cnotcontains $_ }).Count -gt 0 -or
+            @($selectedTools | Where-Object { $adapterNames -cnotcontains [string]$_ }).Count -gt 0) {
+            $errors.Add('AI-TOOLS.json: adapters должны точно соответствовать выбранным инструментам')
+        }
+        $expectedCommands = @{ chatgpt='codex'; claude='claude'; gemini='gemini'; qwen='qwen'; deepseek='deepseek'; grok='grok' }
+        $expectedInstructions = @{ chatgpt='AGENTS.md'; claude='CLAUDE.md'; gemini='GEMINI.md'; qwen='QWEN.md'; deepseek='AGENTS.md'; grok='AGENTS.md' }
+        $expectedGuides = @{
+            chatgpt='https://developers.openai.com/codex/cli'
+            claude='https://code.claude.com/docs/en/terminal-guide'
+            gemini='https://google-gemini.github.io/gemini-cli/docs/get-started/deployment.html'
+            qwen='https://qwenlm.github.io/qwen-code-docs/en/'
+            deepseek='https://github.com/deepseek-ai/awesome-deepseek-agent/blob/main/docs/deepseek-tui.md'
+            grok='https://docs.x.ai/build/overview'
+        }
+        foreach ($adapterName in $adapterNames) {
+            $adapter = $aiTools.adapters.$adapterName
+            if ([string]$adapter.command -cne [string]$expectedCommands[$adapterName] -or
+                [string]$adapter.instructionFile -cne [string]$expectedInstructions[$adapterName] -or
+                -not (Test-Path -LiteralPath (Join-Path $root ([string]$adapter.instructionFile)) -PathType Leaf) -or
+                [string]$adapter.guideUrl -cne [string]$expectedGuides[$adapterName]) {
+                $errors.Add("AI-TOOLS.json: адаптер '$adapterName' заполнен неверно")
+            }
+        }
+        if ([string]$aiTools.obsidian.configurationFolder -cne '.obsidian' -or
+            [string]$aiTools.obsidian.homeDocument -cne 'HOME.md' -or
+            $aiTools.obsidian.enabled -isnot [bool]) {
+            $errors.Add('AI-TOOLS.json: настройки Obsidian не соответствуют структуре проекта')
+        }
+        if (-not (Test-IsoDate ([string]$aiTools.configuredAt))) {
+            $errors.Add('AI-TOOLS.json: configuredAt должен быть календарной датой ГГГГ-ММ-ДД')
+        }
+        if ($aiTools.obsidian.enabled -eq $true) {
+            foreach ($file in @('.obsidian/app.json', '.obsidian/templates.json', '.obsidian/core-plugins.json')) {
+                if (-not (Test-Path -LiteralPath (Join-Path $root $file) -PathType Leaf)) {
+                    $errors.Add("AI-TOOLS.json: Obsidian включён, но отсутствует $file")
+                }
+            }
+        }
+    }
+    catch {
+        $errors.Add("AI-TOOLS.json: некорректный JSON или структура — $($_.Exception.Message)")
+    }
+}
+
+$localSyncPath = Join-Path $root 'LOCAL-SYNC.json'
+if (Test-Path -LiteralPath $localSyncPath -PathType Leaf) {
+    try {
+        $localSync = [System.IO.File]::ReadAllText($localSyncPath) | ConvertFrom-Json
+        $localSyncInvalid = @(
+            [int]$localSync.schemaVersion -ne 1
+            $localSync.enabled -isnot [bool]
+            [string]$localSync.remote -cne 'origin'
+            [string]$localSync.canonicalBranch -cne 'main'
+            [int]$localSync.intervalMinutes -lt 1
+            [int]$localSync.intervalMinutes -gt 1440
+            [string]$localSync.strategy -cne 'fast-forward-only'
+            [string]$localSync.context.profile -cne 'standard'
+            [string]$localSync.context.packagePath -cne '.project/context/ai-package.md'
+            $localSync.context.refreshOnGitChange -ne $true
+            $localSync.safety.requireCleanCanonicalBranch -ne $true
+            $localSync.safety.neverReset -ne $true
+            $localSync.safety.neverForce -ne $true
+            $localSync.safety.neverAutoRebaseAgentBranches -ne $true
+        ) -contains $true
+        if ($localSyncInvalid) {
+            $errors.Add('LOCAL-SYNC.json: политика безопасного обновления настроена неверно')
+        }
+    }
+    catch {
+        $errors.Add("LOCAL-SYNC.json: некорректный JSON или структура — $($_.Exception.Message)")
+    }
+}
 
 $teamInputPath = Join-Path $root 'TEAM-INPUT.json'
 if (Test-Path -LiteralPath $teamInputPath -PathType Leaf) {
@@ -319,6 +421,10 @@ foreach ($file in $markdown) {
             $full = [System.IO.Path]::GetFullPath((Join-Path $file.DirectoryName $decoded))
             if (-not (Test-PathInsideRoot $root $full)) {
                 $errors.Add("${relative}: ссылка выходит за пределы проекта -> $target")
+            }
+            elseif (-not (Test-Path -LiteralPath $full) -and
+                $decoded.Replace('\', '/') -ceq '.project/LOCAL-SYNC-STATUS.md') {
+                continue
             }
             elseif (-not (Test-Path -LiteralPath $full)) {
                 $errors.Add("${relative}: битая ссылка -> $target")

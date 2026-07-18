@@ -8,7 +8,8 @@ param(
     [string]$Date = (Get-Date -Format 'yyyy-MM-dd'),
     [switch]$Apply,
     [switch]$ForceManagedFiles,
-    [switch]$AllowDirty
+    [switch]$AllowDirty,
+    [switch]$SkipLocalSyncInstallation
 )
 
 Set-StrictMode -Version Latest
@@ -396,3 +397,20 @@ if ($result -ne 'success') {
 }
 Write-Host "Обновление завершено: $currentVersion -> $targetVersion."
 Write-Host "Резервная копия и отчёт: $backupRoot"
+if (-not $SkipLocalSyncInstallation -and
+    (Test-Path -LiteralPath (Join-Path $projectRoot 'scripts/install-local-sync.ps1') -PathType Leaf)) {
+    try {
+        $syncInstallationText = (& (Join-Path $projectRoot 'scripts/install-local-sync.ps1') `
+            -ProjectPath $projectRoot -Apply -Json | Out-String).Trim()
+        $syncInstallation = $syncInstallationText | ConvertFrom-Json
+        if ([string]$syncInstallation.status -in @('installed', 'disabled')) {
+            Write-Host ([string]$syncInstallation.message)
+        }
+        else {
+            Write-Warning ([string]$syncInstallation.message)
+        }
+    }
+    catch {
+        Write-Warning "Проект обновлён, но локальную фоновую проверку нужно повторить: $($_.Exception.Message)"
+    }
+}

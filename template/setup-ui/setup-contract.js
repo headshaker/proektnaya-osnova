@@ -7,14 +7,16 @@ const choices = Object.freeze({
   dataClassification: Object.freeze(['public', 'internal', 'confidential', 'restricted', 'not-classified']),
   aiGovernanceLevel: Object.freeze(['basic', 'standard', 'high']),
   cadence: Object.freeze(['daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'on-demand']),
-  githubProtectionMode: Object.freeze(['auto', 'required', 'disabled'])
+  githubProtectionMode: Object.freeze(['auto', 'required', 'disabled']),
+  aiTools: Object.freeze(['chatgpt', 'claude', 'gemini', 'qwen', 'deepseek', 'grok'])
 })
 
 const allowedKeys = new Set([
   'title', 'slug', 'date', 'managementProfile', 'deliveryApproach', 'workSystemType',
   'workSystemUrl', 'dataClassification', 'aiGovernanceLevel', 'statusCadence',
   'riskCadence', 'benefitCadence', 'scheduleToleranceDays', 'costVariancePercent',
-  'scopeChangeRequiresApproval', 'githubProtectionMode'
+  'scopeChangeRequiresApproval', 'githubProtectionMode', 'aiTools', 'obsidianEnabled',
+  'localSyncEnabled'
 ])
 
 function requiredText (value, name, maximum) {
@@ -45,6 +47,15 @@ function isRealIsoDate (value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/u.test(value)) return false
   const date = new Date(`${value}T00:00:00Z`)
   return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value
+}
+
+function selectedAiTools (value) {
+  if (!Array.isArray(value)) throw new Error('Нейросети: ожидается список выбранных инструментов.')
+  const unique = [...new Set(value)]
+  if (unique.length !== value.length || unique.some(item => !choices.aiTools.includes(item))) {
+    throw new Error('Нейросети: список содержит повтор или неизвестный инструмент.')
+  }
+  return choices.aiTools.filter(item => unique.includes(item))
 }
 
 function validatePayload (source) {
@@ -84,7 +95,10 @@ function validatePayload (source) {
     scheduleToleranceDays: nullableNumber(source.scheduleToleranceDays, 'Допуск по сроку', 36500, true),
     costVariancePercent: nullableNumber(source.costVariancePercent, 'Допуск по стоимости', 100000),
     scopeChangeRequiresApproval: source.scopeChangeRequiresApproval !== false,
-    githubProtectionMode: enumValue(source.githubProtectionMode, 'Защита GitHub', choices.githubProtectionMode)
+    githubProtectionMode: enumValue(source.githubProtectionMode, 'Защита GitHub', choices.githubProtectionMode),
+    aiTools: Object.freeze(selectedAiTools(source.aiTools)),
+    obsidianEnabled: source.obsidianEnabled === true,
+    localSyncEnabled: source.localSyncEnabled !== false
   })
 }
 
@@ -106,6 +120,9 @@ function toPowerShellArguments (payload, apply) {
     '-BenefitCadence', value.benefitCadence,
     '-ScopeChangeRequiresApprovalValue', value.scopeChangeRequiresApproval ? 'true' : 'false',
     '-GitHubProtectionMode', value.githubProtectionMode,
+    '-AiToolsCsv', value.aiTools.join(','),
+    '-ObsidianMode', value.obsidianEnabled ? 'enabled' : 'disabled',
+    '-LocalSyncMode', value.localSyncEnabled ? 'enabled' : 'disabled',
     '-NonInteractive'
   ]
   if (value.scheduleToleranceDays !== null) args.push('-ScheduleToleranceDays', String(value.scheduleToleranceDays))

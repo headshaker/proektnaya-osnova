@@ -84,6 +84,7 @@ try {
         }
 
         $required = @(
+            '.gitattributes',
             'README.md',
             'START-PROJECT.cmd',
             'HOME.md',
@@ -101,6 +102,9 @@ try {
             'AI-COORDINATION.md',
             'AI-COORDINATION.json',
             'AI-INTEGRATION-STATE.json',
+            'AI-TOOLS.json',
+            'LOCAL-SYNC.json',
+            'LOCAL-SYNC.md',
             'TEAM-INPUT.md',
             'TEAM-INPUT.json',
             'OBSIDIAN.md',
@@ -108,6 +112,7 @@ try {
             'AGENTS.override.md',
             'CLAUDE.md',
             'GEMINI.md',
+            'QWEN.md',
             '.github/copilot-instructions.md',
             '.ai-work/README.md',
             '.ai-work/changes/.gitkeep',
@@ -133,6 +138,10 @@ try {
             'scripts/check-ai-coordination.ps1',
             'scripts/check-project-health.ps1',
             'scripts/configure-github-protection.ps1',
+            'scripts/configure-project-tools.ps1',
+            'scripts/refresh-ai-context.ps1',
+            'scripts/sync-project.ps1',
+            'scripts/install-local-sync.ps1',
             'scripts/ingest-sources.ps1',
             'scripts/source-ingestion.py',
             'scripts/link-registry-references.py',
@@ -160,7 +169,10 @@ try {
             'setup-ui/setup-contract.js',
             'setup-ui/index.html',
             'setup-ui/styles.css',
-            'setup-ui/test/setup-contract.test.js'
+            'setup-ui/test/setup-contract.test.js',
+            '.githooks/post-merge',
+            '.githooks/post-checkout',
+            '.githooks/post-rewrite'
         )
         foreach ($path in $required) {
             if ($entries.FullName -notcontains $path) {
@@ -205,6 +217,7 @@ try {
     & (Join-Path $PSScriptRoot 'test-setup-wizard.ps1')
     & (Join-Path $PSScriptRoot 'test-ingestion.ps1') -Date '2026-07-16'
     & (Join-Path $PSScriptRoot 'test-team-input.ps1') -Date '2026-07-18'
+    & (Join-Path $PSScriptRoot 'test-local-sync.ps1') -Date '2026-07-18'
     & (Join-Path $PSScriptRoot 'test-migrations.ps1')
 
     Write-Host 'Выпускной архив, агентные инструкции и SHA-256 прошли проверку.'

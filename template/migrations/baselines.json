@@ -120,6 +120,7 @@
       "scripts/build-context.ps1": "ac403f0b21b66dd8a31fc8705b5e4cbcdc8b594758f378e6ffda07c38d52d2d5",
       "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
       "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
+      "scripts/setup-project.ps1": "8b68f227c507f05039f5c35d5a368b5c8966a6a3a09ee58080c7c0f592a6f0d9",
       "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
       "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
       "scripts/validate-vault.ps1": "09128c96aedf942812b510721f48b4d6efe59d143d429092fa12007bbd3f2009"
@@ -139,6 +140,7 @@
       "scripts/check-ai-coordination.ps1": "7a5be88e4053dc0d41287409d5b667cc99eb6d3327c4b9a5be40bd364d2ef509",
       "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
       "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
+      "scripts/setup-project.ps1": "8b68f227c507f05039f5c35d5a368b5c8966a6a3a09ee58080c7c0f592a6f0d9",
       "scripts/start-ai-work.ps1": "61c0ed5f98a6f95a8dc5002b91a6d731d864de75a6799d3a478a9d252d2b7109",
       "scripts/sync-ai-work.ps1": "6fa962450af8160bd57eaacec615aed6c7b24fde22d9d13d432032ed7b2265d7",
       "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
@@ -160,6 +162,7 @@
       "scripts/check-ai-coordination.ps1": "7a5be88e4053dc0d41287409d5b667cc99eb6d3327c4b9a5be40bd364d2ef509",
       "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
       "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
+      "scripts/setup-project.ps1": "a9ed665b0a6b1aee5b3a05de2ab157aeef232f66da680235c35d2a83368a3270",
       "scripts/start-ai-work.ps1": "61c0ed5f98a6f95a8dc5002b91a6d731d864de75a6799d3a478a9d252d2b7109",
       "scripts/sync-ai-work.ps1": "6fa962450af8160bd57eaacec615aed6c7b24fde22d9d13d432032ed7b2265d7",
       "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
@@ -185,11 +188,29 @@
       "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
       "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
       "scripts/process-team-input.ps1": "93e5567279dc66f3a16a9f1add0347548dcd369cb1a3cb5898f8a75bcbb29724",
+      "scripts/setup-project.ps1": "a9ed665b0a6b1aee5b3a05de2ab157aeef232f66da680235c35d2a83368a3270",
       "scripts/start-ai-work.ps1": "61c0ed5f98a6f95a8dc5002b91a6d731d864de75a6799d3a478a9d252d2b7109",
       "scripts/sync-ai-work.ps1": "6fa962450af8160bd57eaacec615aed6c7b24fde22d9d13d432032ed7b2265d7",
       "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
       "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
       "scripts/validate-vault.ps1": "e8a286541db83711db4544617b691bddd80644b5552f743f67a3603bbeb51d79"
+    },
+    "0.12.0": {
+      "REGISTRY-SCHEMA.json": "39e982d57ce9271f68cb21abdc2b91f1152e352b18d7c7eebcb9e55c824100f7",
+      "migrations/baselines.json": "770644dd76ccb03b4a3d789c342be3cefcbbcdff76944e43c12dd2f87f2a390d",
+      "migrations/manifest.json": "700dc274338cdd8e520ab203274a0fd787bacc69e53cdc0e296fc2fccf8f6529",
+      "scripts/setup-project.ps1": "331e8daac16267b15dd9fa0b85dfeb45c4a88cbdf09b5b370096790bb6cbeeda",
+      "scripts/start-project.ps1": "baa981ddc47b19bbe9247e747630276b0bbd8080961150b8a152d317fa4de7d8",
+      "scripts/validate-vault.ps1": "e8a286541db83711db4544617b691bddd80644b5552f743f67a3603bbeb51d79",
+      "setup-ui/index.html": "b4b855ff852b872e626a146b90ac67ad7b31a5867455dda9e46012fa54091c5e",
+      "setup-ui/main.js": "8a59305857ea900c2262154f1c83d28878c63b7c10c82838e690c11e5a56232b",
+      "setup-ui/package-lock.json": "da20f124048d005fc70faab9ccdb54b9a821da453d79923db79d5a10aa438edd",
+      "setup-ui/package.json": "09361a0b023f99187a44c1616370d88f3edafd7b03a8369a3954486fb162bc86",
+      "setup-ui/preload.js": "41e3bdb8b978f70c5f5df5e40e6abe0bea51884a4296ead1c58e18760caca09a",
+      "setup-ui/renderer.js": "201a01e77abf7cac24c4bc1b1d80ffb4f65c5322932b8080a098a9a60b0adf5d",
+      "setup-ui/setup-contract.js": "388db1e0a56c42d45312ed3cacab1333ed867ac96e3592abea9cee5f7876bb3b",
+      "setup-ui/styles.css": "b03040cc007cad9b709f3064477cadf67c73e30622011f8e67bff05b4f8c8d09",
+      "setup-ui/test/setup-contract.test.js": "0b32179a018f8f3006bc877b599c428d111bbef58e835ccfc901237d800bf1ed"
     }
   }
 }

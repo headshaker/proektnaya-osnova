@@ -124,12 +124,39 @@ input:checked + .check-visual::after { content: "✓"; color: white; font-size: 
 .advanced[open] summary { margin: 0 -15px; }
 .field.compact label { margin-top: 0; font-size: 11px; }
 .field.compact select { height: 39px; font-size: 12px; }
+.tool-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tool-card { position: relative; display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: start; min-height: 96px; padding: 15px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
+.tool-card:hover { border-color: #b2c9c0; }
+.tool-card:has(input:checked) { border-color: #8eb9aa; background: #f7fcfa; box-shadow: 0 0 0 2px rgba(13,107,83,.06); }
+.tool-card input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.tool-choice { display: grid; place-items: center; width: 20px; height: 20px; margin-top: 1px; border: 1px solid #a9a59c; border-radius: 6px; color: transparent; background: white; font-size: 12px; font-weight: 900; }
+.tool-card input:checked + .tool-choice { border-color: var(--accent); color: white; background: var(--accent); }
+.tool-card input:focus-visible + .tool-choice { box-shadow: 0 0 0 3px rgba(13,107,83,.16); }
+.tool-copy strong, .tool-copy small, .tool-copy em, .obsidian-choice em { display: block; }
+.tool-copy strong { font-size: 13px; }
+.tool-copy small { margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+.tool-copy em, .obsidian-choice em { margin-top: 9px; color: var(--muted); font-size: 10px; font-style: normal; font-weight: 750; }
+[data-tool-status].is-ready { color: var(--accent); }
+[data-tool-status].is-missing { color: var(--danger); }
+.obsidian-choice { margin-top: 14px; }
+.tool-diagnostics { display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-top: 14px; padding: 15px 16px; border: 1px solid #c6dbd3; border-radius: 12px; background: var(--accent-soft); }
+.tool-diagnostics strong, .tool-diagnostics small { display: block; }
+.tool-diagnostics strong { color: var(--accent-strong); font-size: 12px; }
+.tool-diagnostics small { margin-top: 4px; color: #557069; font-size: 10px; line-height: 1.4; }
+.tool-diagnostics .button { flex: none; }
+.install-guidance { margin-top: 12px; padding: 14px 16px; border: 1px solid #ebd3ad; border-radius: 12px; color: #694f28; background: #fbf1df; }
+.install-item + .install-item { margin-top: 12px; padding-top: 12px; border-top: 1px solid #ead8b9; }
+.install-item strong, .install-item code { display: block; }
+.install-item strong { font-size: 12px; }
+.install-item code { margin: 6px 0; overflow-wrap: anywhere; color: #5b4630; font: 10px/1.45 Consolas, monospace; }
+.guide-button { padding: 0; border: 0; color: var(--accent-strong); background: transparent; font-size: 10px; font-weight: 750; text-decoration: underline; cursor: pointer; }
 .review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .review-card { min-height: 105px; margin: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .review-card p { margin: 0 0 10px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
 .review-card strong, .review-card small { display: block; }
 .review-card strong { font-size: 14px; }
 .review-card small { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+.review-card-wide { grid-column: 1 / -1; min-height: 88px; }
 .github-choice { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 20px; align-items: center; margin-top: 14px; padding: 16px; border: 1px solid #c6dbd3; border-radius: 12px; background: var(--accent-soft); }
 .github-choice label { margin: 0; color: var(--accent-strong); }
 .github-choice p { margin: 5px 0 0; color: #557069; font-size: 11px; line-height: 1.4; }

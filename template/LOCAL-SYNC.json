@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "enabled": true,
+  "remote": "origin",
+  "canonicalBranch": "main",
+  "intervalMinutes": 5,
+  "strategy": "fast-forward-only",
+  "context": {
+    "profile": "standard",
+    "packagePath": ".project/context/ai-package.md",
+    "refreshOnGitChange": true
+  },
+  "safety": {
+    "requireCleanCanonicalBranch": true,
+    "neverReset": true,
+    "neverForce": true,
+    "neverAutoRebaseAgentBranches": true
+  }
+}
