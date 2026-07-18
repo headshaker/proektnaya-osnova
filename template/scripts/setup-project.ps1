@@ -22,6 +22,8 @@ param(
     [Nullable[int]]$ScheduleToleranceDays,
     [Nullable[decimal]]$CostVariancePercent,
     [bool]$ScopeChangeRequiresApproval = $true,
+    [ValidateSet('true', 'false')]
+    [string]$ScopeChangeRequiresApprovalValue,
     [string]$Date = (Get-Date -Format 'yyyy-MM-dd'),
     [ValidateSet('auto', 'required', 'disabled')]
     [string]$GitHubProtectionMode = 'auto',
@@ -123,6 +125,10 @@ function Read-OptionalDecimal([string]$Prompt) {
 }
 
 Assert-IsoDate $Date
+
+if (-not [string]::IsNullOrWhiteSpace($ScopeChangeRequiresApprovalValue)) {
+    $ScopeChangeRequiresApproval = $ScopeChangeRequiresApprovalValue -ceq 'true'
+}
 
 $readmePath = Join-Path $root 'README.md'
 if (-not (Test-Path -LiteralPath $readmePath -PathType Leaf)) { throw 'Не найден README.md шаблона.' }

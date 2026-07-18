@@ -165,31 +165,6 @@
       "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
       "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
       "scripts/validate-vault.ps1": "9271719e70420bfbcad4c7a979161f72fbd09c1a1d46d87f92b9d3a0f60ea6f2"
-    },
-    "0.11.0": {
-      ".github/workflows/ai-coordination.yml": "f53f07f5986d10f42d6dc11f4f0225b93af2e8dab263a0b59de194e272342895",
-      ".github/workflows/knowledge-base.yml": "5ac4432fc1e7f4933a1652b1cf19e6da215ee2f72ed903c13e5edef918c79aa7",
-      ".github/workflows/registry-compatibility.yml": "489b655c7619aef9844a3f96aef34bc7b93448dd4b742163fb30d52198d8b818",
-      ".github/workflows/team-input.yml": "f5536a5c178565df379ee601129033fdae1bb4d790ae2b049f9812fd14c91079",
-      "AI-COORDINATION.json": "ab08f4880862f74a839b46b32c2ad4d425e49ac99eb688907b8c2771845bd0ba",
-      "CONTEXT-PROFILES.json": "a581e4702569df2d77aa5ba58bff0ffe12e7d8dc2eea046efbfd43b310fa4b4f",
-      "REGISTRY-SCHEMA.json": "e85644674d278c8293dc98bbc2225fda0a4f3a70bddae95a2e2a5c497ce6a12e",
-      "START-PROJECT.cmd": "ce7aa0719c2e5d4ce8beb7ce78007aa1a17f43cca8007c6acd475f635a547119",
-      "TEAM-INPUT.json": "602d25308b5b94d6aa21d817e6c640e9362395ddd89faec962fd8f13c04c9c6b",
-      "TEMPLATE-LICENSE": "0ff3d0abc740f19220b216831596984446b97f830e61570da08171e4e4115baa",
-      "migrations/baselines.json": "ccdb7dbd0b50e741008a6e07ab564b23e5e237e669b7648272a50064fa58bb66",
-      "migrations/manifest.json": "9d763d5443605556c4cc583a53ba229d3e4438cf854fac38e1e310883d0246f2",
-      "scripts/build-context.ps1": "ac403f0b21b66dd8a31fc8705b5e4cbcdc8b594758f378e6ffda07c38d52d2d5",
-      "scripts/build-project-dossier.ps1": "51176023e3e3b82aeed944c2526986f2916a295d21459ec669832e125dcb30ab",
-      "scripts/check-ai-coordination.ps1": "7a5be88e4053dc0d41287409d5b667cc99eb6d3327c4b9a5be40bd364d2ef509",
-      "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
-      "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
-      "scripts/process-team-input.ps1": "93e5567279dc66f3a16a9f1add0347548dcd369cb1a3cb5898f8a75bcbb29724",
-      "scripts/start-ai-work.ps1": "61c0ed5f98a6f95a8dc5002b91a6d731d864de75a6799d3a478a9d252d2b7109",
-      "scripts/sync-ai-work.ps1": "6fa962450af8160bd57eaacec615aed6c7b24fde22d9d13d432032ed7b2265d7",
-      "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
-      "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
-      "scripts/validate-vault.ps1": "e8a286541db83711db4544617b691bddd80644b5552f743f67a3603bbeb51d79"
     }
   }
 }

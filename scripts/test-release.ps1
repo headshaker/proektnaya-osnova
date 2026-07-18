@@ -69,6 +69,10 @@ try {
         $duplicates = $entries | Group-Object FullName | Where-Object Count -gt 1
         if ($duplicates) { throw 'В выпускном архиве есть повторяющиеся пути.' }
 
+        if ($entries.FullName -match '^setup-ui/(?:node_modules|\.npm-cache)/') {
+            throw 'В выпускной архив попали локальные зависимости или кэш npm.'
+        }
+
         foreach ($entry in $entries) {
             if ([System.IO.Path]::IsPathRooted($entry.FullName) -or
                 $entry.FullName -match '(^|[\/])\.\.([\/]|$)' -or
@@ -134,6 +138,7 @@ try {
             'scripts/link-registry-references.py',
             'scripts/init-project.ps1',
             'scripts/setup-project.ps1',
+            'scripts/start-project.ps1',
             'scripts/start-ai-work.ps1',
             'scripts/sync-ai-work.ps1',
             'scripts/prepare-commit-digest.ps1',
@@ -146,11 +151,36 @@ try {
             '.github/workflows/team-input.yml',
             '.github/ISSUE_TEMPLATE/team-input.yml',
             '.github/workflows/project-health.yml',
-            '.github/workflows/registry-compatibility.yml'
+            '.github/workflows/registry-compatibility.yml',
+            'setup-ui/package.json',
+            'setup-ui/package-lock.json',
+            'setup-ui/main.js',
+            'setup-ui/preload.js',
+            'setup-ui/renderer.js',
+            'setup-ui/setup-contract.js',
+            'setup-ui/index.html',
+            'setup-ui/styles.css',
+            'setup-ui/test/setup-contract.test.js'
         )
         foreach ($path in $required) {
             if ($entries.FullName -notcontains $path) {
                 throw "В выпускном архиве отсутствует обязательный файл: $path"
+            }
+        }
+
+        $launcherEntry = $entries | Where-Object FullName -eq 'START-PROJECT.cmd'
+        $launcherBytesStream = [System.IO.MemoryStream]::new()
+        $launcherStream = $launcherEntry.Open()
+        try { $launcherStream.CopyTo($launcherBytesStream) }
+        finally { $launcherStream.Dispose() }
+        $launcherBytes = $launcherBytesStream.ToArray()
+        $launcherBytesStream.Dispose()
+        if (@($launcherBytes | Where-Object { $_ -gt 127 }).Count -gt 0) {
+            throw 'START-PROJECT.cmd должен содержать только ASCII для совместимости со старыми cmd.exe.'
+        }
+        for ($index = 0; $index -lt $launcherBytes.Length; $index++) {
+            if ($launcherBytes[$index] -eq 10 -and ($index -eq 0 -or $launcherBytes[$index - 1] -ne 13)) {
+                throw 'START-PROJECT.cmd попал в выпуск с окончаниями строк Linux вместо CRLF.'
             }
         }
 

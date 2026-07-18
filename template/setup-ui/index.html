@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <title>Настройка проекта</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Этапы настройки">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">ПО</div>
+        <div>
+          <p class="brand-name">Проектная основа</p>
+          <p class="brand-note">Мастер первого запуска</p>
+        </div>
+      </div>
+
+      <div class="sidebar-copy">
+        <p class="kicker">Спокойный старт</p>
+        <h1>Соберём основу проекта за несколько шагов.</h1>
+        <p>Сначала вы увидите план. Файлы изменятся только после явного подтверждения.</p>
+      </div>
+
+      <ol class="steps" id="step-list">
+        <li class="step is-active" data-step-indicator="0">
+          <span class="step-number">1</span>
+          <span><strong>Проект</strong><small>Название и дата</small></span>
+        </li>
+        <li class="step" data-step-indicator="1">
+          <span class="step-number">2</span>
+          <span><strong>Работа</strong><small>Подход и задачи</small></span>
+        </li>
+        <li class="step" data-step-indicator="2">
+          <span class="step-number">3</span>
+          <span><strong>Контроль</strong><small>Данные и допуски</small></span>
+        </li>
+        <li class="step" data-step-indicator="3">
+          <span class="step-number">4</span>
+          <span><strong>Проверка</strong><small>План до применения</small></span>
+        </li>
+      </ol>
+
+      <div class="privacy-note">
+        <span class="privacy-icon" aria-hidden="true">✓</span>
+        <p><strong>Локальная настройка</strong><br>Мастер не отправляет введённые сведения в интернет.</p>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="workspace-header">
+        <div>
+          <p class="eyebrow" id="step-eyebrow">Шаг 1 из 4</p>
+          <h2 id="step-title">Расскажите о проекте</h2>
+          <p id="step-description">Достаточно рабочего названия. Техническое имя мастер предложит сам.</p>
+        </div>
+        <span class="runtime" id="runtime-label" title="Версия визуального движка">Electron</span>
+      </header>
+
+      <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
+
+      <form id="setup-form" novalidate>
+        <section class="panel is-active" data-step-panel="0" aria-labelledby="project-heading">
+          <div class="section-heading">
+            <span class="section-index">01</span>
+            <div>
+              <h3 id="project-heading">Основа проекта</h3>
+              <p>Эти сведения появятся в главных документах проекта.</p>
+            </div>
+          </div>
+
+          <div class="field field-wide">
+            <label for="title">Название проекта <span aria-hidden="true">*</span></label>
+            <input id="title" name="title" type="text" maxlength="200" required autofocus
+              placeholder="Например, Новый клиентский портал" autocomplete="off">
+            <p class="hint">Можно использовать обычное понятное название на русском языке.</p>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="slug">Короткое техническое имя <span aria-hidden="true">*</span></label>
+              <input id="slug" name="slug" type="text" maxlength="63" required
+                pattern="[a-z0-9][a-z0-9-]*" placeholder="client-portal" autocomplete="off">
+              <p class="hint">Нужно только системе. Можно оставить предложенный вариант.</p>
+            </div>
+            <div class="field">
+              <label for="date">Дата начала <span aria-hidden="true">*</span></label>
+              <input id="date" name="date" type="date" required>
+              <p class="hint">Используется как дата создания проектных документов.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-step-panel="1" aria-labelledby="work-heading" hidden>
+          <div class="section-heading">
+            <span class="section-index">02</span>
+            <div>
+              <h3 id="work-heading">Как будет организована работа</h3>
+              <p>Выберите ближайшие варианты. Их можно уточнить позднее.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="management-profile">Строгость управления</label>
+              <select id="management-profile" name="managementProfile">
+                <option value="light">Лёгкая — небольшой проект</option>
+                <option value="standard" selected>Основная — обычная проектная работа</option>
+                <option value="regulated">Регулируемая — высокая цена ошибки</option>
+              </select>
+              <p class="hint">Определяет объём контроля и обязательных свидетельств.</p>
+            </div>
+            <div class="field">
+              <label for="delivery-approach">Способ движения к результату</label>
+              <select id="delivery-approach" name="deliveryApproach">
+                <option value="predictive">По подробному плану</option>
+                <option value="incremental">Последовательными результатами</option>
+                <option value="adaptive">Короткими циклами с уточнением</option>
+                <option value="flow">Непрерывным потоком задач</option>
+                <option value="hybrid" selected>Гибридно — контрольные точки и циклы</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="work-system-type">Где команда ведёт задачи</label>
+              <select id="work-system-type" name="workSystemType">
+                <option value="not-configured" selected>Пока не выбрано</option>
+                <option value="repository">В папке проекта</option>
+                <option value="github-issues">GitHub Issues</option>
+                <option value="jira">Jira</option>
+                <option value="linear">Linear</option>
+                <option value="other">Другая система</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="work-system-url">Ссылка на рабочую систему</label>
+              <input id="work-system-url" name="workSystemUrl" type="url" maxlength="500"
+                placeholder="https://…" autocomplete="off" disabled>
+              <p class="hint">Необязательно. Допускаются только защищённые адреса https://.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-step-panel="2" aria-labelledby="control-heading" hidden>
+          <div class="section-heading">
+            <span class="section-index">03</span>
+            <div>
+              <h3 id="control-heading">Границы и безопасный контроль</h3>
+              <p>Не угадывайте чувствительность данных и допустимые отклонения.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="data-classification">Какие данные будут в проекте</label>
+              <select id="data-classification" name="dataClassification">
+                <option value="not-classified" selected>Пока не определено</option>
+                <option value="public">Публичные</option>
+                <option value="internal">Внутренние</option>
+                <option value="confidential">Конфиденциальные</option>
+                <option value="restricted">Со строгим ограничением доступа</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ai-governance-level">Уровень контроля работы ИИ</label>
+              <select id="ai-governance-level" name="aiGovernanceLevel">
+                <option value="basic">Базовый</option>
+                <option value="standard" selected>Стандартный</option>
+                <option value="high">Повышенный</option>
+              </select>
+              <p class="hint">Для конфиденциальных данных мастер предложит повышенный уровень.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="schedule-tolerance">Допустимое отклонение по сроку</label>
+              <div class="input-with-suffix">
+                <input id="schedule-tolerance" name="scheduleToleranceDays" type="number" min="0" max="36500" step="1" placeholder="Не определено">
+                <span>дней</span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="cost-tolerance">Допустимое отклонение по стоимости</label>
+              <div class="input-with-suffix">
+                <input id="cost-tolerance" name="costVariancePercent" type="number" min="0" max="100000" step="0.01" placeholder="Не определено">
+                <span>%</span>
+              </div>
+            </div>
+          </div>
+
+          <label class="check-card" for="scope-approval">
+            <input id="scope-approval" name="scopeChangeRequiresApproval" type="checkbox" checked>
+            <span class="check-visual" aria-hidden="true"></span>
+            <span><strong>Изменение границ требует подтверждения</strong><small>Рекомендуется: ИИ не будет сам расширять или сокращать согласованный объём проекта.</small></span>
+          </label>
+
+          <details class="advanced">
+            <summary>Частота управленческих обзоров</summary>
+            <div class="field-grid three-columns">
+              <div class="field compact">
+                <label for="status-cadence">Статус</label>
+                <select id="status-cadence" name="statusCadence">
+                  <option value="daily">Ежедневно</option><option value="weekly" selected>Еженедельно</option>
+                  <option value="biweekly">Раз в две недели</option><option value="monthly">Ежемесячно</option>
+                  <option value="quarterly">Ежеквартально</option><option value="on-demand">По запросу</option>
+                </select>
+              </div>
+              <div class="field compact">
+                <label for="risk-cadence">Риски</label>
+                <select id="risk-cadence" name="riskCadence">
+                  <option value="daily">Ежедневно</option><option value="weekly" selected>Еженедельно</option>
+                  <option value="biweekly">Раз в две недели</option><option value="monthly">Ежемесячно</option>
+                  <option value="quarterly">Ежеквартально</option><option value="on-demand">По запросу</option>
+                </select>
+              </div>
+              <div class="field compact">
+                <label for="benefit-cadence">Польза</label>
+                <select id="benefit-cadence" name="benefitCadence">
+                  <option value="daily">Ежедневно</option><option value="weekly">Еженедельно</option>
+                  <option value="biweekly">Раз в две недели</option><option value="monthly" selected>Ежемесячно</option>
+                  <option value="quarterly">Ежеквартально</option><option value="on-demand">По запросу</option>
+                </select>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        <section class="panel review-panel" data-step-panel="3" aria-labelledby="review-heading" hidden>
+          <div class="section-heading">
+            <span class="section-index">04</span>
+            <div>
+              <h3 id="review-heading">Проверьте план настройки</h3>
+              <p>Мастер уже проверил значения. До нажатия кнопки «Настроить проект» файлы не меняются.</p>
+            </div>
+          </div>
+
+          <div class="review-grid">
+            <article class="review-card">
+              <p>Проект</p><strong id="review-project">—</strong><small id="review-slug">—</small>
+            </article>
+            <article class="review-card">
+              <p>Организация</p><strong id="review-management">—</strong><small id="review-delivery">—</small>
+            </article>
+            <article class="review-card">
+              <p>Рабочая система</p><strong id="review-work-system">—</strong><small id="review-work-url">—</small>
+            </article>
+            <article class="review-card">
+              <p>Контроль</p><strong id="review-data">—</strong><small id="review-tolerances">—</small>
+            </article>
+          </div>
+
+          <div class="github-choice">
+            <div>
+              <label for="github-protection">Защита общей версии на GitHub</label>
+              <p>Если папка уже связана с GitHub и у вас есть права, мастер защитит ветку main от конфликтующих версий.</p>
+            </div>
+            <select id="github-protection" name="githubProtectionMode">
+              <option value="auto" selected>Настроить, если возможно</option>
+              <option value="required">Обязательно настроить</option>
+              <option value="disabled">Не настраивать сейчас</option>
+            </select>
+          </div>
+
+          <details class="plan-details">
+            <summary>Показать технический результат предварительной проверки</summary>
+            <pre id="preview-output">Проверка ещё не выполнена.</pre>
+          </details>
+
+          <label class="confirm-card" for="confirm-plan">
+            <input id="confirm-plan" type="checkbox">
+            <span class="check-visual" aria-hidden="true"></span>
+            <span><strong>Я проверил план</strong><small>Можно создать проектные файлы и выполнить встроенные проверки.</small></span>
+          </label>
+        </section>
+      </form>
+
+      <footer class="actions">
+        <button class="button secondary" id="back-button" type="button" hidden>Назад</button>
+        <span class="action-note" id="action-note">Обязательные поля отмечены звёздочкой</span>
+        <button class="button primary" id="next-button" type="button">Продолжить</button>
+        <button class="button primary" id="apply-button" type="button" hidden disabled>Настроить проект</button>
+      </footer>
+    </main>
+  </div>
+
+  <div class="completion" id="completion" role="dialog" aria-modal="true" aria-labelledby="completion-title" hidden>
+    <div class="completion-card">
+      <div class="success-mark" aria-hidden="true">✓</div>
+      <p class="eyebrow">Настройка завершена</p>
+      <h2 id="completion-title">Проект готов к работе</h2>
+      <p id="completion-message">Файлы созданы и прошли встроенные проверки.</p>
+      <ul id="completion-decisions" class="decision-list"></ul>
+      <div class="completion-actions">
+        <button class="button secondary" id="close-button" type="button">Закрыть</button>
+        <button class="button primary" id="open-home-button" type="button">Открыть пульт руководителя</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

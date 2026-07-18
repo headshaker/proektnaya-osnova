@@ -37,6 +37,51 @@ if (-not $testRoot.StartsWith(
 try {
     [System.IO.Directory]::CreateDirectory($testRoot) | Out-Null
 
+    $launcherPath = Join-Path $source 'START-PROJECT.cmd'
+    $launcherBytes = [System.IO.File]::ReadAllBytes($launcherPath)
+    if (@($launcherBytes | Where-Object { $_ -gt 127 }).Count -gt 0) {
+        throw 'Windows-запускатель должен содержать только ASCII.'
+    }
+    $launcherText = [System.IO.File]::ReadAllText($launcherPath)
+    foreach ($fragment in @('scripts\start-project.ps1', 'goto missing_pwsh', '--self-test')) {
+        if ($launcherText -notmatch [regex]::Escape($fragment)) {
+            throw "Windows-запускатель не содержит обязательный безопасный фрагмент: $fragment"
+        }
+    }
+
+    $uiRoot = Join-Path $source 'setup-ui'
+    $package = [System.IO.File]::ReadAllText((Join-Path $uiRoot 'package.json')) | ConvertFrom-Json
+    $lock = [System.IO.File]::ReadAllText((Join-Path $uiRoot 'package-lock.json')) | ConvertFrom-Json -AsHashtable -Depth 100
+    $electronVersion = [string]$package.devDependencies.electron
+    if ($electronVersion -notmatch '^\d+\.\d+\.\d+$' -or
+        [string]$lock['packages']['']['devDependencies']['electron'] -cne $electronVersion) {
+        throw 'Electron должен быть зафиксирован точной версией в package.json и package-lock.json.'
+    }
+    foreach ($securityPattern in @(
+            'contextIsolation: true',
+            'nodeIntegration: false',
+            'sandbox: true',
+            'shell: false',
+            "scheme = 'project-setup'"
+        )) {
+        if ([System.IO.File]::ReadAllText((Join-Path $uiRoot 'main.js')) -notmatch [regex]::Escape($securityPattern)) {
+            throw "Electron-мастер не содержит обязательную настройку безопасности: $securityPattern"
+        }
+    }
+    & node --check (Join-Path $uiRoot 'main.js')
+    if ($LASTEXITCODE -ne 0) { throw 'main.js не прошёл синтаксическую проверку Node.js.' }
+    & node --check (Join-Path $uiRoot 'preload.js')
+    if ($LASTEXITCODE -ne 0) { throw 'preload.js не прошёл синтаксическую проверку Node.js.' }
+    & node --check (Join-Path $uiRoot 'renderer.js')
+    if ($LASTEXITCODE -ne 0) { throw 'renderer.js не прошёл синтаксическую проверку Node.js.' }
+    & node --test (Join-Path $uiRoot 'test/setup-contract.test.js')
+    if ($LASTEXITCODE -ne 0) { throw 'Контракт Electron-мастера не прошёл тесты.' }
+    & (Join-Path $source 'scripts/start-project.ps1') -SelfTest | Out-Null
+    if ($IsWindows) {
+        & cmd.exe /d /c (Join-Path $source 'START-PROJECT.cmd') --self-test | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw 'START-PROJECT.cmd не прошёл реальный запуск через cmd.exe.' }
+    }
+
     $planProject = New-WizardFixture 'plan-only'
     & (Join-Path $planProject 'scripts/setup-project.ps1') `
         -Title 'План настройки' -NonInteractive -Date '2026-07-17'
@@ -59,6 +104,7 @@ try {
         -DataClassification confidential `
         -ScheduleToleranceDays 5 `
         -CostVariancePercent 10 `
+        -ScopeChangeRequiresApprovalValue false `
         -NonInteractive -Apply -Date '2026-07-17'
 
     $config = [System.IO.File]::ReadAllText((Join-Path $project 'PROJECT-CONFIG.json')) | ConvertFrom-Json
@@ -72,6 +118,7 @@ try {
         $config.aiGovernanceLevel -cne 'high'
         $config.tolerances.scheduleDays -ne 5
         $config.tolerances.costVariancePercent -ne 10
+        $config.tolerances.scopeChangeRequiresApproval -ne $false
     ) -contains $true
     if ($configInvalid) {
         throw 'Мастер неверно сохранил выбранные параметры.'

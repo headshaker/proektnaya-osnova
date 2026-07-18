@@ -71,7 +71,7 @@ function New-ProjectFixture(
             'scripts/start-ai-work.ps1',
             'scripts/sync-ai-work.ps1'
         )) {
-        $keepCoordination = $Version -in @('0.10.0', '0.10.1')
+        $keepCoordination = $Version -in @('0.10.0', '0.10.1', '0.11.0')
         if (-not $keepCoordination -or
             ($Version -ceq '0.10.0' -and $relative -ceq 'scripts/configure-github-protection.ps1')) {
             Remove-SafePath $project $relative
@@ -85,7 +85,7 @@ function New-ProjectFixture(
             'TEAM-INPUT.md',
             'scripts/process-team-input.ps1'
         )) {
-        Remove-SafePath $project $relative
+        if ($Version -cne '0.11.0') { Remove-SafePath $project $relative }
     }
 
     foreach ($relative in @(
@@ -98,7 +98,7 @@ function New-ProjectFixture(
             'VIRTUAL-SPECIALISTS.md',
             'scripts/link-registry-references.py'
         )) {
-        if ($Version -notin @('0.8.0', '0.8.1', '0.9.0', '0.10.0', '0.10.1')) { Remove-SafePath $project $relative }
+        if ($Version -notin @('0.8.0', '0.8.1', '0.9.0', '0.10.0', '0.10.1', '0.11.0')) { Remove-SafePath $project $relative }
     }
 
     foreach ($relative in @(
@@ -112,10 +112,25 @@ function New-ProjectFixture(
             'scripts/build-status.ps1',
             'scripts/check-project-health.ps1'
         )) {
-        if ($Version -notin @('0.8.0', '0.8.1', '0.9.0', '0.10.0', '0.10.1')) { Remove-SafePath $project $relative }
+        if ($Version -notin @('0.8.0', '0.8.1', '0.9.0', '0.10.0', '0.10.1', '0.11.0')) { Remove-SafePath $project $relative }
     }
 
+    Remove-SafePath $project 'setup-ui'
+    Remove-SafePath $project 'scripts/start-project.ps1'
+
     switch ($Version) {
+        '0.11.0' {
+            $fixture = Join-Path $root 'tests/fixtures/v0.11.0'
+            Copy-FixtureFile $fixture 'START-PROJECT.cmd' $project 'START-PROJECT.cmd'
+            Copy-FixtureFile $fixture 'REGISTRY-SCHEMA.json' $project 'REGISTRY-SCHEMA.json'
+            Copy-FixtureFile $fixture 'manifest.json' $project 'migrations/manifest.json'
+            Copy-FixtureFile $fixture 'baselines.json' $project 'migrations/baselines.json'
+            Copy-FixtureFile $fixture 'update-project.ps1' $project 'scripts/update-project.ps1'
+            $ignorePath = Join-Path $project '.gitignore'
+            $ignore = [System.IO.File]::ReadAllText($ignorePath) -replace '(?m)^setup-ui/node_modules/\s*\r?\n?', ''
+            [System.IO.File]::WriteAllText($ignorePath, $ignore, $utf8)
+            Set-StateVersion $project '0.11.0'
+        }
         '0.10.1' {
             $fixture = Join-Path $root 'tests/fixtures/v0.10.1'
             Copy-FixtureFile $fixture 'AI-COORDINATION.json' $project 'AI-COORDINATION.json'
@@ -384,19 +399,47 @@ try {
     [System.IO.Directory]::CreateDirectory($testRoot) | Out-Null
     $updater = Join-Path $source 'scripts/update-project.ps1'
 
+    $project0110 = New-ProjectFixture 'from-0110' '0.11.0'
+    & $updater -ProjectPath $project0110 -Date '2026-07-18' -Apply
+    Assert-Version $project0110 '0.12.0'
+    Assert-AiCoordinationFiles $project0110
+    Assert-TeamInputFiles $project0110
+    foreach ($relative in @(
+            'START-PROJECT.cmd',
+            'scripts/start-project.ps1',
+            'setup-ui/package.json',
+            'setup-ui/main.js',
+            'setup-ui/index.html'
+        )) {
+        if (-not (Test-Path -LiteralPath (Join-Path $project0110 $relative) -PathType Leaf)) {
+            throw "Миграция 0.11.0 не добавила визуальный мастер: $relative"
+        }
+    }
+    $launcherBytes0110 = [System.IO.File]::ReadAllBytes((Join-Path $project0110 'START-PROJECT.cmd'))
+    if (@($launcherBytes0110 | Where-Object { $_ -gt 127 }).Count -gt 0) {
+        throw 'Миграция 0.11.0 не заменила повреждаемый Windows-запускатель.'
+    }
+    if ([System.IO.File]::ReadAllText((Join-Path $project0110 '.gitignore')) -notmatch '(?m)^setup-ui/node_modules/$') {
+        throw 'Миграция 0.11.0 не исключила локальные зависимости Electron из Git.'
+    }
+    $state0110 = [System.IO.File]::ReadAllText((Join-Path $project0110 'TEMPLATE-STATE.json')) | ConvertFrom-Json
+    if ($state0110.previousTemplateVersion -cne '0.11.0' -or $state0110.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.11.0 -> 0.12.0.'
+    }
+
     $project0101 = New-ProjectFixture 'from-0101' '0.10.1'
     & $updater -ProjectPath $project0101 -Date '2026-07-18' -Apply
-    Assert-Version $project0101 '0.11.0'
+    Assert-Version $project0101 '0.12.0'
     Assert-AiCoordinationFiles $project0101
     Assert-TeamInputFiles $project0101
     $state0101 = [System.IO.File]::ReadAllText((Join-Path $project0101 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0101.previousTemplateVersion -cne '0.10.1' -or $state0101.templateVersion -cne '0.11.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.10.1 -> 0.11.0.'
+    if ($state0101.previousTemplateVersion -cne '0.10.1' -or $state0101.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.10.1 -> 0.12.0.'
     }
 
     $project0100 = New-ProjectFixture 'from-0100' '0.10.0'
     & $updater -ProjectPath $project0100 -Date '2026-07-18' -Apply
-    Assert-Version $project0100 '0.11.0'
+    Assert-Version $project0100 '0.12.0'
     Assert-AiCoordinationFiles $project0100
     $coordination0100 = [System.IO.File]::ReadAllText((Join-Path $project0100 'AI-COORDINATION.json')) | ConvertFrom-Json
     if (-not [bool]$coordination0100.githubProtection.automaticSetup -or
@@ -404,22 +447,22 @@ try {
         throw 'Миграция 0.10.0 не включила автоматическую защиту единой версии на GitHub.'
     }
     $state0100 = [System.IO.File]::ReadAllText((Join-Path $project0100 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0100.previousTemplateVersion -cne '0.10.0' -or $state0100.templateVersion -cne '0.11.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.10.0 -> 0.11.0.'
+    if ($state0100.previousTemplateVersion -cne '0.10.0' -or $state0100.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.10.0 -> 0.12.0.'
     }
 
     $project090 = New-ProjectFixture 'from-090' '0.9.0'
     & $updater -ProjectPath $project090 -Date '2026-07-18' -Apply
-    Assert-Version $project090 '0.11.0'
+    Assert-Version $project090 '0.12.0'
     Assert-AiCoordinationFiles $project090
     $state090 = [System.IO.File]::ReadAllText((Join-Path $project090 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state090.previousTemplateVersion -cne '0.9.0' -or $state090.templateVersion -cne '0.11.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.9.0 -> 0.11.0.'
+    if ($state090.previousTemplateVersion -cne '0.9.0' -or $state090.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.9.0 -> 0.12.0.'
     }
 
     $project081 = New-ProjectFixture 'from-081' '0.8.1'
     & $updater -ProjectPath $project081 -Date '2026-07-17' -Apply
-    Assert-Version $project081 '0.11.0'
+    Assert-Version $project081 '0.12.0'
     Assert-AiCoordinationFiles $project081
     foreach ($relative in @('START-PROJECT.cmd', 'scripts/setup-project.ps1', 'scripts/check-context-health.ps1')) {
         if (-not (Test-Path -LiteralPath (Join-Path $project081 $relative) -PathType Leaf)) {
@@ -429,13 +472,13 @@ try {
     & (Join-Path $project081 'scripts/build-context.ps1') -Profile compact -IncludeId D-001,Q-001 -Check
     & (Join-Path $project081 'scripts/check-context-health.ps1') -Date '2026-07-07' -Check
     $state081 = [System.IO.File]::ReadAllText((Join-Path $project081 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state081.previousTemplateVersion -cne '0.8.1' -or $state081.templateVersion -cne '0.11.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.1 -> 0.11.0.'
+    if ($state081.previousTemplateVersion -cne '0.8.1' -or $state081.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.1 -> 0.12.0.'
     }
 
     $project080 = New-ProjectFixture 'from-080' '0.8.0'
     & $updater -ProjectPath $project080 -Date '2026-07-17' -Apply
-    Assert-Version $project080 '0.11.0'
+    Assert-Version $project080 '0.12.0'
     Assert-AiCoordinationFiles $project080
     foreach ($relative in @('HOME.md', 'ADMIN-SETUP.md', 'START-PROJECT.cmd', 'scripts/setup-project.ps1')) {
         if (-not (Test-Path -LiteralPath (Join-Path $project080 $relative) -PathType Leaf)) {
@@ -443,30 +486,30 @@ try {
         }
     }
     $state080 = [System.IO.File]::ReadAllText((Join-Path $project080 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state080.previousTemplateVersion -cne '0.8.0' -or $state080.templateVersion -cne '0.11.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.0 -> 0.11.0.'
+    if ($state080.previousTemplateVersion -cne '0.8.0' -or $state080.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.0 -> 0.12.0.'
     }
 
     $project070 = New-ProjectFixture 'from-070' '0.7.0'
     & $updater -ProjectPath $project070 -Date '2026-07-17' -Apply
-    Assert-Version $project070 '0.11.0'
+    Assert-Version $project070 '0.12.0'
     Assert-AiCoordinationFiles $project070
     Assert-ControlLoopFiles $project070
     $state070 = [System.IO.File]::ReadAllText((Join-Path $project070 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state070.previousTemplateVersion -cne '0.7.0' -or $state070.templateVersion -cne '0.11.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.7.0 -> 0.11.0.'
+    if ($state070.previousTemplateVersion -cne '0.7.0' -or $state070.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.7.0 -> 0.12.0.'
     }
 
     $project060 = New-ProjectFixture 'from-060' '0.6.0'
     & $updater -ProjectPath $project060 -Date '2026-07-16' -Apply
-    Assert-Version $project060 '0.11.0'
+    Assert-Version $project060 '0.12.0'
     Assert-AiCoordinationFiles $project060
     if (-not (Test-Path -LiteralPath (Join-Path $project060 'scripts/link-registry-references.py') -PathType Leaf)) {
         throw 'Миграция 0.6.0 не добавила преобразователь ссылок реестров.'
     }
     $state060 = [System.IO.File]::ReadAllText((Join-Path $project060 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state060.previousTemplateVersion -cne '0.6.0' -or $state060.templateVersion -cne '0.11.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.6.0 -> 0.11.0.'
+    if ($state060.previousTemplateVersion -cne '0.6.0' -or $state060.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.6.0 -> 0.12.0.'
     }
     & (Join-Path $project060 'scripts/validate-vault.ps1')
 
@@ -478,28 +521,28 @@ try {
         throw 'План обновления 0.5.0 изменил проект или не сообщил о режиме планирования.'
     }
     & $updater -ProjectPath $project050 -Date '2026-07-16' -Apply
-    Assert-Version $project050 '0.11.0'
+    Assert-Version $project050 '0.12.0'
     Assert-AiCoordinationFiles $project050
     Assert-AgentFiles $project050
     if ([System.IO.File]::ReadAllText($agents050) -notmatch 'USER-AGENT-RULE') {
         throw 'Миграция заменила пользовательский AGENTS.md.'
     }
     $state050 = [System.IO.File]::ReadAllText((Join-Path $project050 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state050.previousTemplateVersion -cne '0.5.0' -or $state050.templateVersion -cne '0.11.0') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.5.0 -> 0.11.0.'
+    if ($state050.previousTemplateVersion -cne '0.5.0' -or $state050.templateVersion -cne '0.12.0') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.5.0 -> 0.12.0.'
     }
     & (Join-Path $project050 'scripts/validate-vault.ps1')
 
     $project040 = New-ProjectFixture 'from-040' '0.4.0'
     & $updater -ProjectPath $project040 -Date '2026-07-16' -Apply
-    Assert-Version $project040 '0.11.0'
+    Assert-Version $project040 '0.12.0'
     Assert-AiCoordinationFiles $project040
     Assert-AgentFiles $project040
     & (Join-Path $project040 'scripts/build-ai-package.ps1') -Profile compact -Check
 
     $project030 = New-ProjectFixture 'from-030' '0.3.0'
     & $updater -ProjectPath $project030 -Date '2026-07-16' -Apply
-    Assert-Version $project030 '0.11.0'
+    Assert-Version $project030 '0.12.0'
     Assert-AiCoordinationFiles $project030
     Assert-AgentFiles $project030
     & (Join-Path $project030 'scripts/build-context.ps1') -Profile compact -IncludeId D-001,Q-001 -Check
@@ -508,7 +551,7 @@ try {
     $decisionsPath = Join-Path $project020 'DECISIONS.md'
     [System.IO.File]::AppendAllText($decisionsPath, "`n<!-- CANONICAL-USER-DATA -->`n", $utf8)
     & $updater -ProjectPath $project020 -Date '2026-07-16' -Apply
-    Assert-Version $project020 '0.11.0'
+    Assert-Version $project020 '0.12.0'
     Assert-AiCoordinationFiles $project020
     Assert-AgentFiles $project020
     if ([System.IO.File]::ReadAllText($decisionsPath) -notmatch 'CANONICAL-USER-DATA') {
@@ -522,7 +565,7 @@ try {
         & $updater -ProjectPath $legacy -Date '2026-07-16'
     } 'Укажите проверенную исходную версию' 'проект без маркера не обновляется без FromVersion'
     & $updater -ProjectPath $legacy -FromVersion '0.1.0' -Date '2026-07-16' -Apply
-    Assert-Version $legacy '0.11.0'
+    Assert-Version $legacy '0.12.0'
     Assert-AiCoordinationFiles $legacy
     Assert-AgentFiles $legacy
     if ([System.IO.File]::ReadAllText((Join-Path $legacy '.gitignore')) -notmatch '(?m)^\.project/$') {
@@ -549,7 +592,7 @@ try {
     } 'Найдены конфликты управляемых файлов' 'изменённый управляемый файл блокирует обновление'
     Assert-Version $conflict '0.2.0'
     & $updater -ProjectPath $conflict -Date '2026-07-16' -Apply -ForceManagedFiles
-    Assert-Version $conflict '0.11.0'
+    Assert-Version $conflict '0.12.0'
     $managedBackup = Get-ChildItem -LiteralPath (Join-Path $conflict '.project/backups') -Recurse -File |
         Where-Object FullName -match 'files[\\/]scripts[\\/]build-project-dossier\.ps1$' |
         Select-Object -First 1
@@ -578,7 +621,7 @@ try {
         & $updater -ProjectPath $rollback -FromVersion '9.9.9' -Date '2026-07-16'
     } 'не совпадает с TEMPLATE-VERSION|не поддерживается' 'противоречащая или неподдерживаемая версия отклоняется'
 
-    Write-Host 'Сценарии миграции проектов до 0.11.0 пройдены.'
+    Write-Host 'Сценарии миграции проектов до 0.12.0 пройдены.'
 }
 finally {
     if (Test-Path -LiteralPath $testRoot) {

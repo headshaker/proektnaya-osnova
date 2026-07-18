@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "targetVersion": "0.12.0",
+  "targetVersion": "0.11.0",
   "supportedFromVersions": [
     "0.1.0",
     "0.1.1",
@@ -15,8 +15,7 @@
     "0.8.1",
     "0.9.0",
     "0.10.0",
-    "0.10.1",
-    "0.11.0"
+    "0.10.1"
   ],
   "baselineFile": "migrations/baselines.json",
   "managedFiles": [
@@ -27,7 +26,6 @@
     "AI-COORDINATION.json",
     "CONTEXT-PROFILES.json",
     "REGISTRY-SCHEMA.json",
-    "START-PROJECT.cmd",
     "TEAM-INPUT.json",
     "TEMPLATE-LICENSE",
     "migrations/baselines.json",
@@ -69,6 +67,7 @@
     "PROJECT-CONFIG.json",
     "PROMPTING-GUIDE.md",
     "SOURCE-INGESTION.json",
+    "START-PROJECT.cmd",
     "START-HERE.md",
     "STATUS.md",
     "TEAM-INPUT.md",
@@ -87,17 +86,7 @@
     "scripts/rotate-history.ps1",
     "scripts/source-ingestion.py",
     "scripts/link-registry-references.py",
-    "scripts/setup-project.ps1",
-    "scripts/start-project.ps1",
-    "setup-ui/index.html",
-    "setup-ui/main.js",
-    "setup-ui/package-lock.json",
-    "setup-ui/package.json",
-    "setup-ui/preload.js",
-    "setup-ui/renderer.js",
-    "setup-ui/setup-contract.js",
-    "setup-ui/styles.css",
-    "setup-ui/test/setup-contract.test.js"
+    "scripts/setup-project.ps1"
   ],
   "preservedFiles": [
     "AGENTS.md",

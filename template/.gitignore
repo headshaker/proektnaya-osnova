@@ -6,3 +6,5 @@ desktop.ini
 ~$*
 __pycache__/
 .project/
+setup-ui/node_modules/
+setup-ui/runtime/
