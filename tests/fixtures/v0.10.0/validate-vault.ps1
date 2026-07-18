@@ -15,7 +15,6 @@ $requiredFiles = @(
     'REGISTRY-SCHEMA.json', 'TEMPLATE-LICENSE', 'TEMPLATE-STATE.json',
     'TEMPLATE-VERSION', 'scripts/build-context.ps1', 'scripts/check-context-health.ps1',
     'scripts/start-ai-work.ps1', 'scripts/sync-ai-work.ps1', 'scripts/check-ai-coordination.ps1',
-    'scripts/configure-github-protection.ps1',
     '.github/workflows/ai-coordination.yml', '.ai-work/README.md'
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
@@ -100,25 +99,6 @@ if (Test-Path -LiteralPath $aiCoordinationPath -PathType Leaf) {
         }
         foreach ($property in @('requireSeparateWorkspace', 'requireDeclaredScope', 'requireFreshCanonicalBase', 'requireDraftPullRequest')) {
             if ($aiCoordination.$property -ne $true) { $errors.Add("AI-COORDINATION.json: $property должен быть включён") }
-        }
-        $githubProtection = $aiCoordination.githubProtection
-        if ($null -eq $githubProtection -or
-            $githubProtection.automaticSetup -ne $true -or
-            [string]$githubProtection.setupScript -cne 'scripts/configure-github-protection.ps1' -or
-            [string]$githubProtection.requiredStatusCheck -cne 'Одна согласованная версия проекта' -or
-            [string]$githubProtection.rulesetName -cne 'Проектная основа: единая версия') {
-            $errors.Add('AI-COORDINATION.json: автоматическая защита GitHub настроена неверно')
-        }
-        foreach ($property in @(
-                'requirePullRequest', 'requireUpToDateBranch', 'blockForcePushes',
-                'blockDeletion'
-            )) {
-            if ($null -ne $githubProtection -and $githubProtection.$property -ne $true) {
-                $errors.Add("AI-COORDINATION.json: githubProtection.$property должен быть включён")
-            }
-        }
-        if ($null -ne $githubProtection -and $githubProtection.allowBypass -ne $false) {
-            $errors.Add('AI-COORDINATION.json: githubProtection.allowBypass должен быть выключен')
         }
     }
     catch {

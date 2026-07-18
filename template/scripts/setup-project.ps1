@@ -23,6 +23,8 @@ param(
     [Nullable[decimal]]$CostVariancePercent,
     [bool]$ScopeChangeRequiresApproval = $true,
     [string]$Date = (Get-Date -Format 'yyyy-MM-dd'),
+    [ValidateSet('auto', 'required', 'disabled')]
+    [string]$GitHubProtectionMode = 'auto',
     [switch]$NonInteractive,
     [switch]$Apply
 )
@@ -239,6 +241,11 @@ Write-Host "  Организация работ: $($deliveryOptions[$DeliveryApp
 Write-Host "  Рабочие задачи: $($workOptions[$WorkSystemType])"
 Write-Host "  Данные: $($classificationOptions[$DataClassification])"
 Write-Host "  Контроль ИИ: $AiGovernanceLevel"
+switch ($GitHubProtectionMode) {
+    'auto' { Write-Host '  GitHub: защита main будет настроена автоматически, если репозиторий и права доступны' }
+    'required' { Write-Host '  GitHub: настройка защиты main обязательна; ошибка остановит мастер' }
+    'disabled' { Write-Host '  GitHub: автоматическая защита отключена явным параметром' }
+}
 if ($unresolved.Count -gt 0) {
     Write-Host '  После настройки потребуются решения:'
     foreach ($item in $unresolved) { Write-Host "    - $item" }
@@ -292,15 +299,60 @@ finally {
 & (Join-Path $PSScriptRoot 'validate-registries.ps1') -ProjectPath $root
 & (Join-Path $PSScriptRoot 'validate-vault.ps1')
 
+$githubProtectionFailure = $null
+if ($GitHubProtectionMode -ceq 'disabled') {
+    $githubProtection = [pscustomobject][ordered]@{
+        schemaVersion = 1
+        status = 'disabled'
+        reasonCode = 'disabled-by-parameter'
+        message = 'Автоматическая защита GitHub отключена явным параметром.'
+        repository = ''
+        canonicalBranch = 'main'
+        rulesetName = 'Проектная основа: единая версия'
+        requiredStatusCheck = 'Одна согласованная версия проекта'
+        action = 'none'
+        rulesetId = $null
+        rulesetUrl = ''
+    }
+}
+else {
+    try {
+        $protectionParameters = @{ Apply = $true }
+        if ($GitHubProtectionMode -ceq 'auto') { $protectionParameters.AllowPending = $true }
+        $githubProtection = & (Join-Path $PSScriptRoot 'configure-github-protection.ps1') @protectionParameters
+    }
+    catch {
+        $githubProtectionFailure = $_
+        $githubProtection = [pscustomobject][ordered]@{
+            schemaVersion = 1
+            status = 'failed'
+            reasonCode = 'github-configuration-failed'
+            message = $_.Exception.Message
+            repository = ''
+            canonicalBranch = 'main'
+            rulesetName = 'Проектная основа: единая версия'
+            requiredStatusCheck = 'Одна согласованная версия проекта'
+            action = 'retry-required'
+            rulesetId = $null
+            rulesetUrl = ''
+        }
+    }
+}
+
+if ([string]$githubProtection.status -in @('pending', 'failed')) {
+    $unresolved.Add('завершить автоматическую настройку защиты GitHub')
+}
+
 $reportDirectory = Join-Path $root '.project'
 [System.IO.Directory]::CreateDirectory($reportDirectory) | Out-Null
 $report = [ordered]@{
     schemaVersion = 1
-    result = 'success'
+    result = if ([string]$githubProtection.status -in @('pending', 'failed')) { 'partial' } else { 'success' }
     configuredAt = $Date
     projectTitle = $Title
     projectSlug = $Slug
     unresolvedDecisions = @($unresolved)
+    githubProtection = $githubProtection
     nextDocument = 'HOME.md'
 }
 [System.IO.File]::WriteAllText(
@@ -310,9 +362,19 @@ $report = [ordered]@{
 )
 
 Write-Host ''
-Write-Host 'Готово: проект настроен и прошёл проверки.'
+if ($report.result -ceq 'success') {
+    Write-Host 'Готово: проект настроен и прошёл проверки.'
+}
+else {
+    Write-Warning 'Проект настроен, но защита GitHub требует завершения.'
+    Write-Host 'После входа в gh с правами администратора выполните:'
+    Write-Host '  pwsh ./scripts/configure-github-protection.ps1 -Apply'
+}
 Write-Host 'Следующий шаг: откройте HOME.md и передайте ИИ первую задачу из START-HERE.md.'
 if ($unresolved.Count -gt 0) {
     Write-Host 'Требуют решения владельца:'
     foreach ($item in $unresolved) { Write-Host "  - $item" }
+}
+if ($null -ne $githubProtectionFailure) {
+    throw "Проект создан, но обязательная защита GitHub не настроена: $($githubProtectionFailure.Exception.Message)"
 }

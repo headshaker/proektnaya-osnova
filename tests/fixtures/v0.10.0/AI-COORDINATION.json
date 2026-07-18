@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "canonicalBranch": "main",
+  "aiBranchPrefixes": [
+    "ai/",
+    "agent/",
+    "codex/",
+    "claude/",
+    "gemini/",
+    "copilot/"
+  ],
+  "manifestDirectory": ".ai-work/changes",
+  "integrationStateFile": "AI-INTEGRATION-STATE.json",
+  "integrationMode": "serialized-fresh-base",
+  "requireSeparateWorkspace": true,
+  "requireDeclaredScope": true,
+  "requireFreshCanonicalBase": true,
+  "requireDraftPullRequest": true
+}

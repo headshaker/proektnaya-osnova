@@ -126,6 +126,7 @@ try {
             'scripts/check-context-health.ps1',
             'scripts/check-ai-coordination.ps1',
             'scripts/check-project-health.ps1',
+            'scripts/configure-github-protection.ps1',
             'scripts/ingest-sources.ps1',
             'scripts/source-ingestion.py',
             'scripts/link-registry-references.py',
@@ -164,6 +165,7 @@ try {
     & (Join-Path $extractPath 'scripts/init-project.ps1') -Title 'Проверка выпускного архива' -Slug 'release-package-test' -Date '2000-02-29'
     & (Join-Path $PSScriptRoot 'test-agent-guides.ps1') -Date '2026-07-16'
     & (Join-Path $PSScriptRoot 'test-ai-coordination.ps1')
+    & (Join-Path $PSScriptRoot 'test-github-protection.ps1')
     & (Join-Path $PSScriptRoot 'test-human-first.ps1')
     & (Join-Path $PSScriptRoot 'test-setup-wizard.ps1')
     & (Join-Path $PSScriptRoot 'test-ingestion.ps1') -Date '2026-07-16'
