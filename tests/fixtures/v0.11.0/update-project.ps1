@@ -274,17 +274,13 @@ $gitignoreText = if (Test-Path -LiteralPath $gitignorePath -PathType Leaf) {
     [System.IO.File]::ReadAllText($gitignorePath)
 }
 else { '' }
-$missingIgnoreLines = @(
-    @('.project/', 'setup-ui/node_modules/', 'setup-ui/runtime/') |
-        Where-Object { $gitignoreText -notmatch ('(?m)^' + [regex]::Escape($_) + '\s*$') }
-)
-if ($missingIgnoreLines.Count -gt 0) {
-    $mergedIgnore = (Get-NormalizedText $gitignoreText).TrimEnd() + "`n" + ($missingIgnoreLines -join "`n") + "`n"
-    $entry = [pscustomobject]@{ Path = '.gitignore'; Action = 'merge'; Reason = 'добавить локальные служебные папки в исключения'; Text = $mergedIgnore }
+if ($gitignoreText -notmatch '(?m)^\.project/\s*$') {
+    $mergedIgnore = (Get-NormalizedText $gitignoreText).TrimEnd() + "`n.project/`n"
+    $entry = [pscustomobject]@{ Path = '.gitignore'; Action = 'merge'; Reason = 'добавить локальные резервные копии в исключения'; Text = $mergedIgnore }
     $plan.Add($entry); $changes.Add($entry)
 }
 else {
-    $plan.Add([pscustomobject]@{ Path = '.gitignore'; Action = 'skip'; Reason = 'локальные служебные папки уже исключены'; Text = $null })
+    $plan.Add([pscustomobject]@{ Path = '.gitignore'; Action = 'skip'; Reason = '.project уже исключён'; Text = $null })
 }
 
 $state = [ordered]@{

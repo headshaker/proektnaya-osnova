@@ -12,8 +12,10 @@ $templateVersionPath = Join-Path $root 'template/TEMPLATE-VERSION'
 $changelogPath = Join-Path $root 'CHANGELOG.md'
 $templateStatePath = Join-Path $root 'template/TEMPLATE-STATE.json'
 $migrationManifestPath = Join-Path $root 'template/migrations/manifest.json'
+$setupPackagePath = Join-Path $root 'template/setup-ui/package.json'
+$setupLockPath = Join-Path $root 'template/setup-ui/package-lock.json'
 
-foreach ($path in @($versionPath, $templateVersionPath, $changelogPath, $templateStatePath, $migrationManifestPath)) {
+foreach ($path in @($versionPath, $templateVersionPath, $changelogPath, $templateStatePath, $migrationManifestPath, $setupPackagePath, $setupLockPath)) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "Отсутствует обязательный файл версии: $path"
     }
@@ -36,6 +38,18 @@ if ($migrationManifest.targetVersion -cne $version) {
 $templateVersion = [System.IO.File]::ReadAllText($templateVersionPath).Trim()
 if ($templateVersion -cne $version) {
     throw "VERSION ($version) и template/TEMPLATE-VERSION ($templateVersion) не совпадают."
+}
+
+$setupPackage = [System.IO.File]::ReadAllText($setupPackagePath) | ConvertFrom-Json
+$setupLock = [System.IO.File]::ReadAllText($setupLockPath) | ConvertFrom-Json -AsHashtable -Depth 100
+if ([string]$setupPackage.version -cne $version -or [string]$setupLock['version'] -cne $version -or
+    [string]$setupLock['packages']['']['version'] -cne $version) {
+    throw "Версия Electron-мастера не совпадает с VERSION ($version)."
+}
+$electronVersion = [string]$setupPackage.devDependencies.electron
+if ($electronVersion -notmatch '^\d+\.\d+\.\d+$' -or
+    [string]$setupLock['packages']['']['devDependencies']['electron'] -cne $electronVersion) {
+    throw 'Версия Electron должна быть точной и совпадать с package-lock.json.'
 }
 
 $changelog = [System.IO.File]::ReadAllText($changelogPath)

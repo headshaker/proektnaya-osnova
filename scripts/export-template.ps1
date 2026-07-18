@@ -66,20 +66,38 @@ try {
         )
         try {
             $files = Get-ChildItem -LiteralPath $source -Recurse -File -Force |
+                Where-Object {
+                    $candidate = [System.IO.Path]::GetRelativePath($source, $_.FullName).Replace('\', '/')
+                    $candidate -notmatch '^setup-ui/(?:node_modules|\.npm-cache)/'
+                } |
                 Sort-Object { [System.IO.Path]::GetRelativePath($source, $_.FullName).Replace('\', '/') }
             $fixedTimestamp = [DateTimeOffset]::new(2000, 1, 1, 0, 0, 0, [TimeSpan]::Zero)
             foreach ($file in $files) {
                 $relative = [System.IO.Path]::GetRelativePath($source, $file.FullName).Replace('\', '/')
-                $entry = $writer.CreateEntry($relative, [System.IO.Compression.CompressionLevel]::NoCompression)
+                $compression = if ($relative.StartsWith('setup-ui/runtime/', [System.StringComparison]::Ordinal)) {
+                    [System.IO.Compression.CompressionLevel]::Optimal
+                }
+                else {
+                    [System.IO.Compression.CompressionLevel]::NoCompression
+                }
+                $entry = $writer.CreateEntry($relative, $compression)
                 $entry.LastWriteTime = $fixedTimestamp
-                $inputStream = [System.IO.File]::OpenRead($file.FullName)
                 $outputStream = $entry.Open()
                 try {
-                    $inputStream.CopyTo($outputStream)
+                    if ([System.IO.Path]::GetExtension($file.Name) -ceq '.cmd') {
+                        $text = [System.IO.File]::ReadAllText($file.FullName)
+                        $crlfText = $text.Replace("`r`n", "`n").Replace("`r", "`n").Replace("`n", "`r`n")
+                        $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($crlfText)
+                        $outputStream.Write($bytes, 0, $bytes.Length)
+                    }
+                    else {
+                        $inputStream = [System.IO.File]::OpenRead($file.FullName)
+                        try { $inputStream.CopyTo($outputStream) }
+                        finally { $inputStream.Dispose() }
+                    }
                 }
                 finally {
                     $outputStream.Dispose()
-                    $inputStream.Dispose()
                 }
             }
         }
