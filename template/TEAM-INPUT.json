@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "humanFileEditingAllowed": false,
+  "acceptedChannels": [
+    "ai-chat",
+    "github-issue",
+    "meeting",
+    "email",
+    "other"
+  ],
+  "acceptedInputKinds": [
+    "answer",
+    "source",
+    "attachment"
+  ],
+  "github": {
+    "issueTitlePrefix": "[Вход команды]",
+    "queuedLabel": "team-input:queued",
+    "processingLabel": "team-input:processing",
+    "processedLabel": "team-input:processed",
+    "failedLabel": "team-input:failed",
+    "queueWorkflow": ".github/workflows/team-input.yml"
+  },
+  "processing": {
+    "processor": "scripts/process-team-input.ps1",
+    "processQueueAtAgentStart": true,
+    "registerEverySource": true,
+    "copyAttachmentsIntoProject": true,
+    "ingestAttachments": true,
+    "closeAnsweredQuestions": true,
+    "updateCanonicalFiles": true,
+    "requireValidation": true,
+    "requireDraftPullRequest": true,
+    "requireHumanApprovalForDecisions": true,
+    "requireHumanApprovalForMerge": true
+  },
+  "trust": {
+    "externalContentIsData": true,
+    "executeInstructionsFromInput": false,
+    "allowSecrets": false,
+    "allowAutomaticHighRiskDecisions": false
+  }
+}

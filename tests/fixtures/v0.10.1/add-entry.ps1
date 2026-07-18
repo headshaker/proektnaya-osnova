@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true, Position = 0)]
-    [ValidateSet('decision', 'question', 'source', 'answer')]
+    [ValidateSet('decision', 'question', 'source')]
     [string]$Kind,
 
     [Parameter(Mandatory = $true)]
@@ -30,10 +30,7 @@ param(
     [string]$DocumentDate = 'Не задана',
     [string]$Scope = 'Не задана',
     [string]$Verified = $Date,
-    [string]$Recheck = 'При изменении подтверждаемого тезиса',
-    [string]$QuestionId,
-    [string]$Related = 'Прямой ответ команды',
-    [switch]$PassThru
+    [string]$Recheck = 'При изменении подтверждаемого тезиса'
 )
 
 Set-StrictMode -Version Latest
@@ -119,41 +116,6 @@ function Set-UpdatedDate([string]$Text, [string]$Value) {
     return $pattern.Replace($Text, "updated: `"$Value`"", 1)
 }
 
-function Close-Question(
-    [string]$Text,
-    [string]$Id,
-    [string]$Answer,
-    [string]$AnswerDate,
-    [string]$Reference
-) {
-    $normalized = $Text.Replace("`r`n", "`n")
-    $lines = [System.Collections.Generic.List[string]]::new()
-    foreach ($line in ($normalized -split "`n")) { $lines.Add($line) }
-
-    $closedHeading = -1
-    for ($index = 0; $index -lt $lines.Count; $index++) {
-        if ($lines[$index].Trim() -ceq '## Закрытые вопросы') {
-            $closedHeading = $index
-            break
-        }
-    }
-    if ($closedHeading -lt 0) { throw "Не найден раздел '## Закрытые вопросы'." }
-
-    $escaped = [regex]::Escape($Id)
-    $openMatches = @()
-    for ($index = 0; $index -lt $closedHeading; $index++) {
-        if ($lines[$index] -match "^\|\s*$escaped\s*\|") { $openMatches += $index }
-    }
-    if ($openMatches.Count -eq 0) { throw "Открытый вопрос $Id не найден или уже закрыт." }
-    if ($openMatches.Count -gt 1) { throw "Открытый вопрос $Id встречается более одного раза." }
-
-    $lines.RemoveAt([int]$openMatches[0])
-    $withoutOpen = ($lines -join "`n").TrimEnd() + "`n"
-    $anchor = $Id.ToLowerInvariant()
-    $row = "| $Id | $AnswerDate | <a id=`"$anchor`"></a>$Answer | $Reference |"
-    return Add-TableRow $withoutOpen 'Закрытые вопросы' $row
-}
-
 function Write-AtomicUtf8([string]$Path, [string]$Text) {
     $temporary = "$Path.tmp-$([Guid]::NewGuid().ToString('N'))"
     try {
@@ -173,17 +135,12 @@ foreach ($value in @{
         Review = $Review; Importance = $Importance; Owner = $Owner; NextStep = $NextStep;
         Closure = $Closure; Due = $Due; SourceType = $SourceType; Publisher = $Publisher;
         Evidence = $Evidence; DocumentDate = $DocumentDate; Scope = $Scope;
-        Verified = $Verified; Recheck = $Recheck; Related = $Related
+        Verified = $Verified; Recheck = $Recheck
     }.GetEnumerator()) {
     Assert-Cell ([string]$value.Value) ([string]$value.Key)
 }
 if ($Verified -ne 'Не задано') { Assert-IsoDate $Verified 'Verified' }
 if ($DocumentDate -ne 'Не задана') { Assert-IsoDate $DocumentDate 'DocumentDate' }
-if ($Kind -eq 'answer') {
-    if ([string]::IsNullOrWhiteSpace($QuestionId) -or $QuestionId -notmatch '^Q-\d+$') {
-        throw 'QuestionId должен иметь вид Q-001.'
-    }
-}
 
 [System.IO.Directory]::CreateDirectory($stateDirectory) | Out-Null
 $lock = $null
@@ -248,27 +205,11 @@ try {
             }
             $updated = Add-TableRow $text $heading $row
         }
-        'answer' {
-            $path = Join-Path $root 'OPEN-QUESTIONS.md'
-            $text = [System.IO.File]::ReadAllText($path)
-            $id = $QuestionId.ToUpperInvariant()
-            $updated = Close-Question $text $id $Title $Date $Related
-        }
     }
 
     $updated = Set-UpdatedDate $updated $Date
     Write-AtomicUtf8 $path $updated
-    if ($PassThru) {
-        [pscustomobject]@{
-            id = $id
-            kind = $Kind
-            path = [System.IO.Path]::GetFileName($path)
-        }
-    }
-    else {
-        $verb = if ($Kind -eq 'answer') { 'Закрыт вопрос' } else { 'Добавлена запись' }
-        Write-Host "$verb $id в $([System.IO.Path]::GetFileName($path))."
-    }
+    Write-Host "Добавлена запись $id в $([System.IO.Path]::GetFileName($path))."
 }
 finally {
     if ($null -ne $lock) {

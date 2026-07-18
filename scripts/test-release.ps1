@@ -97,6 +97,8 @@ try {
             'AI-COORDINATION.md',
             'AI-COORDINATION.json',
             'AI-INTEGRATION-STATE.json',
+            'TEAM-INPUT.md',
+            'TEAM-INPUT.json',
             'OBSIDIAN.md',
             'AGENTS.md',
             'AGENTS.override.md',
@@ -135,11 +137,14 @@ try {
             'scripts/start-ai-work.ps1',
             'scripts/sync-ai-work.ps1',
             'scripts/prepare-commit-digest.ps1',
+            'scripts/process-team-input.ps1',
             'scripts/rotate-history.ps1',
             'scripts/update-project.ps1',
             'scripts/validate-registries.ps1',
             '.github/workflows/knowledge-base.yml',
             '.github/workflows/ai-coordination.yml',
+            '.github/workflows/team-input.yml',
+            '.github/ISSUE_TEMPLATE/team-input.yml',
             '.github/workflows/project-health.yml',
             '.github/workflows/registry-compatibility.yml'
         )
@@ -169,6 +174,7 @@ try {
     & (Join-Path $PSScriptRoot 'test-human-first.ps1')
     & (Join-Path $PSScriptRoot 'test-setup-wizard.ps1')
     & (Join-Path $PSScriptRoot 'test-ingestion.ps1') -Date '2026-07-16'
+    & (Join-Path $PSScriptRoot 'test-team-input.ps1') -Date '2026-07-18'
     & (Join-Path $PSScriptRoot 'test-migrations.ps1')
 
     Write-Host 'Выпускной архив, агентные инструкции и SHA-256 прошли проверку.'

@@ -16,14 +16,6 @@
   "requireDeclaredScope": true,
   "requireFreshCanonicalBase": true,
   "requireDraftPullRequest": true,
-  "teamInput": {
-    "policyFile": "TEAM-INPUT.json",
-    "guideFile": "TEAM-INPUT.md",
-    "queuedLabel": "team-input:queued",
-    "processor": "scripts/process-team-input.ps1",
-    "processAtAgentStart": true,
-    "humanFileEditingAllowed": false
-  },
   "githubProtection": {
     "automaticSetup": true,
     "setupScript": "scripts/configure-github-protection.ps1",

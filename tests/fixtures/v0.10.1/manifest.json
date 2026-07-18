@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "targetVersion": "0.11.0",
+  "targetVersion": "0.10.1",
   "supportedFromVersions": [
     "0.1.0",
     "0.1.1",
@@ -14,19 +14,16 @@
     "0.8.0",
     "0.8.1",
     "0.9.0",
-    "0.10.0",
-    "0.10.1"
+    "0.10.0"
   ],
   "baselineFile": "migrations/baselines.json",
   "managedFiles": [
     ".github/workflows/ai-coordination.yml",
     ".github/workflows/knowledge-base.yml",
     ".github/workflows/registry-compatibility.yml",
-    ".github/workflows/team-input.yml",
     "AI-COORDINATION.json",
     "CONTEXT-PROFILES.json",
     "REGISTRY-SCHEMA.json",
-    "TEAM-INPUT.json",
     "TEMPLATE-LICENSE",
     "migrations/baselines.json",
     "migrations/manifest.json",
@@ -35,7 +32,6 @@
     "scripts/check-ai-coordination.ps1",
     "scripts/context-budget.py",
     "scripts/init-project.ps1",
-    "scripts/process-team-input.ps1",
     "scripts/start-ai-work.ps1",
     "scripts/sync-ai-work.ps1",
     "scripts/update-project.ps1",
@@ -46,7 +42,6 @@
     ".ai-work/README.md",
     ".ai-work/changes/.gitkeep",
     ".github/copilot-instructions.md",
-    ".github/ISSUE_TEMPLATE/team-input.yml",
     ".github/workflows/project-health.yml",
     "AGENTS.override.md",
     "ADMIN-SETUP.md",
@@ -70,7 +65,6 @@
     "START-PROJECT.cmd",
     "START-HERE.md",
     "STATUS.md",
-    "TEAM-INPUT.md",
     "VIRTUAL-SPECIALISTS.md",
     "WORK-PROFILES.md",
     "_templates/Commit digest.md",

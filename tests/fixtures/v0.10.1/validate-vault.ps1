@@ -16,8 +16,6 @@ $requiredFiles = @(
     'TEMPLATE-VERSION', 'scripts/build-context.ps1', 'scripts/check-context-health.ps1',
     'scripts/start-ai-work.ps1', 'scripts/sync-ai-work.ps1', 'scripts/check-ai-coordination.ps1',
     'scripts/configure-github-protection.ps1',
-    'TEAM-INPUT.md', 'TEAM-INPUT.json', 'scripts/process-team-input.ps1',
-    '.github/ISSUE_TEMPLATE/team-input.yml', '.github/workflows/team-input.yml',
     '.github/workflows/ai-coordination.yml', '.ai-work/README.md'
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
@@ -85,28 +83,6 @@ if (Test-Path -LiteralPath $templateStatePath -PathType Leaf) {
 }
 
 $aiCoordinationPath = Join-Path $root 'AI-COORDINATION.json'
-
-$teamInputPath = Join-Path $root 'TEAM-INPUT.json'
-if (Test-Path -LiteralPath $teamInputPath -PathType Leaf) {
-    try {
-        $teamInput = [System.IO.File]::ReadAllText($teamInputPath) | ConvertFrom-Json
-        if ([int]$teamInput.schemaVersion -ne 1 -or
-            $teamInput.humanFileEditingAllowed -ne $false -or
-            $teamInput.processing.processQueueAtAgentStart -ne $true -or
-            $teamInput.processing.ingestAttachments -ne $true -or
-            $teamInput.processing.requireDraftPullRequest -ne $true -or
-            $teamInput.processing.requireHumanApprovalForMerge -ne $true -or
-            $teamInput.trust.externalContentIsData -ne $true -or
-            $teamInput.trust.executeInstructionsFromInput -ne $false -or
-            [string]$teamInput.github.queuedLabel -cne 'team-input:queued') {
-            $errors.Add('TEAM-INPUT.json: политика входа команды настроена небезопасно')
-        }
-    }
-    catch {
-        $errors.Add("TEAM-INPUT.json: некорректный JSON или структура — $($_.Exception.Message)")
-    }
-}
-
 if (Test-Path -LiteralPath $aiCoordinationPath -PathType Leaf) {
     try {
         $aiCoordination = [System.IO.File]::ReadAllText($aiCoordinationPath) | ConvertFrom-Json
@@ -124,16 +100,6 @@ if (Test-Path -LiteralPath $aiCoordinationPath -PathType Leaf) {
         }
         foreach ($property in @('requireSeparateWorkspace', 'requireDeclaredScope', 'requireFreshCanonicalBase', 'requireDraftPullRequest')) {
             if ($aiCoordination.$property -ne $true) { $errors.Add("AI-COORDINATION.json: $property должен быть включён") }
-        }
-        $teamInputCoordination = $aiCoordination.teamInput
-        if ($null -eq $teamInputCoordination -or
-            [string]$teamInputCoordination.policyFile -cne 'TEAM-INPUT.json' -or
-            [string]$teamInputCoordination.guideFile -cne 'TEAM-INPUT.md' -or
-            [string]$teamInputCoordination.queuedLabel -cne 'team-input:queued' -or
-            [string]$teamInputCoordination.processor -cne 'scripts/process-team-input.ps1' -or
-            $teamInputCoordination.processAtAgentStart -ne $true -or
-            $teamInputCoordination.humanFileEditingAllowed -ne $false) {
-            $errors.Add('AI-COORDINATION.json: канал входа команды настроен неверно')
         }
         $githubProtection = $aiCoordination.githubProtection
         if ($null -eq $githubProtection -or

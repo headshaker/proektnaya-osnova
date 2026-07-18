@@ -7,13 +7,13 @@ $ErrorActionPreference = 'Stop'
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $template = Join-Path $root 'template'
 
-foreach ($relative in @('HOME.md', 'START-HERE.md', 'DAILY-WORK.md', 'ADMIN-SETUP.md', 'GLOSSARY.md')) {
+foreach ($relative in @('HOME.md', 'START-HERE.md', 'DAILY-WORK.md', 'TEAM-INPUT.md', 'ADMIN-SETUP.md', 'GLOSSARY.md')) {
     if (-not (Test-Path -LiteralPath (Join-Path $template $relative) -PathType Leaf)) {
         throw "Отсутствует обязательная человеко-ориентированная инструкция: $relative"
     }
 }
 
-$managerFiles = @('HOME.md', 'START-HERE.md', 'DAILY-WORK.md', 'README.md')
+$managerFiles = @('HOME.md', 'START-HERE.md', 'DAILY-WORK.md', 'TEAM-INPUT.md', 'README.md')
 foreach ($relative in $managerFiles) {
     $text = [System.IO.File]::ReadAllText((Join-Path $template $relative))
     if ($text -match '(?im)^\s{4,}(pwsh|python|git|gh)\b') {
@@ -41,6 +41,13 @@ foreach ($phrase in @('Это ваш главный экран', 'Получит
     }
 }
 
+$teamInput = [System.IO.File]::ReadAllText((Join-Path $template 'TEAM-INPUT.md'))
+foreach ($phrase in @('Команда не редактирует файлы проекта', 'Ответить на вопрос', 'Добавить источник', 'Добавить вложение')) {
+    if ($teamInput -notmatch [regex]::Escape($phrase)) {
+        throw "TEAM-INPUT.md не содержит простой путь команды: $phrase"
+    }
+}
+
 $admin = [System.IO.File]::ReadAllText((Join-Path $template 'ADMIN-SETUP.md'))
 if ($admin -notmatch 'Техническая инструкция' -or
     $admin -notmatch 'START-PROJECT.cmd' -or
@@ -65,7 +72,7 @@ foreach ($relative in @('AI-CONNECTIONS.md', 'CONTEXT-WORKFLOW.md', 'INGESTION-W
 
 $dossierManifest = [System.IO.File]::ReadAllText((Join-Path $template 'scripts/project-dossier.manifest.json')) | ConvertFrom-Json
 $dossierDocuments = @($dossierManifest.parts.documents)
-foreach ($relative in @('HOME.md', 'ADMIN-SETUP.md')) {
+foreach ($relative in @('HOME.md', 'TEAM-INPUT.md', 'ADMIN-SETUP.md')) {
     if ($dossierDocuments -notcontains $relative) {
         throw "Единая книга проекта не включает человеко-ориентированный файл: $relative"
     }
