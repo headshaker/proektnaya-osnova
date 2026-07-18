@@ -62,6 +62,7 @@
 | [`template/PROMPTING-GUIDE.md`](./template/PROMPTING-GUIDE.md) | лучшие практики постановки задач в привязке к проекту |
 | [`template/OBSIDIAN.md`](./template/OBSIDIAN.md) | настройка и эффективное использование Obsidian |
 | [`template/AI-CONNECTIONS.md`](./template/AI-CONNECTIONS.md) | подключение Codex, Claude Code, Gemini CLI, Copilot и чатовых моделей |
+| [`template/CONTEXT-WORKFLOW.md`](./template/CONTEXT-WORKFLOW.md) | сборка контекста и контроль его деградации |
 | [`template/AGENTS.md`](./template/AGENTS.md) | общий контракт для агентных нейросетей |
 | [`template/CLAUDE.md`](./template/CLAUDE.md) | входные инструкции Claude Code |
 | [`template/GEMINI.md`](./template/GEMINI.md) | входные инструкции Gemini CLI |
@@ -97,6 +98,7 @@
 Локальный пакет без вложений:
 
     pwsh ./scripts/build-context.ps1 -Profile compact -IncludeId D-001,Q-001 -Check
+    pwsh ./scripts/check-context-health.ps1 -UpdateBaseline -Check
 
 PDF, DOCX, PPTX, XLSX и другие файлы хранятся в `_attachments`, регистрируются в [`SOURCES.md`](./template/SOURCES.md) и локально преобразуются Microsoft MarkItDown:
 
@@ -130,7 +132,7 @@ PDF, DOCX, PPTX, XLSX и другие файлы хранятся в `_attachmen
 
     pwsh ./scripts/export-template.ps1
 
-Готовый архив и SHA-256 появляются в `dist`. Тег вида `v0.9.0`, совпадающий с [`VERSION`](./VERSION), автоматически создаёт GitHub Release.
+Готовый архив и SHA-256 появляются в `dist`. Проверка pull request заранее запрещает повторно использовать уже выпущенный номер. После слияния в `main` проверка сверяет все файлы версии, собирает архив, автоматически создаёт недостающий тег вида `v0.9.0` и GitHub Release. Существующий тег никогда не переписывается.
 
 ## Принципы
 

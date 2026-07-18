@@ -12,7 +12,7 @@ $requiredFiles = @(
     'CHANGELOG.md', 'OBSIDIAN.md', 'DAILY-WORK.md', 'MIGRATIONS.md',
     'WORK-PROFILES.md', 'CONTEXT-WORKFLOW.md', 'CONTEXT-PROFILES.json',
     'REGISTRY-SCHEMA.json', 'TEMPLATE-LICENSE', 'TEMPLATE-STATE.json',
-    'TEMPLATE-VERSION', 'scripts/build-context.ps1'
+    'TEMPLATE-VERSION', 'scripts/build-context.ps1', 'scripts/check-context-health.ps1'
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
 
@@ -84,6 +84,17 @@ if (Test-Path -LiteralPath $contextProfilesPath -PathType Leaf) {
         $contextProfiles = [System.IO.File]::ReadAllText($contextProfilesPath) | ConvertFrom-Json
         if ($contextProfiles.schemaVersion -ne 1) {
             $errors.Add('CONTEXT-PROFILES.json: поддерживается только schemaVersion = 1')
+        }
+        $policy = $contextProfiles.healthPolicy
+        if ([int]$policy.warningUtilizationPercent -lt 1 -or
+            [int]$policy.criticalUtilizationPercent -gt 100 -or
+            [int]$policy.warningUtilizationPercent -ge [int]$policy.criticalUtilizationPercent -or
+            [int]$policy.minimumCompletenessScore -lt 1 -or
+            [int]$policy.minimumCompletenessScore -gt 100 -or
+            [int]$policy.maxHandoffAgeDays -lt 0 -or
+            [int]$policy.maxStatusAgeDays -lt 0 -or
+            [int]$policy.warningUtilizationIncreasePoints -lt 1) {
+            $errors.Add('CONTEXT-PROFILES.json: некорректная политика здоровья контекста')
         }
         $profileNames = @($contextProfiles.profiles | ForEach-Object name)
         if ([string]::IsNullOrWhiteSpace([string]$contextProfiles.defaultProfile) -or

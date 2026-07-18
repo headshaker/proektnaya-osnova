@@ -13,6 +13,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  release-readiness:
+    name: Номер версии готов к выпуску
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Получить полную историю
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Не допустить повторного использования версии
+        shell: pwsh
+        run: |
+          $version = (Get-Content -Raw VERSION).Trim()
+          $tag = "v$version"
+          $remoteTag = @(git ls-remote --tags origin "refs/tags/$tag")
+          if ($LASTEXITCODE -ne 0) { throw "Не удалось проверить тег $tag в origin." }
+          if ($remoteTag.Count -gt 1) { throw "GitHub вернул несколько точных совпадений для тега $tag." }
+
+          $existingTagCommit = ''
+          if ($remoteTag.Count -eq 1) {
+            git fetch --force origin "refs/tags/${tag}:refs/tags/${tag}"
+            if ($LASTEXITCODE -ne 0) { throw "Не удалось получить существующий тег $tag." }
+            $existingTagCommit = (git rev-list -n 1 $tag).Trim()
+          }
+
+          ./scripts/plan-release.ps1 `
+            -CommitSha (git rev-parse HEAD).Trim() `
+            -ExistingTagCommit $existingTagCommit
+
   template:
     name: Шаблон разворачивается (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

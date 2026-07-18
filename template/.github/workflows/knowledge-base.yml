@@ -42,6 +42,10 @@ jobs:
         shell: pwsh
         run: ./scripts/build-context.ps1 -Profile compact -IncludeId D-001,Q-001 -Check
 
+      - name: Проверить деградацию контекста
+        shell: pwsh
+        run: ./scripts/check-context-health.ps1 -AllowPlaceholders -Check
+
       - name: Проверить обработчик вложений
         run: |
           python -m py_compile scripts/source-ingestion.py

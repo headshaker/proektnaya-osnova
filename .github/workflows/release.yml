@@ -2,6 +2,8 @@ name: Выпуск шаблона
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
   workflow_dispatch:
@@ -10,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
@@ -21,12 +23,37 @@ jobs:
     steps:
       - name: Получить репозиторий
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
-      - name: Проверить версию
+      - name: Определить версию и состояние выпуска
         shell: pwsh
-        env:
-          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
-        run: ./scripts/check-version.ps1 -Tag $env:RELEASE_TAG
+        run: |
+          $version = (Get-Content -Raw VERSION).Trim()
+          $tag = "v$version"
+          $targetSha = (git rev-parse HEAD).Trim()
+          $eventTag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { '' }
+          $remoteTag = @(git ls-remote --tags origin "refs/tags/$tag")
+          if ($LASTEXITCODE -ne 0) { throw "Не удалось проверить тег $tag в origin." }
+          if ($remoteTag.Count -gt 1) { throw "GitHub вернул несколько точных совпадений для тега $tag." }
+
+          $existingTagCommit = ''
+          if ($remoteTag.Count -eq 1) {
+            git fetch --force origin "refs/tags/${tag}:refs/tags/${tag}"
+            if ($LASTEXITCODE -ne 0) { throw "Не удалось получить существующий тег $tag." }
+            $existingTagCommit = (git rev-list -n 1 $tag).Trim()
+          }
+
+          $planJson = ./scripts/plan-release.ps1 `
+            -CommitSha $targetSha `
+            -ExistingTagCommit $existingTagCommit `
+            -EventTag $eventTag
+          $plan = ($planJson | Select-Object -Last 1) | ConvertFrom-Json
+          "VERSION=$($plan.version)" >> $env:GITHUB_ENV
+          "RELEASE_TAG=$($plan.tag)" >> $env:GITHUB_ENV
+          "TARGET_SHA=$($plan.commitSha)" >> $env:GITHUB_ENV
+          "TAG_ACTION=$($plan.tagAction)" >> $env:GITHUB_ENV
 
       - name: Проверить выпускной пакет
         shell: pwsh
@@ -35,12 +62,10 @@ jobs:
       - name: Собрать файлы выпуска
         shell: pwsh
         run: |
-          $version = (Get-Content -Raw VERSION).Trim()
-          $package = "dist/proektnaya-osnova-template-v$version.zip"
+          $package = "dist/proektnaya-osnova-template-v$env:VERSION.zip"
           ./scripts/export-template.ps1 -OutputPath $package
           "PACKAGE_PATH=$package" >> $env:GITHUB_ENV
           "CHECKSUM_PATH=$package.sha256" >> $env:GITHUB_ENV
-          "VERSION=$version" >> $env:GITHUB_ENV
 
       - name: Сохранить артефакт
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -52,9 +77,51 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Создать GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Синхронизировать тег и GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME $env:PACKAGE_PATH $env:CHECKSUM_PATH --verify-tag --generate-notes --title "Проектная основа $env:GITHUB_REF_NAME"
+        run: |
+          $tag = $env:RELEASE_TAG
+          $title = "Проектная основа $tag"
+          $releaseExists = $true
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -ne 0) { $releaseExists = $false }
+
+          if (-not $releaseExists) {
+            if ($env:TAG_ACTION -eq 'create') {
+              gh release create $tag $env:PACKAGE_PATH $env:CHECKSUM_PATH `
+                --target $env:TARGET_SHA --generate-notes --title $title --latest
+            }
+            else {
+              gh release create $tag $env:PACKAGE_PATH $env:CHECKSUM_PATH `
+                --verify-tag --generate-notes --title $title --latest
+            }
+            if ($LASTEXITCODE -ne 0) { throw "Не удалось создать выпуск $tag." }
+          }
+          else {
+            $release = gh release view $tag --json isDraft,isPrerelease,assets | ConvertFrom-Json
+            $assetNames = @($release.assets.name)
+            $expectedAssets = @(
+              [System.IO.Path]::GetFileName($env:PACKAGE_PATH),
+              [System.IO.Path]::GetFileName($env:CHECKSUM_PATH)
+            )
+            if ($release.isDraft -or $release.isPrerelease -or
+                @($expectedAssets | Where-Object { $assetNames -notcontains $_ }).Count -gt 0) {
+              gh release upload $tag $env:PACKAGE_PATH $env:CHECKSUM_PATH --clobber
+              if ($LASTEXITCODE -ne 0) { throw "Не удалось восстановить файлы выпуска $tag." }
+              gh release edit $tag --draft=false --prerelease=false --title $title --latest
+              if ($LASTEXITCODE -ne 0) { throw "Не удалось опубликовать выпуск $tag." }
+            }
+          }
+
+          $verified = gh release view $tag --json tagName,isDraft,isPrerelease,assets,url | ConvertFrom-Json
+          $verifiedAssets = @($verified.assets.name)
+          $expectedZip = [System.IO.Path]::GetFileName($env:PACKAGE_PATH)
+          $expectedChecksum = [System.IO.Path]::GetFileName($env:CHECKSUM_PATH)
+          if ($verified.tagName -cne $tag -or $verified.isDraft -or $verified.isPrerelease -or
+              $verifiedAssets -notcontains $expectedZip -or
+              $verifiedAssets -notcontains $expectedChecksum) {
+            throw "Тег или GitHub Release $tag остался несогласованным после публикации."
+          }
+          Write-Host "Выпуск синхронизирован: $($verified.url)"
