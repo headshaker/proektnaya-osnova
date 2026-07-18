@@ -99,7 +99,11 @@ try {
     }
 
     $coordination = [System.IO.File]::ReadAllText((Join-Path $test 'AI-COORDINATION.md'))
-    foreach ($phrase in @('отдельное рабочее место', 'Паспорт изменения', 'Свежая основа', 'Последовательное объединение')) {
+    foreach ($phrase in @(
+            'отдельное рабочее место', 'Паспорт изменения', 'Свежая основа',
+            'Последовательное объединение', 'автоматически создаёт',
+            'configure-github-protection.ps1'
+        )) {
         if ($coordination -notmatch [regex]::Escape($phrase)) {
             throw "AI-COORDINATION.md не содержит обязательное правило: $phrase"
         }

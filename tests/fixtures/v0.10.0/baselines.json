@@ -123,27 +123,6 @@
       "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
       "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
       "scripts/validate-vault.ps1": "09128c96aedf942812b510721f48b4d6efe59d143d429092fa12007bbd3f2009"
-    },
-    "0.10.0": {
-      ".github/workflows/ai-coordination.yml": "f53f07f5986d10f42d6dc11f4f0225b93af2e8dab263a0b59de194e272342895",
-      ".github/workflows/knowledge-base.yml": "5ac4432fc1e7f4933a1652b1cf19e6da215ee2f72ed903c13e5edef918c79aa7",
-      ".github/workflows/registry-compatibility.yml": "489b655c7619aef9844a3f96aef34bc7b93448dd4b742163fb30d52198d8b818",
-      "AI-COORDINATION.json": "a6f50f952ffbee7e47265c30820439384021c6fee1b1b10eafc08b7982dbaf83",
-      "CONTEXT-PROFILES.json": "a581e4702569df2d77aa5ba58bff0ffe12e7d8dc2eea046efbfd43b310fa4b4f",
-      "REGISTRY-SCHEMA.json": "9f3e45fb1817d805cce40bfff7b68e62b2f72b20ef99e841ce51785bb320a237",
-      "TEMPLATE-LICENSE": "0ff3d0abc740f19220b216831596984446b97f830e61570da08171e4e4115baa",
-      "migrations/baselines.json": "cd6fa89193b893b952f06091b9e54cb3c726f8ddab50d96ff60fa63093bb8e5b",
-      "migrations/manifest.json": "f7c1297bcf17b0d5f6d7db9f49589658247475d0a00936e9642794562642d29e",
-      "scripts/build-project-dossier.ps1": "51176023e3e3b82aeed944c2526986f2916a295d21459ec669832e125dcb30ab",
-      "scripts/build-context.ps1": "ac403f0b21b66dd8a31fc8705b5e4cbcdc8b594758f378e6ffda07c38d52d2d5",
-      "scripts/check-ai-coordination.ps1": "7a5be88e4053dc0d41287409d5b667cc99eb6d3327c4b9a5be40bd364d2ef509",
-      "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
-      "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
-      "scripts/start-ai-work.ps1": "61c0ed5f98a6f95a8dc5002b91a6d731d864de75a6799d3a478a9d252d2b7109",
-      "scripts/sync-ai-work.ps1": "6fa962450af8160bd57eaacec615aed6c7b24fde22d9d13d432032ed7b2265d7",
-      "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
-      "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
-      "scripts/validate-vault.ps1": "82e9bc32dff2028c6efe76cd16479bb471d4d21f801555f76df68d6a6e08c704"
     }
   }
 }

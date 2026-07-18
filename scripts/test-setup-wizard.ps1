@@ -82,6 +82,8 @@ try {
         $report.result -cne 'success'
         $report.projectSlug -cne 'proekt-elka-2026'
         @($report.unresolvedDecisions).Count -ne 0
+        [string]$report.githubProtection.status -cne 'not-applicable'
+        [string]$report.githubProtection.requiredStatusCheck -cne 'Одна согласованная версия проекта'
         $report.nextDocument -cne 'HOME.md'
     ) -contains $true
     if ($reportInvalid) {

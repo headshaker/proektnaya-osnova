@@ -15,5 +15,16 @@
   "requireSeparateWorkspace": true,
   "requireDeclaredScope": true,
   "requireFreshCanonicalBase": true,
-  "requireDraftPullRequest": true
+  "requireDraftPullRequest": true,
+  "githubProtection": {
+    "automaticSetup": true,
+    "setupScript": "scripts/configure-github-protection.ps1",
+    "rulesetName": "Проектная основа: единая версия",
+    "requiredStatusCheck": "Одна согласованная версия проекта",
+    "requirePullRequest": true,
+    "requireUpToDateBranch": true,
+    "blockForcePushes": true,
+    "blockDeletion": true,
+    "allowBypass": false
+  }
 }

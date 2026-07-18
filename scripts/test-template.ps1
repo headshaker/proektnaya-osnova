@@ -161,3 +161,4 @@ finally {
 & (Join-Path $PSScriptRoot 'test-setup-wizard.ps1')
 & (Join-Path $PSScriptRoot 'test-release-automation.ps1')
 & (Join-Path $PSScriptRoot 'test-ai-coordination.ps1')
+& (Join-Path $PSScriptRoot 'test-github-protection.ps1')
