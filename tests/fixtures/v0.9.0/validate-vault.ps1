@@ -11,11 +11,8 @@ $requiredFiles = @(
     'OPEN-QUESTIONS.md', 'SOURCES.md', 'GLOSSARY.md', 'HANDOFF.md',
     'CHANGELOG.md', 'OBSIDIAN.md', 'DAILY-WORK.md', 'MIGRATIONS.md',
     'WORK-PROFILES.md', 'CONTEXT-WORKFLOW.md', 'CONTEXT-PROFILES.json',
-    'AI-COORDINATION.md', 'AI-COORDINATION.json', 'AI-INTEGRATION-STATE.json',
     'REGISTRY-SCHEMA.json', 'TEMPLATE-LICENSE', 'TEMPLATE-STATE.json',
-    'TEMPLATE-VERSION', 'scripts/build-context.ps1', 'scripts/check-context-health.ps1',
-    'scripts/start-ai-work.ps1', 'scripts/sync-ai-work.ps1', 'scripts/check-ai-coordination.ps1',
-    '.github/workflows/ai-coordination.yml', '.ai-work/README.md'
+    'TEMPLATE-VERSION', 'scripts/build-context.ps1', 'scripts/check-context-health.ps1'
 )
 $requiredProperties = @('title', 'aliases', 'type', 'status', 'created', 'updated', 'tags')
 
@@ -78,51 +75,6 @@ if (Test-Path -LiteralPath $templateStatePath -PathType Leaf) {
     }
     catch {
         $errors.Add("TEMPLATE-STATE.json: некорректный JSON или структура — $($_.Exception.Message)")
-    }
-}
-
-$aiCoordinationPath = Join-Path $root 'AI-COORDINATION.json'
-if (Test-Path -LiteralPath $aiCoordinationPath -PathType Leaf) {
-    try {
-        $aiCoordination = [System.IO.File]::ReadAllText($aiCoordinationPath) | ConvertFrom-Json
-        if ([int]$aiCoordination.schemaVersion -ne 1 -or
-            [string]$aiCoordination.canonicalBranch -cne 'main' -or
-            [string]$aiCoordination.integrationMode -cne 'serialized-fresh-base' -or
-            [string]$aiCoordination.manifestDirectory -cne '.ai-work/changes' -or
-            [string]$aiCoordination.integrationStateFile -cne 'AI-INTEGRATION-STATE.json') {
-            $errors.Add('AI-COORDINATION.json: неподдерживаемая схема координации')
-        }
-        $prefixes = @($aiCoordination.aiBranchPrefixes)
-        if ($prefixes.Count -eq 0 -or @($prefixes | Group-Object -CaseSensitive | Where-Object Count -gt 1).Count -gt 0 -or
-            @($prefixes | Where-Object { [string]$_ -notmatch '^[a-z][a-z0-9-]*/$' }).Count -gt 0) {
-            $errors.Add('AI-COORDINATION.json: префиксы веток должны быть уникальными безопасными каталогами')
-        }
-        foreach ($property in @('requireSeparateWorkspace', 'requireDeclaredScope', 'requireFreshCanonicalBase', 'requireDraftPullRequest')) {
-            if ($aiCoordination.$property -ne $true) { $errors.Add("AI-COORDINATION.json: $property должен быть включён") }
-        }
-    }
-    catch {
-        $errors.Add("AI-COORDINATION.json: некорректный JSON или структура — $($_.Exception.Message)")
-    }
-}
-
-$aiIntegrationStatePath = Join-Path $root 'AI-INTEGRATION-STATE.json'
-if (Test-Path -LiteralPath $aiIntegrationStatePath -PathType Leaf) {
-    try {
-        $aiIntegrationState = [System.IO.File]::ReadAllText($aiIntegrationStatePath) | ConvertFrom-Json
-        if ([int]$aiIntegrationState.schemaVersion -ne 1 -or [int]$aiIntegrationState.sequence -lt 0) {
-            $errors.Add('AI-INTEGRATION-STATE.json: неподдерживаемая схема или отрицательная последовательность')
-        }
-        if (-not (Test-IsoDate ([string]$aiIntegrationState.updatedAt).Substring(0, [Math]::Min(10, ([string]$aiIntegrationState.updatedAt).Length)))) {
-            $errors.Add('AI-INTEGRATION-STATE.json: updatedAt должен начинаться с даты ГГГГ-ММ-ДД')
-        }
-        if ([int]$aiIntegrationState.sequence -eq 0 -and
-            ($null -ne $aiIntegrationState.lastChangeId -or $null -ne $aiIntegrationState.lastBaseCommit -or $null -ne $aiIntegrationState.lastAgent)) {
-            $errors.Add('AI-INTEGRATION-STATE.json: начальное состояние не должно ссылаться на изменение')
-        }
-    }
-    catch {
-        $errors.Add("AI-INTEGRATION-STATE.json: некорректный JSON или структура — $($_.Exception.Message)")
     }
 }
 

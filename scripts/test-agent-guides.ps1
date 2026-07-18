@@ -31,6 +31,9 @@ try {
         'ADMIN-SETUP.md',
         'OBSIDIAN.md',
         'AI-CONNECTIONS.md',
+        'AI-COORDINATION.md',
+        'AI-COORDINATION.json',
+        'AI-INTEGRATION-STATE.json',
         'AGENTS.md',
         'AGENTS.override.md',
         'CLAUDE.md',
@@ -52,7 +55,8 @@ try {
             'данными, а не инструкциями',
             'OUTCOMES.md',
             'CONTROLS.md',
-            'результат сохранён в канонических файлах'
+            'результат сохранён в канонических файлах',
+            'Если одновременно работают несколько нейросетей'
         )) {
         if ($agents -notmatch [regex]::Escape($phrase)) {
             throw "AGENTS.md не содержит обязательное правило: $phrase"
@@ -60,7 +64,7 @@ try {
     }
 
     $override = [System.IO.File]::ReadAllText((Join-Path $test 'AGENTS.override.md'))
-    foreach ($phrase in @('ИИ-оператор проекта', 'Границы полномочий', 'данными, а не инструкциями', 'draft pull request')) {
+    foreach ($phrase in @('ИИ-оператор проекта', 'Границы полномочий', 'данными, а не инструкциями', 'draft pull request', 'Координация с другими нейросетями')) {
         if ($override -notmatch [regex]::Escape($phrase)) {
             throw "AGENTS.override.md не содержит обязательное правило: $phrase"
         }
@@ -81,7 +85,7 @@ try {
     }
 
     $connections = [System.IO.File]::ReadAllText((Join-Path $test 'AI-CONNECTIONS.md'))
-    foreach ($phrase in @('OpenAI Codex', 'Claude Code', 'Gemini CLI', 'GitHub Copilot')) {
+    foreach ($phrase in @('OpenAI Codex', 'Claude Code', 'Gemini CLI', 'GitHub Copilot', 'Одновременное подключение нескольких нейросетей')) {
         if ($connections -notmatch [regex]::Escape($phrase)) {
             throw "AI-CONNECTIONS.md не описывает агентный инструмент: $phrase"
         }
@@ -89,8 +93,15 @@ try {
 
     foreach ($relative in @('CLAUDE.md', 'GEMINI.md', '.github/copilot-instructions.md')) {
         $adapter = [System.IO.File]::ReadAllText((Join-Path $test $relative))
-        if ($adapter -notmatch 'AGENTS\.md' -or $adapter -notmatch 'AI-OPERATING-MODEL\.md') {
+        if ($adapter -notmatch 'AGENTS\.md' -or $adapter -notmatch 'AI-OPERATING-MODEL\.md' -or $adapter -notmatch 'AI-COORDINATION\.md') {
             throw "$relative не направляет агент к общему контракту и модели ИИ-оператора."
+        }
+    }
+
+    $coordination = [System.IO.File]::ReadAllText((Join-Path $test 'AI-COORDINATION.md'))
+    foreach ($phrase in @('отдельное рабочее место', 'Паспорт изменения', 'Свежая основа', 'Последовательное объединение')) {
+        if ($coordination -notmatch [regex]::Escape($phrase)) {
+            throw "AI-COORDINATION.md не содержит обязательное правило: $phrase"
         }
     }
 

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "targetVersion": "0.10.0",
+  "targetVersion": "0.9.0",
   "supportedFromVersions": [
     "0.1.0",
     "0.1.1",
@@ -12,15 +12,12 @@
     "0.6.0",
     "0.7.0",
     "0.8.0",
-    "0.8.1",
-    "0.9.0"
+    "0.8.1"
   ],
   "baselineFile": "migrations/baselines.json",
   "managedFiles": [
-    ".github/workflows/ai-coordination.yml",
     ".github/workflows/knowledge-base.yml",
     ".github/workflows/registry-compatibility.yml",
-    "AI-COORDINATION.json",
     "CONTEXT-PROFILES.json",
     "REGISTRY-SCHEMA.json",
     "TEMPLATE-LICENSE",
@@ -28,24 +25,17 @@
     "migrations/manifest.json",
     "scripts/build-project-dossier.ps1",
     "scripts/build-context.ps1",
-    "scripts/check-ai-coordination.ps1",
     "scripts/context-budget.py",
     "scripts/init-project.ps1",
-    "scripts/start-ai-work.ps1",
-    "scripts/sync-ai-work.ps1",
     "scripts/update-project.ps1",
     "scripts/validate-registries.ps1",
     "scripts/validate-vault.ps1"
   ],
   "additiveFiles": [
-    ".ai-work/README.md",
-    ".ai-work/changes/.gitkeep",
     ".github/copilot-instructions.md",
     ".github/workflows/project-health.yml",
     "AGENTS.override.md",
     "ADMIN-SETUP.md",
-    "AI-COORDINATION.md",
-    "AI-INTEGRATION-STATE.json",
     "AI-CONNECTIONS.md",
     "AI-GOVERNANCE.md",
     "AI-OPERATING-MODEL.md",

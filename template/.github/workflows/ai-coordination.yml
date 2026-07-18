@@ -1,0 +1,40 @@
+name: Координация нейросетей
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-coordination-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  coordination:
+    name: Одна согласованная версия проекта
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Получить полную историю
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Получить проверяемую редакцию без выполнения её кода
+        shell: pwsh
+        run: git fetch --no-tags origin "pull/${{ github.event.pull_request.number }}/head"
+
+      - name: Проверить паспорт, основу и границы
+        shell: pwsh
+        run: >-
+          ./scripts/check-ai-coordination.ps1
+          -BaseRef "${{ github.event.pull_request.base.sha }}"
+          -HeadRef "${{ github.event.pull_request.head.sha }}"
+          -BranchName "${{ github.head_ref }}"
