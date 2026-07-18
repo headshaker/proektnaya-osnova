@@ -107,22 +107,6 @@
       "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
       "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
       "scripts/validate-vault.ps1": "ad11cf143be9dd6b8956932f19c442a63b296b2f9dec0ed47356d26bb7823a7d"
-    },
-    "0.9.0": {
-      ".github/workflows/knowledge-base.yml": "5ac4432fc1e7f4933a1652b1cf19e6da215ee2f72ed903c13e5edef918c79aa7",
-      ".github/workflows/registry-compatibility.yml": "489b655c7619aef9844a3f96aef34bc7b93448dd4b742163fb30d52198d8b818",
-      "CONTEXT-PROFILES.json": "a581e4702569df2d77aa5ba58bff0ffe12e7d8dc2eea046efbfd43b310fa4b4f",
-      "REGISTRY-SCHEMA.json": "3079713e5fac2096f95799c2782ee9dc6176d2f9d0c40159a274813ecf20f94a",
-      "TEMPLATE-LICENSE": "0ff3d0abc740f19220b216831596984446b97f830e61570da08171e4e4115baa",
-      "migrations/baselines.json": "be0625d9009ac2188d9b318c5aa011e4672d6dda8047b95f97eac495a44c8b5b",
-      "migrations/manifest.json": "c69ad9301d456d533905e813a12927e2b44df38e9d773dcecfd7d7678a3e13ef",
-      "scripts/build-project-dossier.ps1": "51176023e3e3b82aeed944c2526986f2916a295d21459ec669832e125dcb30ab",
-      "scripts/build-context.ps1": "ac403f0b21b66dd8a31fc8705b5e4cbcdc8b594758f378e6ffda07c38d52d2d5",
-      "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
-      "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
-      "scripts/update-project.ps1": "51a4be923ba7f197e97ba611928ffaee7c40ec5e67fcb08604abe7aa24c390a7",
-      "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
-      "scripts/validate-vault.ps1": "09128c96aedf942812b510721f48b4d6efe59d143d429092fa12007bbd3f2009"
     }
   }
 }

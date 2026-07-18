@@ -94,12 +94,17 @@ try {
             'VIRTUAL-SPECIALISTS.md',
             'PROMPTING-GUIDE.md',
             'AI-CONNECTIONS.md',
+            'AI-COORDINATION.md',
+            'AI-COORDINATION.json',
+            'AI-INTEGRATION-STATE.json',
             'OBSIDIAN.md',
             'AGENTS.md',
             'AGENTS.override.md',
             'CLAUDE.md',
             'GEMINI.md',
             '.github/copilot-instructions.md',
+            '.ai-work/README.md',
+            '.ai-work/changes/.gitkeep',
             'INGESTION-WORKFLOW.md',
             'SOURCE-INGESTION.json',
             'TEMPLATE-LICENSE',
@@ -119,17 +124,21 @@ try {
             'scripts/build-context.ps1',
             'scripts/build-status.ps1',
             'scripts/check-context-health.ps1',
+            'scripts/check-ai-coordination.ps1',
             'scripts/check-project-health.ps1',
             'scripts/ingest-sources.ps1',
             'scripts/source-ingestion.py',
             'scripts/link-registry-references.py',
             'scripts/init-project.ps1',
             'scripts/setup-project.ps1',
+            'scripts/start-ai-work.ps1',
+            'scripts/sync-ai-work.ps1',
             'scripts/prepare-commit-digest.ps1',
             'scripts/rotate-history.ps1',
             'scripts/update-project.ps1',
             'scripts/validate-registries.ps1',
             '.github/workflows/knowledge-base.yml',
+            '.github/workflows/ai-coordination.yml',
             '.github/workflows/project-health.yml',
             '.github/workflows/registry-compatibility.yml'
         )
@@ -154,6 +163,7 @@ try {
     [System.IO.Compression.ZipFile]::ExtractToDirectory($output, $extractPath)
     & (Join-Path $extractPath 'scripts/init-project.ps1') -Title 'Проверка выпускного архива' -Slug 'release-package-test' -Date '2000-02-29'
     & (Join-Path $PSScriptRoot 'test-agent-guides.ps1') -Date '2026-07-16'
+    & (Join-Path $PSScriptRoot 'test-ai-coordination.ps1')
     & (Join-Path $PSScriptRoot 'test-human-first.ps1')
     & (Join-Path $PSScriptRoot 'test-setup-wizard.ps1')
     & (Join-Path $PSScriptRoot 'test-ingestion.ps1') -Date '2026-07-16'
