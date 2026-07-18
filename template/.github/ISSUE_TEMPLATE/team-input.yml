@@ -1,0 +1,66 @@
+name: Передать информацию проекту
+description: Ответить на открытый вопрос, передать ссылку или приложить материал без редактирования файлов
+title: "[Вход команды]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Здесь не нужно знать Git или названия файлов. Опишите сведения обычным языком. ИИ-оператор обработает их и подготовит изменения на согласование.
+
+  - type: dropdown
+    id: input-kind
+    attributes:
+      label: Что вы передаёте?
+      options:
+        - Ответ на открытый вопрос
+        - Новый источник или ссылка
+        - Вложение или документ
+        - Несколько видов сразу
+    validations:
+      required: true
+
+  - type: input
+    id: question-id
+    attributes:
+      label: Номер вопроса
+      description: Если отвечаете на вопрос, укажите номер вида Q-001. Иначе оставьте поле пустым.
+      placeholder: Q-001
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Ответ или новые сведения
+      description: Напишите факты, договорённости или пояснение. Укажите, кто вправе подтвердить сведения.
+      placeholder: Бриф утверждает руководитель программы...
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Ссылки и что они подтверждают
+      description: Для каждой ссылки коротко укажите подтверждаемый тезис и дату документа, если она известна.
+      placeholder: https://example.org/document — подтверждает...
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Вложения
+      description: Перетащите сюда файлы и напишите, к чему относится каждый материал. Не прикладывайте секреты.
+      placeholder: Перетащите файл в это поле
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Дополнительный контекст
+      description: Укажите срок, область применимости, владельца сведений или известные ограничения.
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Подтверждение
+      options:
+        - label: Я не добавляю пароли, токены, закрытые ключи или другие секреты.
+          required: true
+        - label: Я понимаю, что существенные решения и публикация требуют отдельного подтверждения руководителя.
+          required: true

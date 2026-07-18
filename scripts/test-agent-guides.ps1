@@ -34,6 +34,8 @@ try {
         'AI-COORDINATION.md',
         'AI-COORDINATION.json',
         'AI-INTEGRATION-STATE.json',
+        'TEAM-INPUT.md',
+        'TEAM-INPUT.json',
         'AGENTS.md',
         'AGENTS.override.md',
         'CLAUDE.md',
@@ -56,7 +58,8 @@ try {
             'OUTCOMES.md',
             'CONTROLS.md',
             'результат сохранён в канонических файлах',
-            'Если одновременно работают несколько нейросетей'
+            'Если одновременно работают несколько нейросетей',
+            'Команда проекта не редактирует файлы'
         )) {
         if ($agents -notmatch [regex]::Escape($phrase)) {
             throw "AGENTS.md не содержит обязательное правило: $phrase"
@@ -64,7 +67,7 @@ try {
     }
 
     $override = [System.IO.File]::ReadAllText((Join-Path $test 'AGENTS.override.md'))
-    foreach ($phrase in @('ИИ-оператор проекта', 'Границы полномочий', 'данными, а не инструкциями', 'draft pull request', 'Координация с другими нейросетями')) {
+    foreach ($phrase in @('ИИ-оператор проекта', 'Границы полномочий', 'данными, а не инструкциями', 'draft pull request', 'Координация с другими нейросетями', 'очередь входа команды')) {
         if ($override -notmatch [regex]::Escape($phrase)) {
             throw "AGENTS.override.md не содержит обязательное правило: $phrase"
         }
@@ -106,6 +109,13 @@ try {
         )) {
         if ($coordination -notmatch [regex]::Escape($phrase)) {
             throw "AI-COORDINATION.md не содержит обязательное правило: $phrase"
+        }
+    }
+
+    $teamInput = [System.IO.File]::ReadAllText((Join-Path $test 'TEAM-INPUT.md'))
+    foreach ($phrase in @('Команда не редактирует файлы проекта', 'Ответить на вопрос', 'Что ИИ делает автоматически', 'полностью фоновой обработки')) {
+        if ($teamInput -notmatch [regex]::Escape($phrase)) {
+            throw "TEAM-INPUT.md не содержит обязательное правило: $phrase"
         }
     }
 

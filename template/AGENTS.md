@@ -43,13 +43,15 @@ tags:
 
 Не создавай отдельный документ, если тема уже имеет каноническое место.
 
+Команда проекта не редактирует файлы. Она отвечает на вопросы и передаёт источники или вложения через [`TEAM-INPUT.md`](./TEAM-INPUT.md). Ты отвечаешь за преобразование этого входа в проверяемые изменения, обработку вложений, закрытие подтверждённых вопросов и draft pull request.
+
 ## 3. Порядок погружения
 
 До содержательной работы прочитай:
 
 1. [`AGENTS.md`](./AGENTS.md);
-2. [`README.md`](./README.md);
-3. [`PROJECT-CONFIG.json`](./PROJECT-CONFIG.json) и [`STATUS.md`](./STATUS.md);
+2. [`README.md`](./README.md) и [`TEAM-INPUT.json`](./TEAM-INPUT.json);
+3. очередь `team-input:queued`, если доступен GitHub, затем [`PROJECT-CONFIG.json`](./PROJECT-CONFIG.json) и [`STATUS.md`](./STATUS.md);
 4. [`AI-OPERATING-MODEL.md`](./AI-OPERATING-MODEL.md), [`AI-GOVERNANCE.md`](./AI-GOVERNANCE.md) и [`AI-COORDINATION.md`](./AI-COORDINATION.md);
 5. [`HANDOFF.md`](./HANDOFF.md);
 6. [`PROJECT-BRIEF.md`](./PROJECT-BRIEF.md) и [`OUTCOMES.md`](./OUTCOMES.md);
@@ -164,11 +166,12 @@ tags:
 2. добавь принятое решение или допущение только при наличии основания;
 3. добавь, закрой или уточни существенный вопрос;
 4. зарегистрируй новый источник;
-5. обнови [`HANDOFF.md`](./HANDOFF.md) при изменении состояния или следующих действий;
-6. обнови [`OUTCOMES.md`](./OUTCOMES.md) и [`CONTROLS.md`](./CONTROLS.md), если изменились ценность, прогноз, риски, проблемы, зависимости или допуски;
-7. свяжи новый файл входящей и исходящей ссылками;
-8. пересобери [`STATUS.md`](./STATUS.md);
-9. не редактируй [`PROJECT.md`](./PROJECT.md) и [`STATUS.md`](./STATUS.md) вручную.
+5. обработай машинно-читаемый вход через `pwsh ./scripts/process-team-input.ps1 -InputPath <json> -Apply`, если он подготовлен адаптером;
+6. обнови [`HANDOFF.md`](./HANDOFF.md) при изменении состояния или следующих действий;
+7. обнови [`OUTCOMES.md`](./OUTCOMES.md) и [`CONTROLS.md`](./CONTROLS.md), если изменились ценность, прогноз, риски, проблемы, зависимости или допуски;
+8. свяжи новый файл входящей и исходящей ссылками;
+9. пересобери [`STATUS.md`](./STATUS.md);
+10. не редактируй [`PROJECT.md`](./PROJECT.md) и [`STATUS.md`](./STATUS.md) вручную.
 
 ### Шаг 5. Контроль качества
 

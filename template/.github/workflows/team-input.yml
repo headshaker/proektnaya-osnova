@@ -1,0 +1,65 @@
+name: Очередь входа команды
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: team-input-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  queue:
+    name: Вход команды принят
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.issue.title, '[Вход команды]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - name: Проверить ручной запуск
+        if: github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: Write-Host 'Форма входа команды доступна в GitHub Issues.'
+
+      - name: Поставить вход в очередь ИИ
+        if: github.event_name == 'issues'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $repo = $env:GITHUB_REPOSITORY
+          $issue = [int]$env:ISSUE_NUMBER
+          $label = 'team-input:queued'
+          $labelPayload = @{
+            name = $label
+            color = '1D76DB'
+            description = 'Ожидает автоматической обработки ИИ-оператором'
+          } | ConvertTo-Json -Compress
+          $labelFile = Join-Path $env:RUNNER_TEMP 'team-input-label.json'
+          [IO.File]::WriteAllText($labelFile, $labelPayload)
+          & gh api --method POST "repos/$repo/labels" --input $labelFile 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            & gh api "repos/$repo/labels/$([Uri]::EscapeDataString($label))" | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw 'Не удалось создать или проверить метку очереди.' }
+          }
+
+          $assignmentFile = Join-Path $env:RUNNER_TEMP 'team-input-assignment.json'
+          [IO.File]::WriteAllText($assignmentFile, (@{ labels = @($label) } | ConvertTo-Json -Compress))
+          & gh api --method POST "repos/$repo/issues/$issue/labels" --input $assignmentFile | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Не удалось поставить вход команды в очередь.' }
+
+          $marker = '<!-- project-team-input-queued -->'
+          $comments = @(& gh api "repos/$repo/issues/$issue/comments" --paginate | ConvertFrom-Json)
+          if (@($comments | Where-Object { [string]$_.body -match [regex]::Escape($marker) }).Count -eq 0) {
+            $body = "$marker`nВход принят. Команде не нужно редактировать файлы: ИИ-оператор зарегистрирует источники, обработает вложения, обновит проект и подготовит изменения на согласование."
+            $commentFile = Join-Path $env:RUNNER_TEMP 'team-input-comment.json'
+            [IO.File]::WriteAllText($commentFile, (@{ body = $body } | ConvertTo-Json -Compress))
+            & gh api --method POST "repos/$repo/issues/$issue/comments" --input $commentFile | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw 'Не удалось подтвердить получение входа команды.' }
+          }
