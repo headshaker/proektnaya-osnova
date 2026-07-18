@@ -159,3 +159,4 @@ finally {
 & (Join-Path $PSScriptRoot 'test-project-control.ps1')
 & (Join-Path $PSScriptRoot 'test-human-first.ps1')
 & (Join-Path $PSScriptRoot 'test-setup-wizard.ps1')
+& (Join-Path $PSScriptRoot 'test-release-automation.ps1')
