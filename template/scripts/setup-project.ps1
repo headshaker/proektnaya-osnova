@@ -27,6 +27,12 @@ param(
     [string]$Date = (Get-Date -Format 'yyyy-MM-dd'),
     [ValidateSet('auto', 'required', 'disabled')]
     [string]$GitHubProtectionMode = 'auto',
+    [string]$AiToolsCsv = '',
+    [ValidateSet('enabled', 'disabled')]
+    [string]$ObsidianMode = 'disabled',
+    [ValidateSet('enabled', 'disabled')]
+    [string]$LocalSyncMode = 'enabled',
+    [switch]$SkipLocalSyncScheduling,
     [switch]$NonInteractive,
     [switch]$Apply
 )
@@ -231,12 +237,17 @@ if ([string]::IsNullOrWhiteSpace($StatusCadence)) { $StatusCadence = 'weekly' }
 if ([string]::IsNullOrWhiteSpace($RiskCadence)) { $RiskCadence = 'weekly' }
 if ([string]::IsNullOrWhiteSpace($BenefitCadence)) { $BenefitCadence = 'monthly' }
 
+$toolsScriptPath = Join-Path $PSScriptRoot 'configure-project-tools.ps1'
+$toolsJson = & $toolsScriptPath -AiToolsCsv $AiToolsCsv -ObsidianMode $ObsidianMode -Date $Date -Json
+$toolsResult = ($toolsJson | Out-String) | ConvertFrom-Json
+
 $unresolved = [System.Collections.Generic.List[string]]::new()
 if ($WorkSystemType -ceq 'not-configured') { $unresolved.Add('выбрать рабочую систему команды') }
 if ($DataClassification -ceq 'not-classified') { $unresolved.Add('определить классификацию данных') }
 if ($null -eq $ScheduleToleranceDays -and $null -eq $CostVariancePercent) {
     $unresolved.Add('согласовать допустимые отклонения по сроку и стоимости')
 }
+foreach ($step in @($toolsResult.nextSteps)) { $unresolved.Add("подключить инструмент: $step") }
 
 Write-Host ''
 Write-Host 'План настройки'
@@ -247,6 +258,21 @@ Write-Host "  Организация работ: $($deliveryOptions[$DeliveryApp
 Write-Host "  Рабочие задачи: $($workOptions[$WorkSystemType])"
 Write-Host "  Данные: $($classificationOptions[$DataClassification])"
 Write-Host "  Контроль ИИ: $AiGovernanceLevel"
+$selectedTools = @($toolsResult.tools | Where-Object selected)
+if ($selectedTools.Count -eq 0) { Write-Host '  Нейросети: не выбраны' }
+else {
+    Write-Host '  Нейросети:'
+    foreach ($tool in $selectedTools) {
+        $availability = if ($tool.installed) { 'доступна' } else { 'требуется установка' }
+        Write-Host "    - $($tool.name): $availability"
+    }
+}
+if ($toolsResult.obsidian.selected) {
+    $obsidianAvailability = if ($toolsResult.obsidian.installed) { 'доступен' } else { 'требуется установка' }
+    Write-Host "  Obsidian: $obsidianAvailability"
+}
+else { Write-Host '  Obsidian: не выбран' }
+Write-Host "  Автообновление папки и контекста: $(if ($LocalSyncMode -ceq 'enabled') { 'включено' } else { 'отключено' })"
 switch ($GitHubProtectionMode) {
     'auto' { Write-Host '  GitHub: защита main будет настроена автоматически, если репозиторий и права доступны' }
     'required' { Write-Host '  GitHub: настройка защиты main обязательна; ошибка остановит мастер' }
@@ -271,6 +297,15 @@ if (-not $Apply) {
 }
 
 & (Join-Path $PSScriptRoot 'init-project.ps1') -Title $Title -Slug $Slug -Date $Date
+
+$localSyncPath = Join-Path $root 'LOCAL-SYNC.json'
+$localSyncConfiguration = [System.IO.File]::ReadAllText($localSyncPath) | ConvertFrom-Json
+$localSyncConfiguration.enabled = $LocalSyncMode -ceq 'enabled'
+[System.IO.File]::WriteAllText(
+    $localSyncPath,
+    ($localSyncConfiguration | ConvertTo-Json -Depth 10) + "`n",
+    $utf8
+)
 
 $configPath = Join-Path $root 'PROJECT-CONFIG.json'
 $config = [System.IO.File]::ReadAllText($configPath) | ConvertFrom-Json
@@ -298,12 +333,31 @@ finally {
     if (Test-Path -LiteralPath $temporaryConfig) { Remove-Item -LiteralPath $temporaryConfig -Force }
 }
 
+$toolsJson = & $toolsScriptPath -AiToolsCsv $AiToolsCsv -ObsidianMode $ObsidianMode -Date $Date -Apply -Json
+$toolsResult = ($toolsJson | Out-String) | ConvertFrom-Json
+
 & (Join-Path $PSScriptRoot 'build-status.ps1')
 & (Join-Path $PSScriptRoot 'check-project-health.ps1')
 & (Join-Path $PSScriptRoot 'build-project-dossier.ps1')
 & (Join-Path $PSScriptRoot 'build-project-dossier.ps1') -Check
 & (Join-Path $PSScriptRoot 'validate-registries.ps1') -ProjectPath $root
 & (Join-Path $PSScriptRoot 'validate-vault.ps1')
+
+$localSyncInstallArguments = @{ Apply = $true; Json = $true }
+if ($SkipLocalSyncScheduling) { $localSyncInstallArguments.SkipScheduledTask = $true }
+$localSyncJson = & (Join-Path $PSScriptRoot 'install-local-sync.ps1') @localSyncInstallArguments
+$localSyncResult = ($localSyncJson | Out-String) | ConvertFrom-Json
+$localContextReady = $LocalSyncMode -cne 'enabled'
+if ($LocalSyncMode -ceq 'enabled') {
+    try {
+        & (Join-Path $PSScriptRoot 'refresh-ai-context.ps1') -Quiet
+        $localContextReady = $true
+    }
+    catch { $unresolved.Add("обновить контекст нейросетей: $($_.Exception.Message)") }
+    if ([string]$localSyncResult.status -notin @('installed')) {
+        $unresolved.Add("завершить автообновление локальной папки: $([string]$localSyncResult.message)")
+    }
+}
 
 $githubProtectionFailure = $null
 if ($GitHubProtectionMode -ceq 'disabled') {
@@ -353,12 +407,19 @@ $reportDirectory = Join-Path $root '.project'
 [System.IO.Directory]::CreateDirectory($reportDirectory) | Out-Null
 $report = [ordered]@{
     schemaVersion = 1
-    result = if ([string]$githubProtection.status -in @('pending', 'failed')) { 'partial' } else { 'success' }
+    result = if ([string]$githubProtection.status -in @('pending', 'failed') -or
+        -not [bool]$toolsResult.ready -or
+        ($LocalSyncMode -ceq 'enabled' -and
+            ([string]$localSyncResult.status -cne 'installed' -or -not $localContextReady))) {
+        'partial'
+    } else { 'success' }
     configuredAt = $Date
     projectTitle = $Title
     projectSlug = $Slug
     unresolvedDecisions = @($unresolved)
     githubProtection = $githubProtection
+    tools = $toolsResult
+    localSync = $localSyncResult
     nextDocument = 'HOME.md'
 }
 [System.IO.File]::WriteAllText(
@@ -372,9 +433,12 @@ if ($report.result -ceq 'success') {
     Write-Host 'Готово: проект настроен и прошёл проверки.'
 }
 else {
-    Write-Warning 'Проект настроен, но защита GitHub требует завершения.'
-    Write-Host 'После входа в gh с правами администратора выполните:'
-    Write-Host '  pwsh ./scripts/configure-github-protection.ps1 -Apply'
+    Write-Warning 'Проект настроен, но часть подключений требует завершения.'
+    if ([string]$githubProtection.status -in @('pending', 'failed')) {
+        Write-Host 'После входа в gh с правами администратора выполните:'
+        Write-Host '  pwsh ./scripts/configure-github-protection.ps1 -Apply'
+    }
+    foreach ($step in @($toolsResult.nextSteps)) { Write-Host "  - $step" }
 }
 Write-Host 'Следующий шаг: откройте HOME.md и передайте ИИ первую задачу из START-HERE.md.'
 if ($unresolved.Count -gt 0) {

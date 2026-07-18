@@ -47,7 +47,7 @@ tags:
 
 ## 3. Порядок погружения
 
-До содержательной работы прочитай:
+До содержательной работы сначала запусти `pwsh ./scripts/sync-project.ps1 -Quiet`. При статусе `agent-branch-stale` остановись и синхронизируй работу; в остальных допустимых состояниях прочитай свежий `.project/context/ai-package.md`, затем:
 
 1. [`AGENTS.md`](./AGENTS.md);
 2. [`README.md`](./README.md) и [`TEAM-INPUT.json`](./TEAM-INPUT.json);

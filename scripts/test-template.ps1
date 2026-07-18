@@ -163,3 +163,4 @@ finally {
 & (Join-Path $PSScriptRoot 'test-ai-coordination.ps1')
 & (Join-Path $PSScriptRoot 'test-github-protection.ps1')
 & (Join-Path $PSScriptRoot 'test-team-input.ps1') -Date '2026-07-18'
+& (Join-Path $PSScriptRoot 'test-local-sync.ps1') -Date '2026-07-18'

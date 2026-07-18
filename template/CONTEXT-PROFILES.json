@@ -34,8 +34,8 @@
     {
       "name": "standard",
       "description": "Основное погружение ИИ-оператора для проектной или инженерной задачи.",
-      "tokenBudget": 32000,
-      "reserveTokens": 8000,
+      "tokenBudget": 40000,
+      "reserveTokens": 10000,
       "documents": [
         "AGENTS.md",
         "AI-OPERATING-MODEL.md",

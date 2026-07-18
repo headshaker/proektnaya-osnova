@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "selectedAiTools": [],
+  "instructionContract": "AGENTS.md",
+  "coordination": {
+    "mode": "separate-worktree-per-agent",
+    "guide": "AI-COORDINATION.md"
+  },
+  "context": {
+    "packagePath": ".project/context/ai-package.md",
+    "statePath": ".project/context/local-context-state.json",
+    "syncPolicy": "LOCAL-SYNC.json",
+    "refreshScript": "scripts/refresh-ai-context.ps1",
+    "refreshBeforeSession": true
+  },
+  "adapters": {},
+  "obsidian": {
+    "enabled": false,
+    "configurationFolder": ".obsidian",
+    "homeDocument": "HOME.md"
+  },
+  "secretsStoredInRepository": false,
+  "configuredAt": "{{DATE}}"
+}

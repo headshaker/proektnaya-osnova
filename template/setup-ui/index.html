@@ -39,6 +39,10 @@
         </li>
         <li class="step" data-step-indicator="3">
           <span class="step-number">4</span>
+          <span><strong>Инструменты</strong><small>ИИ и Obsidian</small></span>
+        </li>
+        <li class="step" data-step-indicator="4">
+          <span class="step-number">5</span>
           <span><strong>Проверка</strong><small>План до применения</small></span>
         </li>
       </ol>
@@ -52,7 +56,7 @@
     <main class="workspace">
       <header class="workspace-header">
         <div>
-          <p class="eyebrow" id="step-eyebrow">Шаг 1 из 4</p>
+          <p class="eyebrow" id="step-eyebrow">Шаг 1 из 5</p>
           <h2 id="step-title">Расскажите о проекте</h2>
           <p id="step-description">Достаточно рабочего названия. Техническое имя мастер предложит сам.</p>
         </div>
@@ -230,9 +234,74 @@
           </details>
         </section>
 
-        <section class="panel review-panel" data-step-panel="3" aria-labelledby="review-heading" hidden>
+        <section class="panel tools-panel" data-step-panel="3" aria-labelledby="tools-heading" hidden>
           <div class="section-heading">
             <span class="section-index">04</span>
+            <div>
+              <h3 id="tools-heading">Подключите рабочие инструменты</h3>
+              <p>Можно выбрать несколько нейросетей. Мастер проверит их наличие и подготовит единые правила проекта.</p>
+            </div>
+          </div>
+
+          <div class="tool-grid" aria-label="Выбор нейросетей">
+            <label class="tool-card" for="ai-chatgpt">
+              <input id="ai-chatgpt" name="aiTools" type="checkbox" value="chatgpt">
+              <span class="tool-choice" aria-hidden="true">✓</span>
+              <span class="tool-copy"><strong>ChatGPT / Codex</strong><small>OpenAI · команда codex</small><em data-tool-status="chatgpt">Не проверено</em></span>
+            </label>
+            <label class="tool-card" for="ai-claude">
+              <input id="ai-claude" name="aiTools" type="checkbox" value="claude">
+              <span class="tool-choice" aria-hidden="true">✓</span>
+              <span class="tool-copy"><strong>Claude Code</strong><small>Anthropic · команда claude</small><em data-tool-status="claude">Не проверено</em></span>
+            </label>
+            <label class="tool-card" for="ai-gemini">
+              <input id="ai-gemini" name="aiTools" type="checkbox" value="gemini">
+              <span class="tool-choice" aria-hidden="true">✓</span>
+              <span class="tool-copy"><strong>Gemini CLI</strong><small>Google · команда gemini</small><em data-tool-status="gemini">Не проверено</em></span>
+            </label>
+            <label class="tool-card" for="ai-qwen">
+              <input id="ai-qwen" name="aiTools" type="checkbox" value="qwen">
+              <span class="tool-choice" aria-hidden="true">✓</span>
+              <span class="tool-copy"><strong>Qwen Code</strong><small>Alibaba · команда qwen</small><em data-tool-status="qwen">Не проверено</em></span>
+            </label>
+            <label class="tool-card" for="ai-deepseek">
+              <input id="ai-deepseek" name="aiTools" type="checkbox" value="deepseek">
+              <span class="tool-choice" aria-hidden="true">✓</span>
+              <span class="tool-copy"><strong>DeepSeek</strong><small>Сторонний CLI из каталога DeepSeek</small><em data-tool-status="deepseek">Не проверено</em></span>
+            </label>
+            <label class="tool-card" for="ai-grok">
+              <input id="ai-grok" name="aiTools" type="checkbox" value="grok">
+              <span class="tool-choice" aria-hidden="true">✓</span>
+              <span class="tool-copy"><strong>Grok Build</strong><small>xAI · команда grok</small><em data-tool-status="grok">Не проверено</em></span>
+            </label>
+          </div>
+
+          <label class="check-card obsidian-choice" for="obsidian-enabled">
+            <input id="obsidian-enabled" name="obsidianEnabled" type="checkbox">
+            <span class="check-visual" aria-hidden="true"></span>
+            <span><strong>Использовать папку проекта как хранилище Obsidian</strong><small>Мастер создаст безопасные настройки заметок, вложений, шаблонов и ссылок, не затирая существующие.</small><em data-tool-status="obsidian">Не проверено</em></span>
+          </label>
+
+          <label class="check-card obsidian-choice" for="local-sync-enabled">
+            <input id="local-sync-enabled" name="localSyncEnabled" type="checkbox" checked>
+            <span class="check-visual" aria-hidden="true"></span>
+            <span><strong>Автоматически поддерживать папку и контекст в актуальном состоянии</strong><small>На каждом компьютере будут включены безопасные Git-хуки и фоновая проверка main. Локальные изменения и ветки нейросетей мастер не перезаписывает.</small></span>
+          </label>
+
+          <div class="tool-diagnostics">
+            <div>
+              <strong id="tools-summary">Выберите инструменты и запустите проверку.</strong>
+              <small>Мастер не запускает установщики и не сохраняет пароли или API-ключи в проекте.</small>
+            </div>
+            <button class="button secondary" id="inspect-tools-button" type="button">Проверить выбранное</button>
+          </div>
+
+          <div class="install-guidance" id="install-guidance" aria-live="polite" hidden></div>
+        </section>
+
+        <section class="panel review-panel" data-step-panel="4" aria-labelledby="review-heading" hidden>
+          <div class="section-heading">
+            <span class="section-index">05</span>
             <div>
               <h3 id="review-heading">Проверьте план настройки</h3>
               <p>Мастер уже проверил значения. До нажатия кнопки «Настроить проект» файлы не меняются.</p>
@@ -251,6 +320,9 @@
             </article>
             <article class="review-card">
               <p>Контроль</p><strong id="review-data">—</strong><small id="review-tolerances">—</small>
+            </article>
+            <article class="review-card review-card-wide">
+              <p>Инструменты</p><strong id="review-tools">—</strong><small id="review-tools-status">—</small>
             </article>
           </div>
 
@@ -297,6 +369,7 @@
       <ul id="completion-decisions" class="decision-list"></ul>
       <div class="completion-actions">
         <button class="button secondary" id="close-button" type="button">Закрыть</button>
+        <button class="button secondary" id="open-obsidian-button" type="button" hidden>Открыть в Obsidian</button>
         <button class="button primary" id="open-home-button" type="button">Открыть пульт руководителя</button>
       </div>
     </div>

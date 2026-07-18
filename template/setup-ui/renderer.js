@@ -14,12 +14,17 @@ const workSystem = document.querySelector('#work-system-type')
 const workSystemUrl = document.querySelector('#work-system-url')
 const classification = document.querySelector('#data-classification')
 const aiGovernance = document.querySelector('#ai-governance-level')
+const inspectToolsButton = document.querySelector('#inspect-tools-button')
+const obsidianEnabled = document.querySelector('#obsidian-enabled')
+const localSyncEnabled = document.querySelector('#local-sync-enabled')
+const toolInputs = [...document.querySelectorAll('input[name="aiTools"]')]
 
 const stepCopy = [
-  ['Шаг 1 из 4', 'Расскажите о проекте', 'Достаточно рабочего названия. Техническое имя мастер предложит сам.'],
-  ['Шаг 2 из 4', 'Выберите способ работы', 'Не нужно подбирать идеальную методологию — выберите ближайший вариант.'],
-  ['Шаг 3 из 4', 'Задайте границы контроля', 'Неопределённые допуски останутся открытыми вопросами, а не догадками системы.'],
-  ['Шаг 4 из 4', 'Проверьте план', 'Предварительная проверка ничего не изменила. Применение начнётся только по вашей команде.']
+  ['Шаг 1 из 5', 'Расскажите о проекте', 'Достаточно рабочего названия. Техническое имя мастер предложит сам.'],
+  ['Шаг 2 из 5', 'Выберите способ работы', 'Не нужно подбирать идеальную методологию — выберите ближайший вариант.'],
+  ['Шаг 3 из 5', 'Задайте границы контроля', 'Неопределённые допуски останутся открытыми вопросами, а не догадками системы.'],
+  ['Шаг 4 из 5', 'Подключите инструменты', 'Выберите одну или несколько нейросетей и, при необходимости, Obsidian.'],
+  ['Шаг 5 из 5', 'Проверьте план', 'Предварительная проверка ничего не изменила. Применение начнётся только по вашей команде.']
 ]
 
 const labels = {
@@ -27,13 +32,16 @@ const labels = {
   deliveryApproach: { predictive: 'Работа по подробному плану', incremental: 'Последовательные результаты', adaptive: 'Короткие адаптивные циклы', flow: 'Непрерывный поток', hybrid: 'Гибридный подход' },
   workSystemType: { 'not-configured': 'Пока не выбрана', repository: 'В папке проекта', 'github-issues': 'GitHub Issues', jira: 'Jira', linear: 'Linear', other: 'Другая система' },
   dataClassification: { public: 'Публичные данные', internal: 'Внутренние данные', confidential: 'Конфиденциальные данные', restricted: 'Строго ограниченные данные', 'not-classified': 'Классификация не определена' },
-  aiGovernanceLevel: { basic: 'базовый контроль ИИ', standard: 'стандартный контроль ИИ', high: 'повышенный контроль ИИ' }
+  aiGovernanceLevel: { basic: 'базовый контроль ИИ', standard: 'стандартный контроль ИИ', high: 'повышенный контроль ИИ' },
+  aiTools: { chatgpt: 'ChatGPT / Codex', claude: 'Claude Code', gemini: 'Gemini CLI', qwen: 'Qwen Code', deepseek: 'DeepSeek', grok: 'Grok Build' }
 }
 
 let currentStep = 0
 let slugWasEdited = false
 let governanceWasEdited = false
 let busy = false
+let latestToolInspection = null
+let inspectedSelection = ''
 
 function transliterate (value) {
   const map = {
@@ -53,7 +61,7 @@ function setNotice (message, kind = 'error') {
 
 function setBusy (value, button = nextButton) {
   busy = value
-  for (const control of [backButton, nextButton, applyButton]) control.disabled = value
+  for (const control of [backButton, nextButton, applyButton, inspectToolsButton]) control.disabled = value
   confirmation.disabled = value
   button.classList.toggle('is-busy', value)
   if (!value && currentStep === panels.length - 1) applyButton.disabled = !confirmation.checked
@@ -77,7 +85,7 @@ function showStep (step) {
   nextButton.hidden = currentStep === panels.length - 1
   applyButton.hidden = currentStep !== panels.length - 1
   applyButton.disabled = !confirmation.checked || busy
-  document.querySelector('#action-note').textContent = currentStep === 3
+  document.querySelector('#action-note').textContent = currentStep === panels.length - 1
     ? 'Применение может занять несколько минут'
     : 'Обязательные поля отмечены звёздочкой'
   setNotice('')
@@ -107,7 +115,10 @@ function payload () {
     scheduleToleranceDays: numberOrNull('#schedule-tolerance'),
     costVariancePercent: numberOrNull('#cost-tolerance'),
     scopeChangeRequiresApproval: document.querySelector('#scope-approval').checked,
-    githubProtectionMode: document.querySelector('#github-protection').value
+    githubProtectionMode: document.querySelector('#github-protection').value,
+    aiTools: toolInputs.filter(input => input.checked).map(input => input.value),
+    obsidianEnabled: obsidianEnabled.checked,
+    localSyncEnabled: localSyncEnabled.checked
   }
 }
 
@@ -134,10 +145,123 @@ function renderReview (data) {
   const schedule = data.scheduleToleranceDays === null ? 'срок не определён' : `срок ±${data.scheduleToleranceDays} дн.`
   const cost = data.costVariancePercent === null ? 'стоимость не определена' : `стоимость ±${data.costVariancePercent}%`
   document.querySelector('#review-tolerances').textContent = `${labels.aiGovernanceLevel[data.aiGovernanceLevel]}; ${schedule}; ${cost}`
+  const selected = data.aiTools.map(id => labels.aiTools[id])
+  document.querySelector('#review-tools').textContent = selected.length > 0 ? selected.join(', ') : 'Нейросети не выбраны'
+  const readyCount = latestToolInspection?.tools?.filter(item => item.selected && item.installed).length || 0
+  const selectedCount = data.aiTools.length
+  const aiStatus = selectedCount === 0 ? 'без инструментов ИИ' : `${readyCount} из ${selectedCount} доступны`
+  const obsidianStatus = data.obsidianEnabled
+    ? (latestToolInspection?.obsidian?.installed ? 'Obsidian доступен' : 'Obsidian требует установки')
+    : 'Obsidian не выбран'
+  const syncStatus = data.localSyncEnabled ? 'автообновление включено' : 'автообновление отключено'
+  document.querySelector('#review-tools-status').textContent = `${aiStatus}; ${obsidianStatus}; ${syncStatus}`
+}
+
+function selectionSignature (data = payload()) {
+  return JSON.stringify({ aiTools: data.aiTools, obsidianEnabled: data.obsidianEnabled, date: data.date })
+}
+
+function statusElement (id) {
+  return document.querySelector(`[data-tool-status="${id}"]`)
+}
+
+function setToolStatus (element, text, kind = '') {
+  element.textContent = text
+  element.classList.toggle('is-ready', kind === 'ready')
+  element.classList.toggle('is-missing', kind === 'missing')
+}
+
+function renderToolInspection (result) {
+  latestToolInspection = result
+  inspectedSelection = selectionSignature()
+  for (const item of result.tools || []) {
+    const element = statusElement(item.id)
+    if (!element) continue
+    if (!item.selected) setToolStatus(element, 'Не выбрано')
+    else if (item.installed) setToolStatus(element, 'Установлено и доступно', 'ready')
+    else setToolStatus(element, 'Требуется установка', 'missing')
+  }
+  const obsidianStatus = statusElement('obsidian')
+  if (!result.obsidian?.selected) setToolStatus(obsidianStatus, 'Не выбрано')
+  else if (result.obsidian.installed) setToolStatus(obsidianStatus, 'Установлено и доступно', 'ready')
+  else setToolStatus(obsidianStatus, 'Требуется установка', 'missing')
+
+  const selectedCount = result.selectedAiTools?.length || 0
+  const missing = (result.tools || []).filter(item => item.selected && !item.installed)
+  const missingObsidian = result.obsidian?.selected && !result.obsidian?.installed
+  const missingCount = missing.length + (missingObsidian ? 1 : 0)
+  document.querySelector('#tools-summary').textContent = missingCount === 0
+    ? (selectedCount === 0 && !result.obsidian?.selected ? 'Дополнительные инструменты не выбраны.' : 'Все выбранные инструменты доступны.')
+    : `Нужно установить: ${missingCount}. Это не помешает подготовить проект.`
+
+  const guidance = document.querySelector('#install-guidance')
+  guidance.replaceChildren()
+  const addGuidance = (id, name, hint, credential = '') => {
+    const item = document.createElement('div')
+    item.className = 'install-item'
+    const heading = document.createElement('strong')
+    heading.textContent = name
+    const guide = document.createElement('button')
+    guide.type = 'button'
+    guide.className = 'guide-button'
+    guide.dataset.guideId = id
+    guide.textContent = 'Открыть официальную инструкцию'
+    item.append(heading)
+    if (hint) {
+      const command = document.createElement('code')
+      command.textContent = hint
+      item.append(command)
+    }
+    if (credential) {
+      const note = document.createElement('small')
+      note.textContent = credential
+      item.append(note)
+    }
+    item.append(guide)
+    guidance.append(item)
+  }
+  for (const item of (result.tools || []).filter(item => item.selected)) {
+    addGuidance(item.id, item.name, item.installed ? '' : item.installHint, item.credential)
+  }
+  if (missingObsidian) addGuidance('obsidian', 'Obsidian', result.obsidian.installHint)
+  guidance.hidden = guidance.childElementCount === 0
+}
+
+function markToolsForRecheck () {
+  latestToolInspection = null
+  inspectedSelection = ''
+  document.querySelector('#tools-summary').textContent = 'Выбор изменён. Запустите проверку ещё раз.'
+  for (const input of [...toolInputs, obsidianEnabled]) {
+    const element = statusElement(input === obsidianEnabled ? 'obsidian' : input.value)
+    setToolStatus(element, input.checked ? 'Ожидает проверки' : 'Не выбрано')
+  }
+  document.querySelector('#install-guidance').hidden = true
+}
+
+async function inspectSelectedTools (showProgress = true) {
+  const data = payload()
+  if (latestToolInspection && inspectedSelection === selectionSignature(data)) return latestToolInspection
+  setBusy(true, inspectToolsButton)
+  if (showProgress) setNotice('Проверяем выбранные программы. Ничего не устанавливается и не изменяется…', 'info')
+  try {
+    const result = await window.projectSetup.inspectTools(data)
+    renderToolInspection(result)
+    if (showProgress) setNotice(result.ready
+      ? 'Проверка завершена: выбранные инструменты доступны.'
+      : 'Проверка завершена. Недостающие программы можно установить по подсказкам ниже.', 'info')
+    return result
+  } catch (error) {
+    setNotice(error.message || String(error))
+    return null
+  } finally {
+    setBusy(false, inspectToolsButton)
+  }
 }
 
 async function prepareReview () {
   const data = payload()
+  const inspection = await inspectSelectedTools(false)
+  if (!inspection) return
   renderReview(data)
   setBusy(true, nextButton)
   setNotice('Выполняется предварительная проверка. Файлы не изменяются…', 'info')
@@ -145,7 +269,7 @@ async function prepareReview () {
     const result = await window.projectSetup.preview(data)
     document.querySelector('#preview-output').textContent = result.output || 'Предварительная проверка завершена без сообщений.'
     if (!result.ok) throw new Error(result.output || `Проверка завершилась с кодом ${result.exitCode}.`)
-    showStep(3)
+    showStep(4)
   } catch (error) {
     setNotice(error.message || String(error))
   } finally {
@@ -172,6 +296,8 @@ async function applySetup () {
       item.textContent = decision
       decisions.append(item)
     }
+    const openObsidianButton = document.querySelector('#open-obsidian-button')
+    openObsidianButton.hidden = !(report?.tools?.obsidian?.selected && report?.tools?.obsidian?.installed)
     document.querySelector('#completion').hidden = false
     document.querySelector('#open-home-button').focus()
   } catch (error) {
@@ -194,10 +320,17 @@ classification.addEventListener('change', () => {
   if (!governanceWasEdited) aiGovernance.value = ['confidential', 'restricted'].includes(classification.value) ? 'high' : 'standard'
 })
 confirmation.addEventListener('change', () => { applyButton.disabled = !confirmation.checked || busy })
+for (const input of [...toolInputs, obsidianEnabled]) input.addEventListener('change', markToolsForRecheck)
+inspectToolsButton.addEventListener('click', async () => { if (!busy) await inspectSelectedTools() })
+document.querySelector('#install-guidance').addEventListener('click', async event => {
+  const button = event.target.closest('button[data-guide-id]')
+  if (!button || busy) return
+  try { await window.projectSetup.openGuide(button.dataset.guideId) } catch (error) { setNotice(error.message || String(error)) }
+})
 
 nextButton.addEventListener('click', async () => {
   if (busy || !validateCurrentStep()) return
-  if (currentStep === 2) await prepareReview()
+  if (currentStep === 3) await prepareReview()
   else showStep(currentStep + 1)
 })
 backButton.addEventListener('click', () => { if (!busy) showStep(currentStep - 1) })
@@ -205,6 +338,9 @@ applyButton.addEventListener('click', applySetup)
 document.querySelector('#close-button').addEventListener('click', () => window.close())
 document.querySelector('#open-home-button').addEventListener('click', async () => {
   try { await window.projectSetup.openHome() } catch (error) { setNotice(error.message || String(error)) }
+})
+document.querySelector('#open-obsidian-button').addEventListener('click', async () => {
+  try { await window.projectSetup.openObsidian() } catch (error) { setNotice(error.message || String(error)) }
 })
 form.addEventListener('submit', event => event.preventDefault())
 

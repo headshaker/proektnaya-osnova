@@ -13,6 +13,8 @@ tags:
 
 # Инструкции GitHub Copilot
 
+Перед новой содержательной задачей запусти `pwsh ./scripts/sync-project.ps1 -Quiet`, проверь отсутствие статуса `agent-branch-stale` и прочитай свежий `.project/context/ai-package.md`.
+
 Перед любой работой прочитай и соблюдай [AGENTS.md](../AGENTS.md). Если к проекту могут быть подключены другие нейросети, до редактирования зарегистрируй отдельную работу по [AI-COORDINATION.md](../AI-COORDINATION.md).
 
 Работай как ИИ-оператор проекта из [AI-OPERATING-MODEL.md](../AI-OPERATING-MODEL.md): самостоятельно изучай репозиторий, выбирай виртуальные роли из [VIRTUAL-SPECIALISTS.md](../VIRTUAL-SPECIALISTS.md), изменяй канонические файлы, запускай проверки и показывай владельцу управленческий итог.

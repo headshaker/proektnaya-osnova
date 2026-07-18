@@ -12,6 +12,9 @@ $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $setupScript = Join-Path $PSScriptRoot 'setup-project.ps1'
 $uiRoot = Join-Path $root 'setup-ui'
 $packagePath = Join-Path $uiRoot 'package.json'
+$readmePath = Join-Path $root 'README.md'
+$syncScript = Join-Path $root 'scripts/sync-project.ps1'
+$syncInstaller = Join-Path $root 'scripts/install-local-sync.ps1'
 $bundledElectron = Join-Path $uiRoot 'runtime/Project Setup.exe'
 $electronLauncher = if ($IsWindows) {
     Join-Path $uiRoot 'node_modules/.bin/electron.cmd'
@@ -27,6 +30,32 @@ function Invoke-ConsoleWizard {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+function Open-ConfiguredProject {
+    Write-Host 'Проверяется общая версия проекта и обновляется контекст нейросетей...'
+    try { & $syncInstaller -Apply | Out-Null }
+    catch { Write-Warning "Не удалось включить фоновую проверку: $($_.Exception.Message)" }
+    try { & $syncScript }
+    catch { Write-Warning $_.Exception.Message }
+
+    $toolsPath = Join-Path $root 'AI-TOOLS.json'
+    $openObsidian = $false
+    if (Test-Path -LiteralPath $toolsPath -PathType Leaf) {
+        try {
+            $toolsConfiguration = [System.IO.File]::ReadAllText($toolsPath) | ConvertFrom-Json
+            $openObsidian = [bool]$toolsConfiguration.obsidian.enabled
+        }
+        catch { }
+    }
+    if ($openObsidian) {
+        try {
+            Start-Process "obsidian://open?path=$([Uri]::EscapeDataString($root))"
+            return
+        }
+        catch { Write-Warning 'Не удалось открыть Obsidian; открывается пульт руководителя.' }
+    }
+    Start-Process (Join-Path $root 'HOME.md')
+}
+
 function Get-NodeVersion([System.Management.Automation.CommandInfo]$NodeCommand) {
     $versionText = (& $NodeCommand.Source --version 2>$null | Select-Object -First 1).Trim()
     if ($versionText -notmatch '^v(?<version>\d+\.\d+\.\d+)') { return [version]'0.0.0' }
@@ -36,6 +65,12 @@ function Get-NodeVersion([System.Management.Automation.CommandInfo]$NodeCommand)
 foreach ($required in @($setupScript, $packagePath, (Join-Path $uiRoot 'main.js'))) {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
         throw "Не найден обязательный файл мастера: $required"
+    }
+}
+
+foreach ($required in @($readmePath, $syncScript, $syncInstaller)) {
+    if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
+        throw "Не найден обязательный файл запуска проекта: $required"
     }
 }
 
@@ -53,6 +88,13 @@ if ($SelfTest) {
         uiRoot = $uiRoot
         electronVersion = [string]$package.devDependencies.electron
     } | ConvertTo-Json -Compress
+    return
+}
+
+$readme = [System.IO.File]::ReadAllText($readmePath)
+$projectTitleToken = '{{' + 'PROJECT_TITLE' + '}}'
+if (-not $readme.Contains($projectTitleToken)) {
+    Open-ConfiguredProject
     return
 }
 

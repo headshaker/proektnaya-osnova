@@ -21,7 +21,10 @@ function validPayload () {
     scheduleToleranceDays: 5,
     costVariancePercent: 10.5,
     scopeChangeRequiresApproval: true,
-    githubProtectionMode: 'auto'
+    githubProtectionMode: 'auto',
+    aiTools: ['chatgpt', 'claude', 'gemini'],
+    obsidianEnabled: true,
+    localSyncEnabled: true
   }
 }
 
@@ -30,6 +33,9 @@ test('принимает полный безопасный набор парам
   assert.equal(result.title, 'Проект «Север»')
   assert.equal(result.scheduleToleranceDays, 5)
   assert.equal(result.costVariancePercent, 10.5)
+  assert.deepEqual(result.aiTools, ['chatgpt', 'claude', 'gemini'])
+  assert.equal(result.obsidianEnabled, true)
+  assert.equal(result.localSyncEnabled, true)
 })
 
 test('отклоняет опасный адрес и неизвестные параметры', () => {
@@ -44,12 +50,23 @@ test('отклоняет неверную дату, slug и допуски', () 
   assert.throws(() => validatePayload({ ...validPayload(), scheduleToleranceDays: -1 }), /неотрицательное/u)
 })
 
+test('отклоняет неизвестные и повторяющиеся инструменты ИИ', () => {
+  assert.throws(() => validatePayload({ ...validPayload(), aiTools: ['claude', 'claude'] }), /повтор/u)
+  assert.throws(() => validatePayload({ ...validPayload(), aiTools: ['unknown'] }), /неизвестный/u)
+  assert.throws(() => validatePayload({ ...validPayload(), aiTools: 'claude' }), /список/u)
+})
+
 test('строит массив аргументов без командной оболочки', () => {
   const payload = { ...validPayload(), title: 'Проект & echo unsafe', scopeChangeRequiresApproval: false }
   const args = toPowerShellArguments(payload, true)
   assert.ok(args.includes('Проект & echo unsafe'))
   assert.ok(args.includes('-Apply'))
   assert.ok(args.includes('-ScopeChangeRequiresApprovalValue'))
+  assert.ok(args.includes('-AiToolsCsv'))
+  assert.ok(args.includes('chatgpt,claude,gemini'))
+  assert.ok(args.includes('-ObsidianMode'))
+  assert.ok(args.includes('-LocalSyncMode'))
+  assert.ok(args.includes('enabled'))
   assert.ok(args.includes('false'))
   assert.equal(args.filter(value => value === 'Проект & echo unsafe').length, 1)
   assert.deepEqual(args.slice(0, 4), ['-NoLogo', '-NoProfile', '-NonInteractive', '-File'])
