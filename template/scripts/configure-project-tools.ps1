@@ -11,6 +11,10 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $utf8 = [System.Text.UTF8Encoding]::new($false)
+if ($env:PROJECT_SETUP_STDIO_ENCODING -ceq 'utf8') {
+    [Console]::OutputEncoding = $utf8
+    $OutputEncoding = $utf8
+}
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $allowedTools = @('chatgpt', 'claude', 'gemini', 'qwen', 'deepseek', 'grok')
 

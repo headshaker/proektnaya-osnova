@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "targetVersion": "0.13.0",
+  "targetVersion": "0.13.1",
   "supportedFromVersions": [
     "0.1.0",
     "0.1.1",
@@ -17,7 +17,8 @@
     "0.10.0",
     "0.10.1",
     "0.11.0",
-    "0.12.0"
+    "0.12.0",
+    "0.13.0"
   ],
   "baselineFile": "migrations/baselines.json",
   "managedFiles": [
@@ -39,6 +40,7 @@
     "scripts/context-budget.py",
     "scripts/init-project.ps1",
     "scripts/process-team-input.ps1",
+    "scripts/configure-project-tools.ps1",
     "scripts/setup-project.ps1",
     "scripts/start-ai-work.ps1",
     "scripts/start-project.ps1",
@@ -99,7 +101,6 @@
     "scripts/check-context-health.ps1",
     "scripts/check-project-health.ps1",
     "scripts/configure-github-protection.ps1",
-    "scripts/configure-project-tools.ps1",
     "scripts/install-local-sync.ps1",
     "scripts/refresh-ai-context.ps1",
     "scripts/sync-project.ps1",

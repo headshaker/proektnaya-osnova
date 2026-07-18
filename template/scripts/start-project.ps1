@@ -27,7 +27,8 @@ function Invoke-ConsoleWizard {
     Write-Host ''
     Write-Host 'Открывается запасной текстовый мастер настройки.'
     & $setupScript
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    $wizardSucceeded = $?
+    if (-not $wizardSucceeded) { throw 'Запасной текстовый мастер завершился с ошибкой.' }
 }
 
 function Open-ConfiguredProject {
