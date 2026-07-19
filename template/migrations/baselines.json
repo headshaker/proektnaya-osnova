@@ -222,6 +222,15 @@
       "setup-ui/main.js": "7fa68c77beb040de10b9858db93281396966a9da6cc45a09377d95966c81f6a7",
       "setup-ui/package-lock.json": "b9cba9debe385d58c56e7aa6279dbcb222f4ba6a8229d53311001276f393b47e",
       "setup-ui/package.json": "850fa021a4ec023097def645d3295c8e7ee314d32b2ed13e4f91a9845c8fb0db"
+    },
+    "0.13.1": {
+      "REGISTRY-SCHEMA.json": "44740dff0fd28066df8b6bb406ad214fcf530dbc00cd68fa34349bfe5eae6742",
+      "migrations/baselines.json": "f032e7bcabbbf631460a1a6773d4502887f5d0e71ba829fe61b240c925d90074",
+      "migrations/manifest.json": "dc40d578c284144a77c2a23edc2262bd04ed7b236a7d0ce637e52dc184989e9a",
+      "scripts/configure-project-tools.ps1": "1f16a60ed6e9a0748ed65391bf1771f8b4d7a1f63dcc7672d7c1bfda78cbb934",
+      "scripts/start-project.ps1": "3da7bb5460a1c2ab6ea502e90c0e31a686449522b3e0096c16ed5dae5e9ed106",
+      "setup-ui/package-lock.json": "a18d6ae2f53bc76e5b0d9486533a44a9c44163e56e7170099d36d868a186af2f",
+      "setup-ui/package.json": "99df0ed63e1315ee428ee8118fe40664459fb801c1f219a6486ec9a76fb730f1"
     }
   }
 }

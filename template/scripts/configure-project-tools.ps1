@@ -31,6 +31,21 @@ function Assert-IsoDate([string]$Value) {
     }
 }
 
+function ConvertTo-AsciiJson([object]$Value, [int]$Depth = 12) {
+    $json = $Value | ConvertTo-Json -Depth $Depth -Compress
+    $builder = [System.Text.StringBuilder]::new($json.Length)
+    foreach ($character in $json.ToCharArray()) {
+        $codePoint = [int][char]$character
+        if ($codePoint -ge 0x20 -and $codePoint -le 0x7e) {
+            [void]$builder.Append($character)
+        }
+        else {
+            [void]$builder.AppendFormat('\u{0:x4}', $codePoint)
+        }
+    }
+    return $builder.ToString()
+}
+
 function Get-SelectedTools([string]$Value) {
     $requested = @($Value.Split(',', [System.StringSplitOptions]::RemoveEmptyEntries) |
         ForEach-Object { $_.Trim().ToLowerInvariant() } |
@@ -305,7 +320,7 @@ if ($Apply) {
     Write-JsonFile (Join-Path $reportDirectory 'setup-tools-report.json') $result
 }
 
-if ($Json) { Write-Output ($result | ConvertTo-Json -Depth 12 -Compress) }
+if ($Json) { Write-Output (ConvertTo-AsciiJson $result) }
 else {
     Write-Host "Выбрано инструментов ИИ: $($selected.Count)."
     foreach ($item in @($toolResults | Where-Object selected)) {
