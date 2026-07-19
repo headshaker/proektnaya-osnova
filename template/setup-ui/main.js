@@ -27,6 +27,11 @@ const guideUrls = new Map([
   ['grok', 'https://docs.x.ai/build/overview'],
   ['obsidian', 'https://obsidian.md/help/install']
 ])
+const projectGuidePaths = new Map([
+  ['start-here', path.join(projectRoot, 'START-HERE.md')],
+  ['prompting', path.join(projectRoot, 'PROMPTING-GUIDE.md')],
+  ['team-input', path.join(projectRoot, 'TEAM-INPUT.md')]
+])
 const allowedAssets = new Map([
   ['/index.html', path.join(__dirname, 'index.html')],
   ['/styles.css', path.join(__dirname, 'styles.css')],
@@ -243,6 +248,14 @@ function configureIpc () {
     const url = guideUrls.get(String(guideId || ''))
     if (!url) throw new Error('Неизвестная инструкция по установке.')
     await shell.openExternal(url)
+    return true
+  })
+  ipcMain.handle('setup:open-project-guide', async (event, guideId) => {
+    requireTrustedSender(event)
+    const guidePath = projectGuidePaths.get(String(guideId || ''))
+    if (!guidePath || !fs.existsSync(guidePath)) throw new Error('Не найдено выбранное руководство проекта.')
+    const error = await shell.openPath(guidePath)
+    if (error) throw new Error(error)
     return true
   })
   ipcMain.handle('setup:open-obsidian', async event => {

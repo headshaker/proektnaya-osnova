@@ -69,16 +69,19 @@ try {
         }
     }
     $wizardHtml = [System.IO.File]::ReadAllText((Join-Path $uiRoot 'index.html'))
-    if ([regex]::Matches($wizardHtml, 'data-step-panel=').Count -ne 5 -or
+    if ([regex]::Matches($wizardHtml, 'data-step-panel=').Count -ne 6 -or
         [regex]::Matches($wizardHtml, 'name="aiTools"').Count -ne 6 -or
         $wizardHtml -notmatch 'id="obsidian-enabled"' -or
         $wizardHtml -notmatch 'id="local-sync-enabled"' -or
-        $wizardHtml -notmatch 'id="inspect-tools-button"') {
-        throw 'Electron-мастер не содержит пять шагов, шесть нейросетей или настройку Obsidian.'
+        $wizardHtml -notmatch 'id="inspect-tools-button"' -or
+        $wizardHtml -notmatch 'id="guidance-heading"' -or
+        [regex]::Matches($wizardHtml, 'data-project-guide=').Count -lt 3) {
+        throw 'Electron-мастер не содержит шесть шагов, рекомендации руководителю, шесть нейросетей или настройку Obsidian.'
     }
     $mainText = [System.IO.File]::ReadAllText((Join-Path $uiRoot 'main.js'))
     $preloadText = [System.IO.File]::ReadAllText((Join-Path $uiRoot 'preload.js'))
-    foreach ($pattern in @('setup:inspect-tools', 'setup:open-guide', 'setup:open-obsidian')) {
+    $rendererText = [System.IO.File]::ReadAllText((Join-Path $uiRoot 'renderer.js'))
+    foreach ($pattern in @('setup:inspect-tools', 'setup:open-guide', 'setup:open-project-guide', 'setup:open-obsidian')) {
         if ($mainText -notmatch [regex]::Escape($pattern)) {
             throw "Electron-мастер не содержит изолированный обработчик: $pattern"
         }
@@ -100,9 +103,19 @@ try {
     if ($toolsScriptText -notmatch [regex]::Escape('ConvertTo-AsciiJson $result')) {
         throw 'Проверка инструментов не защищает JSON от системной кодировки Windows.'
     }
-    foreach ($pattern in @('inspectTools:', 'openGuide:', 'openObsidian:')) {
+    foreach ($pattern in @('inspectTools:', 'openGuide:', 'openProjectGuide:', 'openObsidian:')) {
         if ($preloadText -notmatch [regex]::Escape($pattern)) {
             throw "Preload не содержит безопасный метод: $pattern"
+        }
+    }
+    foreach ($pattern in @('currentStep === 4', 'showStep(5)', 'openProjectGuide(button.dataset.projectGuide)')) {
+        if ($rendererText -notmatch [regex]::Escape($pattern)) {
+            throw "Electron-мастер не содержит ожидаемый переход или действие шага руководителя: $pattern"
+        }
+    }
+    foreach ($pattern in @('START-HERE.md', 'PROMPTING-GUIDE.md', 'TEAM-INPUT.md', 'projectGuidePaths.get')) {
+        if ($mainText -notmatch [regex]::Escape($pattern)) {
+            throw "Electron-мастер не ограничивает локальные инструкции ожидаемым списком: $pattern"
         }
     }
     & node --check (Join-Path $uiRoot 'main.js')

@@ -219,9 +219,13 @@
       "scripts/configure-project-tools.ps1": "b04f93055239f8ee87143c6f3ce218bf5567589e6839fdfddacee011d9df7289",
       "scripts/setup-project.ps1": "a42c462d2f046d2db6eca74a7a5e4a5d7578f78c4d218886713d7066fcebbe2a",
       "scripts/start-project.ps1": "cb2edafa5b1811befbbd81a35a284d965683ef6923ad95ae83f83cbe12993997",
+      "setup-ui/index.html": "dce35053ce7983f6502e04d6a1ba6c742b55a1a3599d1b390c477003669fc525",
       "setup-ui/main.js": "7fa68c77beb040de10b9858db93281396966a9da6cc45a09377d95966c81f6a7",
       "setup-ui/package-lock.json": "b9cba9debe385d58c56e7aa6279dbcb222f4ba6a8229d53311001276f393b47e",
-      "setup-ui/package.json": "850fa021a4ec023097def645d3295c8e7ee314d32b2ed13e4f91a9845c8fb0db"
+      "setup-ui/package.json": "850fa021a4ec023097def645d3295c8e7ee314d32b2ed13e4f91a9845c8fb0db",
+      "setup-ui/preload.js": "bbfddf1dbc2e0fb91b1809c60444b757ee19b32ceefe36b466076489f048e348",
+      "setup-ui/renderer.js": "3d19ce9581cb5a3e32997e85b974f7d4be7ea665e91fc918886126c256fa8fc3",
+      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee"
     },
     "0.13.1": {
       "REGISTRY-SCHEMA.json": "44740dff0fd28066df8b6bb406ad214fcf530dbc00cd68fa34349bfe5eae6742",
@@ -229,8 +233,25 @@
       "migrations/manifest.json": "dc40d578c284144a77c2a23edc2262bd04ed7b236a7d0ce637e52dc184989e9a",
       "scripts/configure-project-tools.ps1": "1f16a60ed6e9a0748ed65391bf1771f8b4d7a1f63dcc7672d7c1bfda78cbb934",
       "scripts/start-project.ps1": "3da7bb5460a1c2ab6ea502e90c0e31a686449522b3e0096c16ed5dae5e9ed106",
+      "setup-ui/index.html": "dce35053ce7983f6502e04d6a1ba6c742b55a1a3599d1b390c477003669fc525",
+      "setup-ui/main.js": "9b4b5ed2e286d2808747524908d9017fca264116ec0414aae73a8997dfaf62c1",
       "setup-ui/package-lock.json": "a18d6ae2f53bc76e5b0d9486533a44a9c44163e56e7170099d36d868a186af2f",
-      "setup-ui/package.json": "99df0ed63e1315ee428ee8118fe40664459fb801c1f219a6486ec9a76fb730f1"
+      "setup-ui/package.json": "99df0ed63e1315ee428ee8118fe40664459fb801c1f219a6486ec9a76fb730f1",
+      "setup-ui/preload.js": "bbfddf1dbc2e0fb91b1809c60444b757ee19b32ceefe36b466076489f048e348",
+      "setup-ui/renderer.js": "3d19ce9581cb5a3e32997e85b974f7d4be7ea665e91fc918886126c256fa8fc3",
+      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee"
+    },
+    "0.13.2": {
+      "REGISTRY-SCHEMA.json": "56796438adea2bcdde704f34d4161b174b2ef99e1094e1ef0a84d5db668cbe4f",
+      "migrations/baselines.json": "4b5de68cc1fdbae3743fdf23095f32d2da25a764cedad741a62ceff7aa7e6b8c",
+      "migrations/manifest.json": "afaa5a5657db077ac31ed81c73bf0a97a22ac875ca9c7c64d87d91b00303946a",
+      "setup-ui/index.html": "dce35053ce7983f6502e04d6a1ba6c742b55a1a3599d1b390c477003669fc525",
+      "setup-ui/main.js": "9b4b5ed2e286d2808747524908d9017fca264116ec0414aae73a8997dfaf62c1",
+      "setup-ui/package-lock.json": "6582006bcbd8fb19c65ae5b476d5c23703f16b00a736a6af6d822bc1153327e5",
+      "setup-ui/package.json": "84b904ddcb295c0b830c7ce34daf2585a6e45e2cc19ed126344290f02d940a0e",
+      "setup-ui/preload.js": "bbfddf1dbc2e0fb91b1809c60444b757ee19b32ceefe36b466076489f048e348",
+      "setup-ui/renderer.js": "3d19ce9581cb5a3e32997e85b974f7d4be7ea665e91fc918886126c256fa8fc3",
+      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee"
     }
   }
 }

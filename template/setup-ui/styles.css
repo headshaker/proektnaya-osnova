@@ -58,12 +58,12 @@ button, select, input { color: inherit; }
 .brand p { margin: 0; }
 .brand-name { font-weight: 700; letter-spacing: .01em; }
 .brand-note { margin-top: 2px !important; color: rgba(255,255,255,.62); font-size: 12px; }
-.sidebar-copy { position: relative; z-index: 1; margin-top: 60px; }
+.sidebar-copy { position: relative; z-index: 1; margin-top: 42px; }
 .kicker, .eyebrow { margin: 0 0 8px; color: var(--warm); font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .sidebar-copy h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 32px; font-weight: 500; line-height: 1.12; letter-spacing: -.025em; }
 .sidebar-copy > p:last-child { margin: 18px 0 0; color: rgba(255,255,255,.67); font-size: 14px; line-height: 1.55; }
-.steps { position: relative; z-index: 1; display: grid; gap: 6px; margin: 42px 0 0; padding: 0; list-style: none; }
-.step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; color: rgba(255,255,255,.52); transition: .2s ease; }
+.steps { position: relative; z-index: 1; display: grid; gap: 4px; margin: 30px 0 0; padding: 0; list-style: none; }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: center; padding: 8px 12px; border-radius: 12px; color: rgba(255,255,255,.52); transition: .2s ease; }
 .step-number { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; font-size: 12px; font-weight: 700; }
 .step strong, .step small { display: block; }
 .step strong { font-size: 13px; }
@@ -150,6 +150,25 @@ input:checked + .check-visual::after { content: "✓"; color: white; font-size: 
 .install-item strong { font-size: 12px; }
 .install-item code { margin: 6px 0; overflow-wrap: anywhere; color: #5b4630; font: 10px/1.45 Consolas, monospace; }
 .guide-button { padding: 0; border: 0; color: var(--accent-strong); background: transparent; font-size: 10px; font-weight: 750; text-decoration: underline; cursor: pointer; }
+.owner-principle { display: grid; grid-template-columns: 38px 1fr; gap: 13px; align-items: start; margin-bottom: 14px; padding: 16px; border: 1px solid #c6dbd3; border-radius: 12px; background: var(--accent-soft); }
+.owner-principle > span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: white; background: var(--accent); font-size: 10px; font-weight: 800; }
+.owner-principle strong, .owner-principle p { display: block; }
+.owner-principle strong { color: var(--accent-strong); font-size: 13px; }
+.owner-principle p { margin: 5px 0 0; color: #49675e; font-size: 11px; line-height: 1.45; }
+.practice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.practice-card { min-height: 178px; padding: 15px 16px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+.practice-card > p { margin: 0 0 7px; color: var(--accent); font-size: 9px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.practice-card h4 { margin: 0; font-size: 13px; }
+.practice-card ul { margin: 10px 0 0; padding-left: 17px; color: #42514b; font-size: 11px; line-height: 1.45; }
+.practice-card small { display: block; margin-top: 9px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.owner-details { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: #f7f5f0; }
+.owner-details summary { padding: 13px 15px; color: var(--accent-strong); font-size: 12px; font-weight: 700; cursor: pointer; }
+.owner-details p { margin: 0; padding: 0 15px 15px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.starter-prompt { margin-top: 14px; padding: 15px 16px; border-left: 4px solid var(--warm); border-radius: 0 12px 12px 0; background: #fbf1df; }
+.starter-prompt strong { color: #694f28; font-size: 12px; }
+.starter-prompt p { margin: 6px 0 0; color: #6c5a40; font-size: 11px; line-height: 1.5; }
+.guide-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+.guide-actions .button { min-width: 0; height: 38px; padding: 0 13px; font-size: 11px; }
 .review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .review-card { min-height: 105px; margin: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .review-card p { margin: 0 0 10px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
@@ -189,8 +208,9 @@ input:checked + .check-visual::after { content: "✓"; color: white; font-size: 
 
 @media (max-height: 720px) {
   .sidebar { padding-top: 24px; }
-  .sidebar-copy { margin-top: 34px; }
-  .steps { margin-top: 26px; }
+  .sidebar-copy { margin-top: 22px; }
+  .sidebar-copy > p:last-child { display: none; }
+  .steps { margin-top: 18px; }
   .workspace { padding-top: 26px; }
   .panel { padding-top: 20px; }
 }

@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('projectSetup', Object.freeze({
   apply: payload => ipcRenderer.invoke('setup:apply', payload),
   openHome: () => ipcRenderer.invoke('setup:open-home'),
   openGuide: guideId => ipcRenderer.invoke('setup:open-guide', guideId),
+  openProjectGuide: guideId => ipcRenderer.invoke('setup:open-project-guide', guideId),
   openObsidian: () => ipcRenderer.invoke('setup:open-obsidian')
 }))
