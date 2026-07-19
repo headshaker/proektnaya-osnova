@@ -20,11 +20,12 @@ const localSyncEnabled = document.querySelector('#local-sync-enabled')
 const toolInputs = [...document.querySelectorAll('input[name="aiTools"]')]
 
 const stepCopy = [
-  ['Шаг 1 из 5', 'Расскажите о проекте', 'Достаточно рабочего названия. Техническое имя мастер предложит сам.'],
-  ['Шаг 2 из 5', 'Выберите способ работы', 'Не нужно подбирать идеальную методологию — выберите ближайший вариант.'],
-  ['Шаг 3 из 5', 'Задайте границы контроля', 'Неопределённые допуски останутся открытыми вопросами, а не догадками системы.'],
-  ['Шаг 4 из 5', 'Подключите инструменты', 'Выберите одну или несколько нейросетей и, при необходимости, Obsidian.'],
-  ['Шаг 5 из 5', 'Проверьте план', 'Предварительная проверка ничего не изменила. Применение начнётся только по вашей команде.']
+  ['Шаг 1 из 6', 'Расскажите о проекте', 'Достаточно рабочего названия. Техническое имя мастер предложит сам.'],
+  ['Шаг 2 из 6', 'Выберите способ работы', 'Не нужно подбирать идеальную методологию — выберите ближайший вариант.'],
+  ['Шаг 3 из 6', 'Задайте границы контроля', 'Неопределённые допуски останутся открытыми вопросами, а не догадками системы.'],
+  ['Шаг 4 из 6', 'Подключите инструменты', 'Выберите одну или несколько нейросетей и, при необходимости, Obsidian.'],
+  ['Шаг 5 из 6', 'Освойте рабочий ритм', 'Короткая памятка поможет управлять проектом без Git, терминала и ручного редактирования файлов.'],
+  ['Шаг 6 из 6', 'Проверьте план', 'Предварительная проверка ничего не изменила. Применение начнётся только по вашей команде.']
 ]
 
 const labels = {
@@ -269,7 +270,7 @@ async function prepareReview () {
     const result = await window.projectSetup.preview(data)
     document.querySelector('#preview-output').textContent = result.output || 'Предварительная проверка завершена без сообщений.'
     if (!result.ok) throw new Error(result.output || `Проверка завершилась с кодом ${result.exitCode}.`)
-    showStep(4)
+    showStep(5)
   } catch (error) {
     setNotice(error.message || String(error))
   } finally {
@@ -327,10 +328,15 @@ document.querySelector('#install-guidance').addEventListener('click', async even
   if (!button || busy) return
   try { await window.projectSetup.openGuide(button.dataset.guideId) } catch (error) { setNotice(error.message || String(error)) }
 })
+document.querySelector('.guidance-panel').addEventListener('click', async event => {
+  const button = event.target.closest('button[data-project-guide]')
+  if (!button || busy) return
+  try { await window.projectSetup.openProjectGuide(button.dataset.projectGuide) } catch (error) { setNotice(error.message || String(error)) }
+})
 
 nextButton.addEventListener('click', async () => {
   if (busy || !validateCurrentStep()) return
-  if (currentStep === 3) await prepareReview()
+  if (currentStep === 4) await prepareReview()
   else showStep(currentStep + 1)
 })
 backButton.addEventListener('click', () => { if (!busy) showStep(currentStep - 1) })

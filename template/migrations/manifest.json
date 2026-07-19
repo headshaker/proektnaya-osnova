@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "targetVersion": "0.13.2",
+  "targetVersion": "0.14.0",
   "supportedFromVersions": [
     "0.1.0",
     "0.1.1",
@@ -19,7 +19,8 @@
     "0.11.0",
     "0.12.0",
     "0.13.0",
-    "0.13.1"
+    "0.13.1",
+    "0.13.2"
   ],
   "baselineFile": "migrations/baselines.json",
   "managedFiles": [

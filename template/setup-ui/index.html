@@ -43,6 +43,10 @@
         </li>
         <li class="step" data-step-indicator="4">
           <span class="step-number">5</span>
+          <span><strong>Рабочий ритм</strong><small>Как вести проект</small></span>
+        </li>
+        <li class="step" data-step-indicator="5">
+          <span class="step-number">6</span>
           <span><strong>Проверка</strong><small>План до применения</small></span>
         </li>
       </ol>
@@ -56,7 +60,7 @@
     <main class="workspace">
       <header class="workspace-header">
         <div>
-          <p class="eyebrow" id="step-eyebrow">Шаг 1 из 5</p>
+          <p class="eyebrow" id="step-eyebrow">Шаг 1 из 6</p>
           <h2 id="step-title">Расскажите о проекте</h2>
           <p id="step-description">Достаточно рабочего названия. Техническое имя мастер предложит сам.</p>
         </div>
@@ -299,9 +303,89 @@
           <div class="install-guidance" id="install-guidance" aria-live="polite" hidden></div>
         </section>
 
-        <section class="panel review-panel" data-step-panel="4" aria-labelledby="review-heading" hidden>
+        <section class="panel guidance-panel" data-step-panel="4" aria-labelledby="guidance-heading" hidden>
           <div class="section-heading">
             <span class="section-index">05</span>
+            <div>
+              <h3 id="guidance-heading">Как руководителю работать с проектом</h3>
+              <p>Технические знания не нужны: вы управляете решениями, а ИИ поддерживает файлы и проверки.</p>
+            </div>
+          </div>
+
+          <div class="owner-principle">
+            <span aria-hidden="true">01</span>
+            <div>
+              <strong>Начинайте с пульта руководителя</strong>
+              <p>Открывайте проект через START-PROJECT: он сначала безопасно обновит локальную папку и контекст ИИ. Затем посмотрите пульт или попросите ИИ дать обзор простым языком.</p>
+            </div>
+          </div>
+
+          <div class="practice-grid">
+            <article class="practice-card">
+              <p>Постановка задачи</p>
+              <h4>Опишите ожидаемый результат</h4>
+              <ul>
+                <li>что должно измениться;</li>
+                <li>какие есть сроки и ограничения;</li>
+                <li>что нельзя решать без вас.</li>
+              </ul>
+              <small>Названия файлов и команды знать не требуется.</small>
+            </article>
+
+            <article class="practice-card">
+              <p>Команда и материалы</p>
+              <h4>Люди дают вход — ИИ ведёт основу</h4>
+              <ul>
+                <li>команда отвечает на открытые вопросы;</li>
+                <li>передаёт ссылки и вложения;</li>
+                <li>ИИ обновляет документы и показывает итог.</li>
+              </ul>
+              <small>Так проект не распадается на несколько версий.</small>
+            </article>
+
+            <article class="practice-card">
+              <p>Несколько нейросетей</p>
+              <h4>Разделяйте независимые результаты</h4>
+              <ul>
+                <li>не поручайте им одновременно менять одно и то же;</li>
+                <li>каждая работает в своей ветке;</li>
+                <li>объединяйте изменения по одному.</li>
+              </ul>
+              <small>Общая версия проекта всегда одна — ветка main.</small>
+            </article>
+
+            <article class="practice-card">
+              <p>Ритм контроля</p>
+              <h4>Проверяйте результат, а не файлы</h4>
+              <ul>
+                <li>ежедневно: приоритеты и препятствия;</li>
+                <li>еженедельно: прогноз, риски и решения;</li>
+                <li>перед публикацией: дайджест и проверки.</li>
+              </ul>
+              <small>ИИ должен сам поддерживать связанность базы.</small>
+            </article>
+          </div>
+
+          <details class="owner-details">
+            <summary>Какие решения нельзя передавать ИИ</summary>
+            <p>Цель и границы проекта, бюджет и обязательства, принятие существенного риска, назначение ответственных и разрешение на внешнюю публикацию остаются за руководителем.</p>
+          </details>
+
+          <div class="starter-prompt">
+            <strong>Хорошая первая задача после настройки</strong>
+            <p>«Изучи актуальное состояние проекта, подготовь краткий обзор и предложи следующие действия. Сам исправь безопасные рутинные недостатки, но не меняй без меня цель, границы, бюджет и обязательства».</p>
+          </div>
+
+          <div class="guide-actions" aria-label="Подробные руководства">
+            <button class="button secondary" type="button" data-project-guide="start-here">Открыть «Начните здесь»</button>
+            <button class="button secondary" type="button" data-project-guide="prompting">Как ставить задачи ИИ</button>
+            <button class="button secondary" type="button" data-project-guide="team-input">Как работает команда</button>
+          </div>
+        </section>
+
+        <section class="panel review-panel" data-step-panel="5" aria-labelledby="review-heading" hidden>
+          <div class="section-heading">
+            <span class="section-index">06</span>
             <div>
               <h3 id="review-heading">Проверьте план настройки</h3>
               <p>Мастер уже проверил значения. До нажатия кнопки «Настроить проект» файлы не меняются.</p>
