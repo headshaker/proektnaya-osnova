@@ -106,8 +106,9 @@ if ($Console) {
 
 if ($IsWindows -and (Test-Path -LiteralPath $bundledElectron -PathType Leaf)) {
     Write-Host 'Открывается визуальный мастер настройки...'
-    & $bundledElectron
-    $result = $LASTEXITCODE
+    $process = Start-Process -FilePath $bundledElectron -Wait -PassThru
+    $result = $process.ExitCode
+    $process.Dispose()
     if ($result -eq 0) { return }
     Write-Warning "Встроенный визуальный мастер завершился с кодом $result."
     Invoke-ConsoleWizard

@@ -96,6 +96,10 @@ try {
             }
         }
     }
+    $toolsScriptText = [System.IO.File]::ReadAllText((Join-Path $source 'scripts/configure-project-tools.ps1'))
+    if ($toolsScriptText -notmatch [regex]::Escape('ConvertTo-AsciiJson $result')) {
+        throw 'Проверка инструментов не защищает JSON от системной кодировки Windows.'
+    }
     foreach ($pattern in @('inspectTools:', 'openGuide:', 'openObsidian:')) {
         if ($preloadText -notmatch [regex]::Escape($pattern)) {
             throw "Preload не содержит безопасный метод: $pattern"
@@ -116,7 +120,7 @@ const script = process.argv[1].replaceAll("'", "''")
 const command = "[Console]::OutputEncoding=[Text.Encoding]::GetEncoding(866); & '" + script + "' -AiToolsCsv 'chatgpt,claude,qwen' -ObsidianMode disabled -Date '2026-07-18' -Json"
 const result = spawnSync('pwsh', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command], {
   encoding: null,
-  env: { ...process.env, PROJECT_SETUP_STDIO_ENCODING: 'utf8' }
+  env: Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'PROJECT_SETUP_STDIO_ENCODING'))
 })
 if (result.status !== 0) throw new Error(result.stderr.toString('utf8'))
 const text = new TextDecoder('utf-8', { fatal: true }).decode(result.stdout)
@@ -146,6 +150,17 @@ if (!credentials.includes('При первом запуске выберите �
         throw "Запасной текстовый мастер неверно обрабатывает успешный PowerShell-сценарий: $($consoleOutput -join ' ')"
     }
     if ($IsWindows) {
+        $guiFixture = New-WizardFixture 'bundled-gui'
+        $runtimeRoot = Join-Path $guiFixture 'setup-ui/runtime'
+        [System.IO.Directory]::CreateDirectory($runtimeRoot) | Out-Null
+        Copy-Item -LiteralPath (Join-Path $env:SystemRoot 'System32/hostname.exe') `
+            -Destination (Join-Path $runtimeRoot 'Project Setup.exe')
+        $guiOutput = @(& $powerShellExecutable -NoLogo -NoProfile -NonInteractive -File `
+                (Join-Path $guiFixture 'scripts/start-project.ps1') 2>&1)
+        $guiExitCode = $LASTEXITCODE
+        if ($guiExitCode -ne 0) {
+            throw "Встроенный GUI-мастер зависит от неинициализированного LASTEXITCODE: $($guiOutput -join ' ')"
+        }
         & cmd.exe /d /c (Join-Path $source 'START-PROJECT.cmd') --self-test | Out-Null
         if ($LASTEXITCODE -ne 0) { throw 'START-PROJECT.cmd не прошёл реальный запуск через cmd.exe.' }
     }

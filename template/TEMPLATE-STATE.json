@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "templateVersion": "0.13.1",
+  "templateVersion": "0.13.2",
   "registrySchemaVersion": 1,
   "initializedAt": "{{DATE}}",
   "lastUpdatedAt": "{{DATE}}",
