@@ -251,7 +251,7 @@ if ($DataClassification -ceq 'not-classified') { $unresolved.Add('определ
 if ($null -eq $ScheduleToleranceDays -and $null -eq $CostVariancePercent) {
     $unresolved.Add('согласовать допустимые отклонения по сроку и стоимости')
 }
-foreach ($step in @($toolsResult.nextSteps)) { $unresolved.Add("подключить инструмент: $step") }
+foreach ($step in @($toolsResult.nextSteps)) { $unresolved.Add([string]$step) }
 
 Write-Host ''
 Write-Host 'План настройки'
@@ -439,8 +439,7 @@ if ($report.result -ceq 'success') {
 else {
     Write-Warning 'Проект настроен, но часть подключений требует завершения.'
     if ([string]$githubProtection.status -in @('pending', 'failed')) {
-        Write-Host 'После входа в gh с правами администратора выполните:'
-        Write-Host '  pwsh ./scripts/configure-github-protection.ps1 -Apply'
+        Write-Host 'Защиту GitHub сможет завершить ИИ или технический специалист после входа администратора в GitHub.'
     }
     foreach ($step in @($toolsResult.nextSteps)) { Write-Host "  - $step" }
 }
