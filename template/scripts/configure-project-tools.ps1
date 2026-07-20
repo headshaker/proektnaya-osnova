@@ -111,23 +111,15 @@ function Find-Executable([string]$Name, [string[]]$AdditionalPaths = @()) {
 }
 
 function Get-PlatformInstallHint([string]$Id) {
-    $windowsHints = @{
-        chatgpt = 'powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"'
-        claude = 'irm https://claude.ai/install.ps1 | iex'
-        gemini = 'npm install -g @google/gemini-cli'
-        qwen = 'npm install -g @qwen-code/qwen-code@latest'
-        deepseek = 'npm install -g deepseek-tui'
-        grok = 'irm https://x.ai/cli/install.ps1 | iex'
+    $hints = @{
+        chatgpt = 'Откройте официальную страницу OpenAI и выберите установку Codex для своей системы.'
+        claude = 'Откройте официальную страницу Anthropic и следуйте разделу установки Claude Code.'
+        gemini = 'Откройте официальную страницу Google и следуйте разделу установки Gemini CLI.'
+        qwen = 'Откройте официальную страницу Alibaba и следуйте разделу установки Qwen Code.'
+        deepseek = 'Откройте страницу стороннего клиента из каталога DeepSeek и сначала изучите условия и риски.'
+        grok = 'Откройте официальную страницу xAI и следуйте разделу установки Grok Build.'
     }
-    $unixHints = @{
-        chatgpt = 'curl -fsSL https://chatgpt.com/codex/install.sh | sh'
-        claude = 'curl -fsSL https://claude.ai/install.sh | bash'
-        gemini = 'npm install -g @google/gemini-cli'
-        qwen = 'curl -fsSL https://qwen-code-assets.oss-cn-hangzhou.aliyuncs.com/installation/install-qwen.sh | bash'
-        deepseek = 'npm install -g deepseek-tui'
-        grok = 'curl -fsSL https://x.ai/cli/install.sh | bash'
-    }
-    return [string]$(if ($IsWindows) { $windowsHints[$Id] } else { $unixHints[$Id] })
+    return [string]$hints[$Id]
 }
 
 function Write-JsonFile([string]$Path, [object]$Value) {
@@ -232,8 +224,12 @@ $obsidian = [pscustomobject][ordered]@{
 $missing = @($toolResults | Where-Object { $_.selected -and -not $_.installed })
 $ready = $missing.Count -eq 0 -and (-not $obsidianSelected -or $obsidianInstalled)
 $nextSteps = [System.Collections.Generic.List[string]]::new()
-foreach ($item in $missing) { $nextSteps.Add("$($item.name): $($item.installHint)") }
-if ($obsidianSelected -and -not $obsidianInstalled) { $nextSteps.Add($obsidian.installHint) }
+foreach ($item in $missing) {
+    $nextSteps.Add("Установите $($item.name) по официальной инструкции, затем повторите проверку в мастере.")
+}
+if ($obsidianSelected -and -not $obsidianInstalled) {
+    $nextSteps.Add('Установите Obsidian с официального сайта, затем повторите проверку в мастере.')
+}
 
 if ($Apply) {
     $adapters = [ordered]@{}
@@ -330,7 +326,7 @@ else {
         Write-Host ("  Obsidian: {0}" -f $(if ($obsidianInstalled) { 'установлен' } else { 'требуется установка' }))
     }
     if ($nextSteps.Count -gt 0) {
-        Write-Host 'Следующие ручные шаги:'
+        Write-Host 'Осталось установить выбранные программы:'
         foreach ($step in $nextSteps) { Write-Host "  - $step" }
     }
 }

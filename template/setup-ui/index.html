@@ -67,7 +67,14 @@
         <span class="runtime" id="runtime-label" title="Версия визуального движка">Electron</span>
       </header>
 
-      <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
+      <div class="feedback">
+        <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
+        <details class="technical-error" id="technical-error" hidden>
+          <summary>Подробности для ИИ или технического специалиста</summary>
+          <p>Это диагностический журнал, а не список действий для руководителя.</p>
+          <pre id="technical-error-output"></pre>
+        </details>
+      </div>
 
       <form id="setup-form" novalidate>
         <section class="panel is-active" data-step-panel="0" aria-labelledby="project-heading">
@@ -295,7 +302,7 @@
           <div class="tool-diagnostics">
             <div>
               <strong id="tools-summary">Выберите инструменты и запустите проверку.</strong>
-              <small>Мастер не запускает установщики и не сохраняет пароли или API-ключи в проекте.</small>
+              <small>Если программы нет, мастер откроет официальную страницу. Команды PowerShell копировать не потребуется.</small>
             </div>
             <button class="button secondary" id="inspect-tools-button" type="button">Проверить выбранное</button>
           </div>
@@ -423,7 +430,8 @@
           </div>
 
           <details class="plan-details">
-            <summary>Показать технический результат предварительной проверки</summary>
+            <summary>Диагностика для специалиста — обычно не требуется</summary>
+            <p>Это журнал автоматической проверки, а не перечень задач для руководителя.</p>
             <pre id="preview-output">Проверка ещё не выполнена.</pre>
           </details>
 

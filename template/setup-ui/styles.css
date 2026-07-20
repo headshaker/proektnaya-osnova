@@ -86,6 +86,10 @@ button, select, input { color: inherit; }
 .runtime { flex: none; padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: white; font-size: 10px; font-weight: 700; letter-spacing: .04em; }
 .notice { margin-top: 16px; padding: 12px 14px; border: 1px solid #efc1ba; border-radius: 10px; color: var(--danger); background: var(--danger-soft); font-size: 13px; line-height: 1.45; }
 .notice.is-info { border-color: #b8d5ca; color: var(--accent-strong); background: var(--accent-soft); }
+.technical-error { margin-top: 10px; border: 1px solid #efc1ba; border-radius: 10px; background: #fff8f6; }
+.technical-error summary { padding: 11px 13px; color: #7b3730; font-size: 11px; font-weight: 750; cursor: pointer; }
+.technical-error p { margin: 0; padding: 0 13px 8px; color: var(--muted); font-size: 10px; }
+.technical-error pre { max-height: 130px; margin: 0; padding: 0 13px 13px; overflow: auto; white-space: pre-wrap; color: #51443f; font: 10px/1.45 Consolas, monospace; }
 #setup-form { min-height: 0; overflow: auto; scrollbar-color: #c8c4ba transparent; }
 .panel { max-width: 850px; padding: 26px 2px 22px; animation: enter .22s ease; }
 @keyframes enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
@@ -146,9 +150,9 @@ input:checked + .check-visual::after { content: "✓"; color: white; font-size: 
 .tool-diagnostics .button { flex: none; }
 .install-guidance { margin-top: 12px; padding: 14px 16px; border: 1px solid #ebd3ad; border-radius: 12px; color: #694f28; background: #fbf1df; }
 .install-item + .install-item { margin-top: 12px; padding-top: 12px; border-top: 1px solid #ead8b9; }
-.install-item strong, .install-item code { display: block; }
+.install-item strong, .install-item small { display: block; }
 .install-item strong { font-size: 12px; }
-.install-item code { margin: 6px 0; overflow-wrap: anywhere; color: #5b4630; font: 10px/1.45 Consolas, monospace; }
+.install-item small { margin: 6px 0; color: #6c5a40; font-size: 10px; line-height: 1.45; }
 .guide-button { padding: 0; border: 0; color: var(--accent-strong); background: transparent; font-size: 10px; font-weight: 750; text-decoration: underline; cursor: pointer; }
 .owner-principle { display: grid; grid-template-columns: 38px 1fr; gap: 13px; align-items: start; margin-bottom: 14px; padding: 16px; border: 1px solid #c6dbd3; border-radius: 12px; background: var(--accent-soft); }
 .owner-principle > span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: white; background: var(--accent); font-size: 10px; font-weight: 800; }
@@ -180,6 +184,7 @@ input:checked + .check-visual::after { content: "✓"; color: white; font-size: 
 .github-choice label { margin: 0; color: var(--accent-strong); }
 .github-choice p { margin: 5px 0 0; color: #557069; font-size: 11px; line-height: 1.4; }
 .github-choice select { height: 40px; }
+.plan-details p { margin: 0; padding: 0 15px 8px; color: var(--muted); font-size: 10px; line-height: 1.4; }
 .plan-details pre { max-height: 150px; margin: 0; padding: 0 15px 15px; overflow: auto; white-space: pre-wrap; color: #41504a; font: 11px/1.5 Consolas, monospace; }
 .confirm-card { margin-top: 14px; border-color: #c6dbd3; background: #fbfffd; }
 

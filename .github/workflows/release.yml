@@ -73,6 +73,9 @@ jobs:
           if (-not (Test-Path -LiteralPath 'template/setup-ui/runtime/Project Setup.exe' -PathType Leaf)) {
             throw 'В выпуск не встроен визуальный мастер Windows.'
           }
+          if (-not (Test-Path -LiteralPath 'template/setup-ui/runtime/powershell/pwsh.exe' -PathType Leaf)) {
+            throw 'В выпуск не встроен механизм автоматической настройки.'
+          }
           Remove-Item -LiteralPath 'template/setup-ui/node_modules' -Recurse -Force
 
       - name: Собрать файлы выпуска

@@ -18,6 +18,11 @@ const toolsScript = path.join(projectRoot, 'scripts', 'configure-project-tools.p
 const homePath = path.join(projectRoot, 'HOME.md')
 const reportPath = path.join(projectRoot, '.project', 'setup-report.json')
 const toolsReportPath = path.join(projectRoot, '.project', 'setup-tools-report.json')
+const bundledPowerShell = app.isPackaged
+  ? path.resolve(process.resourcesPath, '..', 'powershell', 'pwsh.exe')
+  : ''
+const hasBundledPowerShell = Boolean(bundledPowerShell && fs.existsSync(bundledPowerShell))
+const powerShellExecutable = hasBundledPowerShell ? bundledPowerShell : 'pwsh'
 const guideUrls = new Map([
   ['chatgpt', 'https://developers.openai.com/codex/cli'],
   ['claude', 'https://code.claude.com/docs/en/terminal-guide'],
@@ -127,7 +132,7 @@ function runPowerShellArguments (args, timeoutMilliseconds = 10 * 60 * 1000) {
   if (activeRun) return Promise.reject(new Error('Дождитесь завершения текущей проверки.'))
 
   activeRun = new Promise((resolve, reject) => {
-    const child = spawn('pwsh', args, {
+    const child = spawn(powerShellExecutable, args, {
       cwd: projectRoot,
       env: {
         ...process.env,
@@ -167,7 +172,9 @@ function runPowerShellArguments (args, timeoutMilliseconds = 10 * 60 * 1000) {
     child.once('error', error => {
       clearTimeout(timeout)
       reject(error.code === 'ENOENT'
-        ? new Error('Не найден PowerShell 7 (pwsh). Установите его и повторите запуск.')
+        ? new Error(app.isPackaged
+            ? 'В выпуске отсутствует внутренний механизм настройки. Скачайте официальный архив повторно или передайте ADMIN-SETUP.md техническому специалисту.'
+            : 'Исходная копия не подготовлена для обычного запуска. Техническому специалисту нужен PowerShell 7; подробности находятся в ADMIN-SETUP.md.')
         : error)
     })
     child.once('close', code => {
@@ -221,7 +228,9 @@ function configureIpc () {
     return {
       canConfigure: readme.includes(projectTitleToken),
       date: today,
-      electronVersion: process.versions.electron
+      electronVersion: process.versions.electron,
+      automationReady: hasBundledPowerShell || !app.isPackaged,
+      runtimeLabel: hasBundledPowerShell ? 'Автономный запуск' : 'Режим разработки'
     }
   })
   ipcMain.handle('setup:preview', (event, payload) => {

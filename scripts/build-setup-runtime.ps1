@@ -8,6 +8,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 if (-not $IsWindows) { throw 'Встроенный runtime мастера собирается только в Windows.' }
+if ($PSVersionTable.PSVersion -lt [version]'7.4.0') {
+    throw 'Для сборки встроенного runtime требуется PowerShell 7.4 или новее.'
+}
 
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $uiRoot = Join-Path $root 'template/setup-ui'
@@ -29,12 +32,19 @@ if (-not $OutputPath.StartsWith($allowedParent, [System.StringComparison]::Ordin
 if (-not (Test-Path -LiteralPath (Join-Path $electronDist 'electron.exe') -PathType Leaf)) {
     throw 'Electron ещё не загружен. Выполните npx install-electron --no в template/setup-ui.'
 }
+$powerShellSource = [System.IO.Path]::GetFullPath($PSHOME)
+$powerShellExecutableSource = Join-Path $powerShellSource 'pwsh.exe'
+if (-not (Test-Path -LiteralPath $powerShellExecutableSource -PathType Leaf)) {
+    throw "Не найден исполняемый файл PowerShell для встраивания: $powerShellExecutableSource"
+}
 if (Test-Path -LiteralPath $OutputPath) {
     if (-not $Force) { throw "Папка runtime уже существует: $OutputPath. Для замены укажите -Force." }
     Remove-Item -LiteralPath $OutputPath -Recurse -Force
 }
 
 Copy-Item -LiteralPath $electronDist -Destination $OutputPath -Recurse
+$powerShellRuntime = Join-Path $OutputPath 'powershell'
+Copy-Item -LiteralPath $powerShellSource -Destination $powerShellRuntime -Recurse
 $resources = Join-Path $OutputPath 'resources'
 $defaultApplication = Join-Path $resources 'default_app.asar'
 if (Test-Path -LiteralPath $defaultApplication -PathType Leaf) {
@@ -62,7 +72,7 @@ $runtimePackage = [ordered]@{
 )
 [System.IO.File]::WriteAllText(
     (Join-Path $OutputPath 'RUNTIME-VERSION'),
-    "Electron $(([System.IO.File]::ReadAllText((Join-Path $uiRoot 'package.json')) | ConvertFrom-Json).devDependencies.electron); app $version`n",
+    "Electron $(([System.IO.File]::ReadAllText((Join-Path $uiRoot 'package.json')) | ConvertFrom-Json).devDependencies.electron); PowerShell $($PSVersionTable.PSVersion); app $version`n",
     [System.Text.UTF8Encoding]::new($false)
 )
 
@@ -73,7 +83,12 @@ Move-Item -LiteralPath $electronExecutable -Destination $applicationExecutable
 if (-not (Test-Path -LiteralPath $applicationExecutable -PathType Leaf)) {
     throw 'Не создан исполняемый файл визуального мастера.'
 }
+$bundledPowerShellExecutable = Join-Path $powerShellRuntime 'pwsh.exe'
+if (-not (Test-Path -LiteralPath $bundledPowerShellExecutable -PathType Leaf)) {
+    throw 'В визуальный мастер не встроен PowerShell.'
+}
 if (Get-ChildItem -LiteralPath $application -Recurse -Directory | Where-Object Name -eq 'node_modules') {
     throw 'В приложение ошибочно попала папка node_modules.'
 }
 Write-Host "Встроенный визуальный мастер собран: $applicationExecutable"
+Write-Host "Встроенный PowerShell: $bundledPowerShellExecutable"

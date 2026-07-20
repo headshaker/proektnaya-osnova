@@ -18,6 +18,8 @@ const inspectToolsButton = document.querySelector('#inspect-tools-button')
 const obsidianEnabled = document.querySelector('#obsidian-enabled')
 const localSyncEnabled = document.querySelector('#local-sync-enabled')
 const toolInputs = [...document.querySelectorAll('input[name="aiTools"]')]
+const technicalError = document.querySelector('#technical-error')
+const technicalErrorOutput = document.querySelector('#technical-error-output')
 
 const stepCopy = [
   ['Шаг 1 из 6', 'Расскажите о проекте', 'Достаточно рабочего названия. Техническое имя мастер предложит сам.'],
@@ -58,6 +60,28 @@ function setNotice (message, kind = 'error') {
   notice.textContent = message
   notice.classList.toggle('is-info', kind === 'info')
   notice.hidden = !message
+}
+
+function clearTechnicalError () {
+  technicalError.hidden = true
+  technicalError.open = false
+  technicalErrorOutput.textContent = ''
+}
+
+function showTechnicalError (output) {
+  technicalErrorOutput.textContent = output || 'Дополнительные сведения не получены.'
+  technicalError.hidden = false
+  technicalError.open = false
+}
+
+function friendlyFailure (operation, output = '') {
+  if (/PowerShell|pwsh|ENOENT/iu.test(output)) {
+    return 'Не запустился внутренний механизм мастера. Не выполняйте команды вручную: скачайте официальный выпуск повторно или передайте подробности ИИ или техническому специалисту.'
+  }
+  if (/GitHub|\bgh\b|ruleset/iu.test(output)) {
+    return `Не удалось завершить ${operation} из-за подключения к GitHub. Остальные сведения сохранены; вход и права сможет проверить ИИ или технический специалист.`
+  }
+  return `Не удалось завершить ${operation}. Не запускайте команды из журнала вручную — передайте подробности ИИ или техническому специалисту.`
 }
 
 function setBusy (value, button = nextButton) {
@@ -206,12 +230,12 @@ function renderToolInspection (result) {
     guide.type = 'button'
     guide.className = 'guide-button'
     guide.dataset.guideId = id
-    guide.textContent = 'Открыть официальную инструкцию'
+    guide.textContent = 'Открыть официальную страницу установки'
     item.append(heading)
     if (hint) {
-      const command = document.createElement('code')
-      command.textContent = hint
-      item.append(command)
+      const instruction = document.createElement('small')
+      instruction.textContent = hint
+      item.append(instruction)
     }
     if (credential) {
       const note = document.createElement('small')
@@ -221,8 +245,8 @@ function renderToolInspection (result) {
     item.append(guide)
     guidance.append(item)
   }
-  for (const item of (result.tools || []).filter(item => item.selected)) {
-    addGuidance(item.id, item.name, item.installed ? '' : item.installHint, item.credential)
+  for (const item of (result.tools || []).filter(item => item.selected && !item.installed)) {
+    addGuidance(item.id, item.name, item.installHint, item.credential)
   }
   if (missingObsidian) addGuidance('obsidian', 'Obsidian', result.obsidian.installHint)
   guidance.hidden = guidance.childElementCount === 0
@@ -269,7 +293,11 @@ async function prepareReview () {
   try {
     const result = await window.projectSetup.preview(data)
     document.querySelector('#preview-output').textContent = result.output || 'Предварительная проверка завершена без сообщений.'
-    if (!result.ok) throw new Error(result.output || `Проверка завершилась с кодом ${result.exitCode}.`)
+    if (!result.ok) {
+      showTechnicalError(result.output)
+      throw new Error(friendlyFailure('предварительную проверку', result.output))
+    }
+    clearTechnicalError()
     showStep(5)
   } catch (error) {
     setNotice(error.message || String(error))
@@ -285,7 +313,11 @@ async function applySetup () {
   try {
     const result = await window.projectSetup.apply(payload())
     document.querySelector('#preview-output').textContent = result.output || 'Настройка завершена.'
-    if (!result.ok) throw new Error(result.output || `Настройка завершилась с кодом ${result.exitCode}.`)
+    if (!result.ok) {
+      showTechnicalError(result.output)
+      throw new Error(friendlyFailure('настройку проекта', result.output))
+    }
+    clearTechnicalError()
     const report = result.report
     document.querySelector('#completion-message').textContent = report?.projectTitle
       ? `«${report.projectTitle}» настроен. Теперь можно открыть пульт руководителя и передать ИИ первую задачу.`
@@ -352,7 +384,14 @@ form.addEventListener('submit', event => event.preventDefault())
 
 window.projectSetup.getDefaults().then(defaults => {
   document.querySelector('#date').value = defaults.date
-  document.querySelector('#runtime-label').textContent = `Electron ${defaults.electronVersion}`
+  document.querySelector('#runtime-label').textContent = defaults.runtimeLabel
+  document.querySelector('#runtime-label').title = `Визуальный движок Electron ${defaults.electronVersion}`
+  if (!defaults.automationReady) {
+    setNotice('Этот архив собран не полностью. Не запускайте PowerShell вручную: скачайте официальный выпуск повторно или передайте ADMIN-SETUP.md техническому специалисту.')
+    for (const control of form.elements) control.disabled = true
+    nextButton.disabled = true
+    return
+  }
   if (!defaults.canConfigure) {
     setNotice('Этот экземпляр проекта уже настроен. Повторный запуск мастера заблокирован.')
     for (const control of form.elements) control.disabled = true
