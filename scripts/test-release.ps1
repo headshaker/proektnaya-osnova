@@ -142,6 +142,7 @@ try {
             'scripts/refresh-ai-context.ps1',
             'scripts/sync-project.ps1',
             'scripts/install-local-sync.ps1',
+            'scripts/run-local-sync-background.ps1',
             'scripts/ingest-sources.ps1',
             'scripts/source-ingestion.py',
             'scripts/link-registry-references.py',

@@ -14,11 +14,11 @@
         <div class="brand-mark" aria-hidden="true">ПО</div>
         <div>
           <p class="brand-name">Проектная основа</p>
-          <p class="brand-note">Мастер первого запуска</p>
+          <p class="brand-note" id="brand-note">Мастер первого запуска</p>
         </div>
       </div>
 
-      <div class="sidebar-copy">
+      <div class="sidebar-copy" id="sidebar-copy">
         <p class="kicker">Спокойный старт</p>
         <h1>Соберём основу проекта за несколько шагов.</h1>
         <p>Сначала вы увидите план. Файлы изменятся только после явного подтверждения.</p>
@@ -75,6 +75,38 @@
           <pre id="technical-error-output"></pre>
         </details>
       </div>
+
+      <section class="maintenance" id="maintenance" aria-labelledby="maintenance-heading" hidden>
+        <div class="section-heading">
+          <span class="section-index">↻</span>
+          <div>
+            <h3 id="maintenance-heading">Фоновое обновление</h3>
+            <p>Проверка работает без видимого окна PowerShell и сохраняет результат в локальный журнал.</p>
+          </div>
+        </div>
+
+        <article class="sync-state" id="sync-state">
+          <span class="sync-state-mark" id="sync-state-mark" aria-hidden="true">✓</span>
+          <div>
+            <p id="sync-state-label">Проверяем состояние…</p>
+            <strong id="sync-state-message">Подождите несколько секунд.</strong>
+            <small id="sync-log-location">Журнал хранится только на этом компьютере.</small>
+          </div>
+        </article>
+
+        <div class="maintenance-actions">
+          <button class="button primary" id="enable-sync-button" type="button">Включить обновление</button>
+          <button class="button secondary danger-button" id="disable-sync-button" type="button">Выключить обновление</button>
+          <button class="button secondary" id="open-sync-log-button" type="button">Открыть журнал</button>
+        </div>
+
+        <div class="maintenance-note">
+          <strong>Отключение действует только на этом компьютере.</strong>
+          <p>Общая настройка проекта и компьютеры других участников не изменятся. Включить проверку снова можно здесь же.</p>
+        </div>
+
+        <button class="button primary" id="open-home-configured-button" type="button">Открыть пульт руководителя</button>
+      </section>
 
       <form id="setup-form" novalidate>
         <section class="panel is-active" data-step-panel="0" aria-labelledby="project-heading">
@@ -443,7 +475,7 @@
         </section>
       </form>
 
-      <footer class="actions">
+      <footer class="actions" id="setup-actions">
         <button class="button secondary" id="back-button" type="button" hidden>Назад</button>
         <span class="action-note" id="action-note">Обязательные поля отмечены звёздочкой</span>
         <button class="button primary" id="next-button" type="button">Продолжить</button>

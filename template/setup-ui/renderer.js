@@ -20,6 +20,10 @@ const localSyncEnabled = document.querySelector('#local-sync-enabled')
 const toolInputs = [...document.querySelectorAll('input[name="aiTools"]')]
 const technicalError = document.querySelector('#technical-error')
 const technicalErrorOutput = document.querySelector('#technical-error-output')
+const maintenance = document.querySelector('#maintenance')
+const enableSyncButton = document.querySelector('#enable-sync-button')
+const disableSyncButton = document.querySelector('#disable-sync-button')
+const openSyncLogButton = document.querySelector('#open-sync-log-button')
 
 const stepCopy = [
   ['Шаг 1 из 6', 'Расскажите о проекте', 'Достаточно рабочего названия. Техническое имя мастер предложит сам.'],
@@ -45,6 +49,39 @@ let governanceWasEdited = false
 let busy = false
 let latestToolInspection = null
 let inspectedSelection = ''
+let currentLocalSyncState = null
+
+function renderLocalSyncState (state) {
+  currentLocalSyncState = state
+  const enabled = state?.enabled === true
+  const policyEnabled = state?.policyEnabled !== false
+  document.querySelector('#sync-state-label').textContent = enabled ? 'Обновление включено' : 'Обновление выключено'
+  document.querySelector('#sync-state-message').textContent = state?.message || 'Состояние не определено.'
+  document.querySelector('#sync-state-mark').textContent = enabled ? '✓' : '—'
+  document.querySelector('#sync-state').classList.toggle('is-disabled', !enabled)
+  document.querySelector('#sync-log-location').textContent = state?.logAvailable
+    ? 'Ошибки и результаты проверок записываются в .project/local-sync.log.'
+    : 'Журнал появится после настройки первой фоновой проверки.'
+  enableSyncButton.disabled = enabled || !policyEnabled
+  disableSyncButton.disabled = !enabled
+  openSyncLogButton.disabled = state?.logAvailable !== true
+  if (!policyEnabled) {
+    document.querySelector('#sync-state-message').textContent = 'Обновление отключено общей политикой проекта. Изменить её может ИИ или технический специалист.'
+  }
+}
+
+async function setLocalSyncState (enabled) {
+  for (const button of [enableSyncButton, disableSyncButton, openSyncLogButton]) button.disabled = true
+  setNotice(enabled ? 'Включаем безопасную фоновую проверку…' : 'Отключаем фоновую проверку на этом компьютере…', 'info')
+  try {
+    const state = await window.projectSetup.setLocalSync(enabled)
+    renderLocalSyncState(state)
+    setNotice(enabled ? 'Фоновое обновление включено.' : 'Фоновое обновление выключено на этом компьютере.', 'info')
+  } catch (error) {
+    setNotice(error.message || String(error))
+    if (currentLocalSyncState) renderLocalSyncState(currentLocalSyncState)
+  }
+}
 
 function transliterate (value) {
   const map = {
@@ -380,6 +417,14 @@ document.querySelector('#open-home-button').addEventListener('click', async () =
 document.querySelector('#open-obsidian-button').addEventListener('click', async () => {
   try { await window.projectSetup.openObsidian() } catch (error) { setNotice(error.message || String(error)) }
 })
+enableSyncButton.addEventListener('click', async () => setLocalSyncState(true))
+disableSyncButton.addEventListener('click', async () => setLocalSyncState(false))
+openSyncLogButton.addEventListener('click', async () => {
+  try { await window.projectSetup.openLocalSyncLog() } catch (error) { setNotice(error.message || String(error)) }
+})
+document.querySelector('#open-home-configured-button').addEventListener('click', async () => {
+  try { await window.projectSetup.openHome() } catch (error) { setNotice(error.message || String(error)) }
+})
 form.addEventListener('submit', event => event.preventDefault())
 
 window.projectSetup.getDefaults().then(defaults => {
@@ -393,8 +438,16 @@ window.projectSetup.getDefaults().then(defaults => {
     return
   }
   if (!defaults.canConfigure) {
-    setNotice('Этот экземпляр проекта уже настроен. Повторный запуск мастера заблокирован.')
-    for (const control of form.elements) control.disabled = true
-    nextButton.disabled = true
+    form.hidden = true
+    document.querySelector('#setup-actions').hidden = true
+    document.querySelector('#step-list').hidden = true
+    document.querySelector('#brand-note').textContent = 'Управление проектом'
+    document.querySelector('#sidebar-copy').querySelector('h1').textContent = 'Проект готов к работе.'
+    document.querySelector('#sidebar-copy').querySelector('p:last-child').textContent = 'Здесь можно открыть пульт, проверить фоновые обновления или выключить их на этом компьютере.'
+    document.querySelector('#step-eyebrow').textContent = 'Настройки компьютера'
+    document.querySelector('#step-title').textContent = 'Работа с настроенным проектом'
+    document.querySelector('#step-description').textContent = 'Технические команды не нужны — выберите нужное действие.'
+    maintenance.hidden = false
+    renderLocalSyncState(defaults.localSync)
   }
 }).catch(error => setNotice(error.message || String(error)))

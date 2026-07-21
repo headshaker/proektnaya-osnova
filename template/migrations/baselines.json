@@ -230,7 +230,10 @@
       "setup-ui/package.json": "850fa021a4ec023097def645d3295c8e7ee314d32b2ed13e4f91a9845c8fb0db",
       "setup-ui/preload.js": "bbfddf1dbc2e0fb91b1809c60444b757ee19b32ceefe36b466076489f048e348",
       "setup-ui/renderer.js": "3d19ce9581cb5a3e32997e85b974f7d4be7ea665e91fc918886126c256fa8fc3",
-      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee"
+      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee",
+      "scripts/install-local-sync.ps1": "535f4db407cd333447453be6ae3a31c8bdf8f5d6553c02b17ae25a78f83a59ba",
+      "scripts/sync-project.ps1": "02a8612888cb2b3e362b2b3008383ecd1323da94864c4165a581c6c38a38a66a",
+      "scripts/validate-vault.ps1": "3ebe2e01c6d123a4b369781721a0d6792a71a981d3c8240cdbced861b5d1543c"
     },
     "0.13.1": {
       "REGISTRY-SCHEMA.json": "44740dff0fd28066df8b6bb406ad214fcf530dbc00cd68fa34349bfe5eae6742",
@@ -246,7 +249,10 @@
       "setup-ui/package.json": "99df0ed63e1315ee428ee8118fe40664459fb801c1f219a6486ec9a76fb730f1",
       "setup-ui/preload.js": "bbfddf1dbc2e0fb91b1809c60444b757ee19b32ceefe36b466076489f048e348",
       "setup-ui/renderer.js": "3d19ce9581cb5a3e32997e85b974f7d4be7ea665e91fc918886126c256fa8fc3",
-      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee"
+      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee",
+      "scripts/install-local-sync.ps1": "535f4db407cd333447453be6ae3a31c8bdf8f5d6553c02b17ae25a78f83a59ba",
+      "scripts/sync-project.ps1": "02a8612888cb2b3e362b2b3008383ecd1323da94864c4165a581c6c38a38a66a",
+      "scripts/validate-vault.ps1": "3ebe2e01c6d123a4b369781721a0d6792a71a981d3c8240cdbced861b5d1543c"
     },
     "0.13.2": {
       "REGISTRY-SCHEMA.json": "56796438adea2bcdde704f34d4161b174b2ef99e1094e1ef0a84d5db668cbe4f",
@@ -262,7 +268,10 @@
       "setup-ui/package.json": "84b904ddcb295c0b830c7ce34daf2585a6e45e2cc19ed126344290f02d940a0e",
       "setup-ui/preload.js": "bbfddf1dbc2e0fb91b1809c60444b757ee19b32ceefe36b466076489f048e348",
       "setup-ui/renderer.js": "3d19ce9581cb5a3e32997e85b974f7d4be7ea665e91fc918886126c256fa8fc3",
-      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee"
+      "setup-ui/styles.css": "1b298e0d96101055dd49e0054d8a90fcbe5f9e616fdbe84d83c9c45aeb383eee",
+      "scripts/install-local-sync.ps1": "535f4db407cd333447453be6ae3a31c8bdf8f5d6553c02b17ae25a78f83a59ba",
+      "scripts/sync-project.ps1": "02a8612888cb2b3e362b2b3008383ecd1323da94864c4165a581c6c38a38a66a",
+      "scripts/validate-vault.ps1": "3ebe2e01c6d123a4b369781721a0d6792a71a981d3c8240cdbced861b5d1543c"
     },
     "0.14.0": {
       "REGISTRY-SCHEMA.json": "e80b851b0c8222922093c67b3e46836f8f32340afc86d30f6266f7a8a822254e",
@@ -277,7 +286,50 @@
       "setup-ui/package-lock.json": "bb57abb3f69aec79d9d8fac39ed676d43cf3fcc7271a44cea1d6d5cb199dff7a",
       "setup-ui/package.json": "2e7e11f30b5fa7e8f385ff3a5cd1714d2a164e96679570a990c7181c076b07c6",
       "setup-ui/renderer.js": "4411812e526d166505d470af48635f38fc18f2ff3bad64d0842052e2944ebbfc",
-      "setup-ui/styles.css": "4198b6df1014418be45909f29b2449223f18ec864a87174e9b02d9f82ae46431"
+      "setup-ui/styles.css": "4198b6df1014418be45909f29b2449223f18ec864a87174e9b02d9f82ae46431",
+      "scripts/install-local-sync.ps1": "535f4db407cd333447453be6ae3a31c8bdf8f5d6553c02b17ae25a78f83a59ba",
+      "scripts/sync-project.ps1": "02a8612888cb2b3e362b2b3008383ecd1323da94864c4165a581c6c38a38a66a",
+      "scripts/validate-vault.ps1": "3ebe2e01c6d123a4b369781721a0d6792a71a981d3c8240cdbced861b5d1543c",
+      "setup-ui/preload.js": "31c415f6789acf75de3cc6f4c996c581e4eb3e33035be2f0c3bdb60cc1536968"
+    },
+    "0.14.1": {
+      ".github/workflows/ai-coordination.yml": "f53f07f5986d10f42d6dc11f4f0225b93af2e8dab263a0b59de194e272342895",
+      ".github/workflows/knowledge-base.yml": "5ac4432fc1e7f4933a1652b1cf19e6da215ee2f72ed903c13e5edef918c79aa7",
+      ".github/workflows/registry-compatibility.yml": "489b655c7619aef9844a3f96aef34bc7b93448dd4b742163fb30d52198d8b818",
+      ".github/workflows/team-input.yml": "f5536a5c178565df379ee601129033fdae1bb4d790ae2b049f9812fd14c91079",
+      "AI-COORDINATION.json": "ab08f4880862f74a839b46b32c2ad4d425e49ac99eb688907b8c2771845bd0ba",
+      "CONTEXT-PROFILES.json": "5fca8f63d151d56f2d9edca5b0a603b1084bd1757871e0a8f885994205c6584e",
+      "REGISTRY-SCHEMA.json": "ca2a412af20d0e629c5a98ddfd78d3aedcd83092c8ea772595eb4f088b9d4fa3",
+      "START-PROJECT.cmd": "d850be1e746452c307965fa4fbfe0036f3b424af9a2499abbb81f4ef2d45b224",
+      "TEAM-INPUT.json": "602d25308b5b94d6aa21d817e6c640e9362395ddd89faec962fd8f13c04c9c6b",
+      "TEMPLATE-LICENSE": "0ff3d0abc740f19220b216831596984446b97f830e61570da08171e4e4115baa",
+      "migrations/baselines.json": "afcd53c3ea2a1c9ec8ac9c0364944efc379726874c26b1c59343a24fb26d2de6",
+      "migrations/manifest.json": "16cf82ebd1caea3f1ed397f48a542813b707e450f26549497d718e95456efab5",
+      "scripts/build-project-dossier.ps1": "51176023e3e3b82aeed944c2526986f2916a295d21459ec669832e125dcb30ab",
+      "scripts/build-context.ps1": "ac403f0b21b66dd8a31fc8705b5e4cbcdc8b594758f378e6ffda07c38d52d2d5",
+      "scripts/check-ai-coordination.ps1": "7a5be88e4053dc0d41287409d5b667cc99eb6d3327c4b9a5be40bd364d2ef509",
+      "scripts/context-budget.py": "d725d09ef2c161608a8e40acd855280e3ca3fdc06e0486248624ffed8cd908e9",
+      "scripts/init-project.ps1": "93aa3cf7cdac28f60225c9740e5f872036517a05cd84891223f3c9d54cf297c6",
+      "scripts/install-local-sync.ps1": "535f4db407cd333447453be6ae3a31c8bdf8f5d6553c02b17ae25a78f83a59ba",
+      "scripts/process-team-input.ps1": "93e5567279dc66f3a16a9f1add0347548dcd369cb1a3cb5898f8a75bcbb29724",
+      "scripts/configure-project-tools.ps1": "8781a6cc0acb1184152ac2ea483f51fc301bc3ca9e332ae3bde0b8af0ca7ac17",
+      "scripts/setup-project.ps1": "cbbd95dad6e12a8b7118fd9c148a3826728c464352d6d074e4f6621dba03b5de",
+      "scripts/start-ai-work.ps1": "61c0ed5f98a6f95a8dc5002b91a6d731d864de75a6799d3a478a9d252d2b7109",
+      "scripts/start-project.ps1": "de34566f1c9c716687af0e2e42f7d4009fcb9ca2284f2d4f3a885ccd5f743eb7",
+      "scripts/sync-project.ps1": "02a8612888cb2b3e362b2b3008383ecd1323da94864c4165a581c6c38a38a66a",
+      "scripts/sync-ai-work.ps1": "6fa962450af8160bd57eaacec615aed6c7b24fde22d9d13d432032ed7b2265d7",
+      "scripts/update-project.ps1": "fb356364c1bbbf725028c177472151162c9c8b9cc1daf02f1aa444d538e68bef",
+      "scripts/validate-registries.ps1": "1d12a95d2b798177516df656fea266df0043332a01a4612cc7bd903137a5d25b",
+      "scripts/validate-vault.ps1": "3ebe2e01c6d123a4b369781721a0d6792a71a981d3c8240cdbced861b5d1543c",
+      "setup-ui/index.html": "891b9586c58774be46ab3b01d3e39dd935976257f3bb3df333f7fa8294781316",
+      "setup-ui/main.js": "c24f213e10d02107e00f32bf9952bb14846444102fbe772213eeaa13819f891d",
+      "setup-ui/package-lock.json": "f93cb766af7f67bee9f3dc9eb8fc815bfe298981430e995302e76ca2260297a8",
+      "setup-ui/package.json": "45e4cee0cb26d63f16c7cb1b144b8681a82f0bea16e25b5728f8a2ce63f6d6d9",
+      "setup-ui/preload.js": "31c415f6789acf75de3cc6f4c996c581e4eb3e33035be2f0c3bdb60cc1536968",
+      "setup-ui/renderer.js": "25af75b5a4d3e205dd187bc60a37516af9201caa4c7bedd0b161be834150f1c2",
+      "setup-ui/setup-contract.js": "6d80796384f9c9d87c96008ddbe935f786d19d9c3ca2d9e986dc89c24ab5f893",
+      "setup-ui/styles.css": "e68a8e6eecb8d92e3b686d629f6ba4434705a4e0c77b082b8dc6c5d43ba71fce",
+      "setup-ui/test/setup-contract.test.js": "e4ce7a126b71333b51ec98bece44a0e974c95ca99b8e3446b5ce6e3c087e145e"
     }
   }
 }

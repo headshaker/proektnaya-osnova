@@ -15,6 +15,7 @@ $configurationPath = Join-Path $root 'LOCAL-SYNC.json'
 $reportPath = Join-Path $root '.project/local-sync-status.json'
 $humanReportPath = Join-Path $root '.project/LOCAL-SYNC-STATUS.md'
 $lockPath = Join-Path $root '.project/local-sync.lock'
+$localDisablePath = Join-Path $root '.project/local-sync.disabled'
 $lockStream = $null
 
 function Write-AtomicJson([string]$Path, [object]$Value) {
@@ -120,6 +121,10 @@ try {
     $remote = [string]$configuration.remote
     if (-not [bool]$configuration.enabled) {
         Complete-Sync 'disabled' 'Автоматическое обновление этой папки отключено.' $false $false
+        return
+    }
+    if (Test-Path -LiteralPath $localDisablePath -PathType Leaf) {
+        Complete-Sync 'disabled-local' 'Фоновое обновление отключено на этом компьютере.' $false $false
         return
     }
     if ([string]$configuration.strategy -cne 'fast-forward-only' -or

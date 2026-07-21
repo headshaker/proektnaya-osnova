@@ -76,6 +76,9 @@ jobs:
     steps:
       - name: Получить репозиторий
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Проверить версию и выпускной архив
         shell: pwsh

@@ -20,6 +20,7 @@ $requiredFiles = @(
     'scripts/configure-github-protection.ps1',
     'scripts/configure-project-tools.ps1',
     'scripts/refresh-ai-context.ps1', 'scripts/sync-project.ps1', 'scripts/install-local-sync.ps1',
+    'scripts/run-local-sync-background.ps1',
     '.githooks/post-merge', '.githooks/post-checkout', '.githooks/post-rewrite',
     'TEAM-INPUT.md', 'TEAM-INPUT.json', 'scripts/process-team-input.ps1',
     '.github/ISSUE_TEMPLATE/team-input.yml', '.github/workflows/team-input.yml',
