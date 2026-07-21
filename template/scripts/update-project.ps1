@@ -403,7 +403,7 @@ if (-not $SkipLocalSyncInstallation -and
         $syncInstallationText = (& (Join-Path $projectRoot 'scripts/install-local-sync.ps1') `
             -ProjectPath $projectRoot -Apply -Json | Out-String).Trim()
         $syncInstallation = $syncInstallationText | ConvertFrom-Json
-        if ([string]$syncInstallation.status -in @('installed', 'disabled')) {
+        if ([string]$syncInstallation.status -in @('installed', 'disabled-policy', 'disabled-local')) {
             Write-Host ([string]$syncInstallation.message)
         }
         else {

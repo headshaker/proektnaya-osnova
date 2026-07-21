@@ -15,9 +15,13 @@ const projectRoot = app.isPackaged
   : path.resolve(__dirname, '..')
 const setupScript = path.join(projectRoot, 'scripts', 'setup-project.ps1')
 const toolsScript = path.join(projectRoot, 'scripts', 'configure-project-tools.ps1')
+const localSyncInstaller = path.join(projectRoot, 'scripts', 'install-local-sync.ps1')
 const homePath = path.join(projectRoot, 'HOME.md')
 const reportPath = path.join(projectRoot, '.project', 'setup-report.json')
 const toolsReportPath = path.join(projectRoot, '.project', 'setup-tools-report.json')
+const localSyncReportPath = path.join(projectRoot, '.project', 'local-sync-installation.json')
+const localSyncLogPath = path.join(projectRoot, '.project', 'local-sync.log')
+const localSyncDisablePath = path.join(projectRoot, '.project', 'local-sync.disabled')
 const bundledPowerShell = app.isPackaged
   ? path.resolve(process.resourcesPath, '..', 'powershell', 'pwsh.exe')
   : ''
@@ -45,6 +49,30 @@ const allowedAssets = new Map([
 
 let mainWindow = null
 let activeRun = null
+
+function readLocalSyncState () {
+  let policyEnabled = true
+  try {
+    const configuration = JSON.parse(fs.readFileSync(path.join(projectRoot, 'LOCAL-SYNC.json'), 'utf8'))
+    policyEnabled = configuration.enabled === true
+  } catch {}
+
+  let report = null
+  try { report = JSON.parse(fs.readFileSync(localSyncReportPath, 'utf8')) } catch {}
+  const localEnabled = !fs.existsSync(localSyncDisablePath)
+  const enabled = policyEnabled && localEnabled
+  return {
+    enabled,
+    policyEnabled,
+    localEnabled,
+    status: String(report?.status || (enabled ? 'not-installed' : (policyEnabled ? 'disabled-local' : 'disabled-policy'))),
+    message: String(report?.message || (enabled
+      ? 'Фоновое обновление ещё не настроено на этом компьютере.'
+      : (policyEnabled ? 'Фоновое обновление отключено на этом компьютере.' : 'Автоматическое обновление отключено политикой проекта.'))),
+    logAvailable: fs.existsSync(localSyncLogPath),
+    logPath: localSyncLogPath
+  }
+}
 
 protocol.registerSchemesAsPrivileged([{
   scheme,
@@ -219,6 +247,21 @@ function inspectTools (payload) {
   })
 }
 
+function configureLocalSync (enabled) {
+  if (!fs.existsSync(localSyncInstaller)) {
+    return Promise.reject(new Error('Не найден внутренний механизм управления обновлением.'))
+  }
+  const args = [
+    '-NoLogo', '-NoProfile', '-NonInteractive', '-File', localSyncInstaller,
+    '-ProjectPath', projectRoot, '-Apply', enabled ? '-Enable' : '-Disable', '-Json'
+  ]
+  return runPowerShellArguments(args, 60 * 1000).then(result => {
+    if (!result.ok) throw new Error(result.output || 'Не удалось изменить настройку фонового обновления.')
+    try { JSON.parse(result.output) } catch { throw new Error('Механизм обновления вернул непонятный результат.') }
+    return readLocalSyncState()
+  })
+}
+
 function configureIpc () {
   ipcMain.handle('setup:get-defaults', event => {
     requireTrustedSender(event)
@@ -230,7 +273,8 @@ function configureIpc () {
       date: today,
       electronVersion: process.versions.electron,
       automationReady: hasBundledPowerShell || !app.isPackaged,
-      runtimeLabel: hasBundledPowerShell ? 'Автономный запуск' : 'Режим разработки'
+      runtimeLabel: hasBundledPowerShell ? 'Автономный запуск' : 'Режим разработки',
+      localSync: readLocalSyncState()
     }
   })
   ipcMain.handle('setup:preview', (event, payload) => {
@@ -244,6 +288,18 @@ function configureIpc () {
   ipcMain.handle('setup:apply', (event, payload) => {
     requireTrustedSender(event)
     return runPowerShell(payload, true)
+  })
+  ipcMain.handle('setup:set-local-sync', (event, enabled) => {
+    requireTrustedSender(event)
+    if (typeof enabled !== 'boolean') throw new Error('Неизвестное состояние фонового обновления.')
+    return configureLocalSync(enabled)
+  })
+  ipcMain.handle('setup:open-local-sync-log', async event => {
+    requireTrustedSender(event)
+    if (!fs.existsSync(localSyncLogPath)) throw new Error('Журнал ещё не создан. Выполните первую проверку обновлений.')
+    const error = await shell.openPath(localSyncLogPath)
+    if (error) throw new Error(error)
+    return true
   })
   ipcMain.handle('setup:open-home', async event => {
     requireTrustedSender(event)

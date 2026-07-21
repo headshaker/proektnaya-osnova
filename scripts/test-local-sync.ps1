@@ -47,8 +47,15 @@ try {
     $installationText = (& (Join-Path $manager 'scripts/install-local-sync.ps1') -Apply -SkipScheduledTask -Json | Out-String).Trim()
     $installation = $installationText | ConvertFrom-Json
     $hooksPath = (Invoke-Git $manager @('config', '--local', '--get', 'core.hooksPath') | Select-Object -First 1).Trim()
-    if (-not $installation.gitHooksConfigured -or $hooksPath -cne '.githooks') {
+    if ([int]$installation.schemaVersion -ne 2 -or
+        -not $installation.gitHooksConfigured -or $hooksPath -cne '.githooks' -or
+        -not (Test-Path -LiteralPath (Join-Path $manager '.project/local-sync.log') -PathType Leaf)) {
         throw 'Локальная установка не включила проектные Git-хуки.'
+    }
+    $installerText = [System.IO.File]::ReadAllText((Join-Path $manager 'scripts/install-local-sync.ps1'))
+    if ($installerText -notmatch [regex]::Escape('-WindowStyle Hidden') -or
+        $installerText -notmatch [regex]::Escape('run-local-sync-background.ps1')) {
+        throw 'Windows-задача не использует скрытый фоновый обработчик.'
     }
 
     $initialText = (& (Join-Path $manager 'scripts/sync-project.ps1') -NoFetch -ForceContextRefresh -Json | Out-String).Trim()
@@ -57,6 +64,48 @@ try {
         -not (Test-Path -LiteralPath (Join-Path $manager '.project/context/ai-package.md') -PathType Leaf) -or
         -not (Test-Path -LiteralPath (Join-Path $manager '.project/LOCAL-SYNC-STATUS.md') -PathType Leaf)) {
         throw "Первая синхронизация не собрала актуальный общий контекст: $($initial | ConvertTo-Json -Depth 8 -Compress)"
+    }
+
+    & (Join-Path $manager 'scripts/run-local-sync-background.ps1') -ProjectPath $manager
+    $backgroundLog = [System.IO.File]::ReadAllText((Join-Path $manager '.project/local-sync.log'))
+    if ($backgroundLog -notmatch '\[INFO\].*status=current') {
+        throw 'Успешная фоновая проверка не записалась в журнал.'
+    }
+
+    $disabledText = (& (Join-Path $manager 'scripts/install-local-sync.ps1') `
+            -Apply -Disable -SkipScheduledTask -Json | Out-String).Trim()
+    $disabled = $disabledText | ConvertFrom-Json
+    $disabledSyncText = (& (Join-Path $manager 'scripts/sync-project.ps1') -NoFetch -Json | Out-String).Trim()
+    $disabledSync = $disabledSyncText | ConvertFrom-Json
+    $hooksAfterDisable = @(& git -C $manager config --local --get core.hooksPath 2>$null)
+    if ([string]$disabled.status -cne 'disabled-local' -or $disabled.enabled -ne $false -or
+        [string]$disabledSync.status -cne 'disabled-local' -or $hooksAfterDisable.Count -gt 0) {
+        throw 'Локальное отключение не остановило задачу и Git-хуки этого компьютера.'
+    }
+
+    $enabledText = (& (Join-Path $manager 'scripts/install-local-sync.ps1') `
+            -Apply -Enable -SkipScheduledTask -Json | Out-String).Trim()
+    $enabledInstallation = $enabledText | ConvertFrom-Json
+    $hooksAfterEnable = @(& git -C $manager config --local --get core.hooksPath 2>$null)
+    if ($enabledInstallation.enabled -ne $true -or
+        ($hooksAfterEnable | Select-Object -First 1) -cne '.githooks') {
+        throw 'Повторное включение не восстановило локальное обновление.'
+    }
+
+    $brokenRoot = Join-Path $testRoot 'broken-background-project'
+    [System.IO.Directory]::CreateDirectory((Join-Path $brokenRoot '.project')) | Out-Null
+    $brokenLog = Join-Path $brokenRoot '.project/local-sync.log'
+    try {
+        & (Join-Path $manager 'scripts/run-local-sync-background.ps1') `
+            -ProjectPath $brokenRoot -LogPath $brokenLog
+        throw 'Ошибочный фоновый запуск неожиданно завершился успешно.'
+    }
+    catch {
+        if ($_.Exception.Message -ceq 'Ошибочный фоновый запуск неожиданно завершился успешно.') { throw }
+    }
+    if (-not (Test-Path -LiteralPath $brokenLog -PathType Leaf) -or
+        [System.IO.File]::ReadAllText($brokenLog) -notmatch '\[ERROR\].*Не найден сценарий синхронизации') {
+        throw 'Ошибка фоновой проверки не сохранилась в журнале.'
     }
 
     Add-Content -LiteralPath (Join-Path $seed 'HANDOFF.md') -Value "`n<!-- remote-update-1 -->" -Encoding utf8NoBOM

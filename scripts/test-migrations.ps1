@@ -81,7 +81,45 @@ function Replace-FixtureRegex(
     [System.IO.File]::WriteAllText($path, $updated, $utf8)
 }
 
+function Restore-Fixture0141([string]$Project) {
+    $releaseCommit = ''
+    foreach ($candidate in @(& git -C $root log --all --format=%H -- template/TEMPLATE-VERSION)) {
+        $versionText = @(& git -C $root show "${candidate}:template/TEMPLATE-VERSION" 2>$null)
+        if ($LASTEXITCODE -eq 0 -and ($versionText -join "`n").Trim() -ceq '0.14.1') {
+            $releaseCommit = $candidate
+            break
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($releaseCommit)) {
+        throw 'Не найдена официальная редакция 0.14.1 для прямой проверки миграции.'
+    }
+
+    foreach ($relative in @(
+            'REGISTRY-SCHEMA.json',
+            'migrations/baselines.json',
+            'migrations/manifest.json',
+            'scripts/install-local-sync.ps1',
+            'scripts/sync-project.ps1',
+            'scripts/validate-vault.ps1',
+            'setup-ui/index.html',
+            'setup-ui/main.js',
+            'setup-ui/package-lock.json',
+            'setup-ui/package.json',
+            'setup-ui/preload.js',
+            'setup-ui/renderer.js',
+            'setup-ui/styles.css'
+        )) {
+        $content = @(& git -C $root show "${releaseCommit}:template/$relative" 2>$null)
+        if ($LASTEXITCODE -ne 0) { throw "Не удалось восстановить официальный файл 0.14.1: $relative" }
+        $destination = Join-Path $Project $relative
+        [System.IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
+        [System.IO.File]::WriteAllText($destination, ($content -join "`n").TrimEnd() + "`n", $utf8)
+    }
+    Remove-SafePath $Project 'scripts/run-local-sync-background.ps1'
+}
+
 function Restore-Fixture0140([string]$Project) {
+    Restore-Fixture0141 $Project
     $launcher0132 = @'
 @echo off
 setlocal
@@ -322,6 +360,21 @@ exit /b 1
     foreach ($relative in @('setup-ui/package.json', 'setup-ui/package-lock.json')) {
         Replace-FixtureRegex $Project $relative '"version": "0\.14\.1"' '"version": "0.14.0"'
     }
+    foreach ($relative in @(
+            'REGISTRY-SCHEMA.json',
+            'migrations/baselines.json',
+            'migrations/manifest.json',
+            'scripts/validate-vault.ps1',
+            'setup-ui/preload.js'
+        )) {
+        $content = @(& git -C $root show "v0.14.0:template/$relative" 2>$null)
+        if ($LASTEXITCODE -ne 0) { throw "Не удалось восстановить официальный файл 0.14.0: $relative" }
+        [System.IO.File]::WriteAllText(
+            (Join-Path $Project $relative),
+            ($content -join "`n").TrimEnd() + "`n",
+            $utf8
+        )
+    }
 }
 
 function Restore-Fixture0132([string]$Project) {
@@ -454,7 +507,7 @@ function New-ProjectFixture(
             'scripts/start-ai-work.ps1',
             'scripts/sync-ai-work.ps1'
         )) {
-        $keepCoordination = $Version -in @('0.10.0', '0.10.1', '0.11.0', '0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0')
+        $keepCoordination = $Version -in @('0.10.0', '0.10.1', '0.11.0', '0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0', '0.14.1')
         if (-not $keepCoordination -or
             ($Version -ceq '0.10.0' -and $relative -ceq 'scripts/configure-github-protection.ps1')) {
             Remove-SafePath $project $relative
@@ -468,7 +521,7 @@ function New-ProjectFixture(
             'TEAM-INPUT.md',
             'scripts/process-team-input.ps1'
         )) {
-        if ($Version -notin @('0.11.0', '0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0')) { Remove-SafePath $project $relative }
+        if ($Version -notin @('0.11.0', '0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0', '0.14.1')) { Remove-SafePath $project $relative }
     }
 
     foreach ($relative in @(
@@ -481,7 +534,7 @@ function New-ProjectFixture(
             'VIRTUAL-SPECIALISTS.md',
             'scripts/link-registry-references.py'
         )) {
-        if ($Version -notin @('0.8.0', '0.8.1', '0.9.0', '0.10.0', '0.10.1', '0.11.0', '0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0')) { Remove-SafePath $project $relative }
+        if ($Version -notin @('0.8.0', '0.8.1', '0.9.0', '0.10.0', '0.10.1', '0.11.0', '0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0', '0.14.1')) { Remove-SafePath $project $relative }
     }
 
     foreach ($relative in @(
@@ -495,15 +548,19 @@ function New-ProjectFixture(
             'scripts/build-status.ps1',
             'scripts/check-project-health.ps1'
         )) {
-        if ($Version -notin @('0.8.0', '0.8.1', '0.9.0', '0.10.0', '0.10.1', '0.11.0', '0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0')) { Remove-SafePath $project $relative }
+        if ($Version -notin @('0.8.0', '0.8.1', '0.9.0', '0.10.0', '0.10.1', '0.11.0', '0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0', '0.14.1')) { Remove-SafePath $project $relative }
     }
 
-    if ($Version -notin @('0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0')) {
+    if ($Version -notin @('0.12.0', '0.13.0', '0.13.1', '0.13.2', '0.14.0', '0.14.1')) {
         Remove-SafePath $project 'setup-ui'
         Remove-SafePath $project 'scripts/start-project.ps1'
     }
 
     switch ($Version) {
+        '0.14.1' {
+            Restore-Fixture0141 $project
+            Set-StateVersion $project '0.14.1'
+        }
         '0.14.0' {
             Restore-Fixture0140 $project
             Set-StateVersion $project '0.14.0'
@@ -758,6 +815,18 @@ function New-ProjectFixture(
         }
     }
 
+    if ($Version -in @('0.13.0', '0.13.1', '0.13.2', '0.14.0')) {
+        foreach ($relative in @('REGISTRY-SCHEMA.json', 'migrations/baselines.json', 'migrations/manifest.json')) {
+            $content = @(& git -C $root show "v${Version}:template/$relative" 2>$null)
+            if ($LASTEXITCODE -ne 0) { throw "Не удалось восстановить официальный файл ${Version}: $relative" }
+            [System.IO.File]::WriteAllText(
+                (Join-Path $project $relative),
+                ($content -join "`n").TrimEnd() + "`n",
+                $utf8
+            )
+        }
+    }
+
     if ($Legacy) {
         foreach ($relative in @(
                 'DAILY-WORK.md',
@@ -878,9 +947,24 @@ try {
     [System.IO.Directory]::CreateDirectory($testRoot) | Out-Null
     $updater = Join-Path $source 'scripts/update-project.ps1'
 
+    $project0141 = New-ProjectFixture 'from-0141' '0.14.1'
+    & $updater -ProjectPath $project0141 -Date '2026-07-21' -Apply -SkipLocalSyncInstallation
+    Assert-Version $project0141 '0.14.2'
+    $installer0141 = [System.IO.File]::ReadAllText((Join-Path $project0141 'scripts/install-local-sync.ps1'))
+    $main0141 = [System.IO.File]::ReadAllText((Join-Path $project0141 'setup-ui/main.js'))
+    if ($installer0141 -notmatch [regex]::Escape('-WindowStyle Hidden') -or
+        $main0141 -notmatch [regex]::Escape('setup:set-local-sync') -or
+        -not (Test-Path -LiteralPath (Join-Path $project0141 'scripts/run-local-sync-background.ps1') -PathType Leaf)) {
+        throw 'Миграция 0.14.1 не установила скрытый запуск, журнал и визуальное управление обновлением.'
+    }
+    $state0141 = [System.IO.File]::ReadAllText((Join-Path $project0141 'TEMPLATE-STATE.json')) | ConvertFrom-Json
+    if ($state0141.previousTemplateVersion -cne '0.14.1' -or $state0141.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.14.1 -> 0.14.2.'
+    }
+
     $project0140 = New-ProjectFixture 'from-0140' '0.14.0'
-    & $updater -ProjectPath $project0140 -Date '2026-07-20' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project0140 '0.14.1'
+    & $updater -ProjectPath $project0140 -Date '2026-07-21' -Apply -SkipLocalSyncInstallation
+    Assert-Version $project0140 '0.14.2'
     $launcher0140 = [System.IO.File]::ReadAllText((Join-Path $project0140 'START-PROJECT.cmd'))
     $main0140 = [System.IO.File]::ReadAllText((Join-Path $project0140 'setup-ui/main.js'))
     $renderer0140 = [System.IO.File]::ReadAllText((Join-Path $project0140 'setup-ui/renderer.js'))
@@ -890,13 +974,13 @@ try {
         throw 'Миграция 0.14.0 не установила автономный запуск и понятную обработку ошибок.'
     }
     $state0140 = [System.IO.File]::ReadAllText((Join-Path $project0140 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0140.previousTemplateVersion -cne '0.14.0' -or $state0140.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.14.0 -> 0.14.1.'
+    if ($state0140.previousTemplateVersion -cne '0.14.0' -or $state0140.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.14.0 -> 0.14.2.'
     }
 
     $project0132 = New-ProjectFixture 'from-0132' '0.13.2'
     & $updater -ProjectPath $project0132 -Date '2026-07-19' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project0132 '0.14.1'
+    Assert-Version $project0132 '0.14.2'
     $wizard0132 = [System.IO.File]::ReadAllText((Join-Path $project0132 'setup-ui/index.html'))
     $main0132 = [System.IO.File]::ReadAllText((Join-Path $project0132 'setup-ui/main.js'))
     if ([regex]::Matches($wizard0132, 'data-step-panel=').Count -ne 6 -or
@@ -905,13 +989,13 @@ try {
         throw 'Миграция 0.13.2 не добавила рекомендации руководителю и безопасное открытие локальных инструкций.'
     }
     $state0132 = [System.IO.File]::ReadAllText((Join-Path $project0132 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0132.previousTemplateVersion -cne '0.13.2' -or $state0132.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.13.2 -> 0.14.1.'
+    if ($state0132.previousTemplateVersion -cne '0.13.2' -or $state0132.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.13.2 -> 0.14.2.'
     }
 
     $project0131 = New-ProjectFixture 'from-0131' '0.13.1'
     & $updater -ProjectPath $project0131 -Date '2026-07-19' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project0131 '0.14.1'
+    Assert-Version $project0131 '0.14.2'
     $configuredTools0131 = [System.IO.File]::ReadAllText((Join-Path $project0131 'scripts/configure-project-tools.ps1'))
     $startProject0131 = [System.IO.File]::ReadAllText((Join-Path $project0131 'scripts/start-project.ps1'))
     if ($configuredTools0131 -notmatch 'ConvertTo-AsciiJson' -or
@@ -919,13 +1003,13 @@ try {
         throw 'Миграция 0.13.1 не установила независимый от кодировки JSON и безопасный запуск GUI.'
     }
     $state0131 = [System.IO.File]::ReadAllText((Join-Path $project0131 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0131.previousTemplateVersion -cne '0.13.1' -or $state0131.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.13.1 -> 0.14.1.'
+    if ($state0131.previousTemplateVersion -cne '0.13.1' -or $state0131.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.13.1 -> 0.14.2.'
     }
 
     $project0130 = New-ProjectFixture 'from-0130' '0.13.0'
     & $updater -ProjectPath $project0130 -Date '2026-07-18' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project0130 '0.14.1'
+    Assert-Version $project0130 '0.14.2'
     $configuredTools0130 = [System.IO.File]::ReadAllText((Join-Path $project0130 'scripts/configure-project-tools.ps1'))
     $setupProject0130 = [System.IO.File]::ReadAllText((Join-Path $project0130 'scripts/setup-project.ps1'))
     $startProject0130 = [System.IO.File]::ReadAllText((Join-Path $project0130 'scripts/start-project.ps1'))
@@ -940,13 +1024,13 @@ try {
         throw 'Миграция 0.13.0 не установила исправления кодировки и запасного текстового мастера.'
     }
     $state0130 = [System.IO.File]::ReadAllText((Join-Path $project0130 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0130.previousTemplateVersion -cne '0.13.0' -or $state0130.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.13.0 -> 0.14.1.'
+    if ($state0130.previousTemplateVersion -cne '0.13.0' -or $state0130.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.13.0 -> 0.14.2.'
     }
 
     $project0120 = New-ProjectFixture 'from-0120' '0.12.0'
     & $updater -ProjectPath $project0120 -Date '2026-07-18' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project0120 '0.14.1'
+    Assert-Version $project0120 '0.14.2'
     foreach ($relative in @(
             'AI-TOOLS.json', 'QWEN.md', 'scripts/configure-project-tools.ps1',
             'LOCAL-SYNC.json', 'LOCAL-SYNC.md', 'scripts/install-local-sync.ps1',
@@ -967,13 +1051,13 @@ try {
         throw 'Миграция 0.12.0 не включила безопасное локальное обновление и контекст ИИ.'
     }
     $state0120 = [System.IO.File]::ReadAllText((Join-Path $project0120 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0120.previousTemplateVersion -cne '0.12.0' -or $state0120.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.12.0 -> 0.14.1.'
+    if ($state0120.previousTemplateVersion -cne '0.12.0' -or $state0120.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.12.0 -> 0.14.2.'
     }
 
     $project0110 = New-ProjectFixture 'from-0110' '0.11.0'
     & $updater -ProjectPath $project0110 -Date '2026-07-18' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project0110 '0.14.1'
+    Assert-Version $project0110 '0.14.2'
     Assert-AiCoordinationFiles $project0110
     Assert-TeamInputFiles $project0110
     foreach ($relative in @(
@@ -995,23 +1079,23 @@ try {
         throw 'Миграция 0.11.0 не исключила локальные зависимости Electron из Git.'
     }
     $state0110 = [System.IO.File]::ReadAllText((Join-Path $project0110 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0110.previousTemplateVersion -cne '0.11.0' -or $state0110.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.11.0 -> 0.14.1.'
+    if ($state0110.previousTemplateVersion -cne '0.11.0' -or $state0110.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.11.0 -> 0.14.2.'
     }
 
     $project0101 = New-ProjectFixture 'from-0101' '0.10.1'
     & $updater -ProjectPath $project0101 -Date '2026-07-18' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project0101 '0.14.1'
+    Assert-Version $project0101 '0.14.2'
     Assert-AiCoordinationFiles $project0101
     Assert-TeamInputFiles $project0101
     $state0101 = [System.IO.File]::ReadAllText((Join-Path $project0101 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0101.previousTemplateVersion -cne '0.10.1' -or $state0101.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.10.1 -> 0.14.1.'
+    if ($state0101.previousTemplateVersion -cne '0.10.1' -or $state0101.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.10.1 -> 0.14.2.'
     }
 
     $project0100 = New-ProjectFixture 'from-0100' '0.10.0'
     & $updater -ProjectPath $project0100 -Date '2026-07-18' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project0100 '0.14.1'
+    Assert-Version $project0100 '0.14.2'
     Assert-AiCoordinationFiles $project0100
     $coordination0100 = [System.IO.File]::ReadAllText((Join-Path $project0100 'AI-COORDINATION.json')) | ConvertFrom-Json
     if (-not [bool]$coordination0100.githubProtection.automaticSetup -or
@@ -1019,22 +1103,22 @@ try {
         throw 'Миграция 0.10.0 не включила автоматическую защиту единой версии на GitHub.'
     }
     $state0100 = [System.IO.File]::ReadAllText((Join-Path $project0100 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state0100.previousTemplateVersion -cne '0.10.0' -or $state0100.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.10.0 -> 0.14.1.'
+    if ($state0100.previousTemplateVersion -cne '0.10.0' -or $state0100.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.10.0 -> 0.14.2.'
     }
 
     $project090 = New-ProjectFixture 'from-090' '0.9.0'
     & $updater -ProjectPath $project090 -Date '2026-07-18' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project090 '0.14.1'
+    Assert-Version $project090 '0.14.2'
     Assert-AiCoordinationFiles $project090
     $state090 = [System.IO.File]::ReadAllText((Join-Path $project090 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state090.previousTemplateVersion -cne '0.9.0' -or $state090.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.9.0 -> 0.14.1.'
+    if ($state090.previousTemplateVersion -cne '0.9.0' -or $state090.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.9.0 -> 0.14.2.'
     }
 
     $project081 = New-ProjectFixture 'from-081' '0.8.1'
     & $updater -ProjectPath $project081 -Date '2026-07-17' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project081 '0.14.1'
+    Assert-Version $project081 '0.14.2'
     Assert-AiCoordinationFiles $project081
     foreach ($relative in @('START-PROJECT.cmd', 'scripts/setup-project.ps1', 'scripts/check-context-health.ps1')) {
         if (-not (Test-Path -LiteralPath (Join-Path $project081 $relative) -PathType Leaf)) {
@@ -1044,13 +1128,13 @@ try {
     & (Join-Path $project081 'scripts/build-context.ps1') -Profile compact -IncludeId D-001,Q-001 -Check
     & (Join-Path $project081 'scripts/check-context-health.ps1') -Date '2026-07-07' -Check
     $state081 = [System.IO.File]::ReadAllText((Join-Path $project081 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state081.previousTemplateVersion -cne '0.8.1' -or $state081.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.1 -> 0.14.1.'
+    if ($state081.previousTemplateVersion -cne '0.8.1' -or $state081.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.1 -> 0.14.2.'
     }
 
     $project080 = New-ProjectFixture 'from-080' '0.8.0'
     & $updater -ProjectPath $project080 -Date '2026-07-17' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project080 '0.14.1'
+    Assert-Version $project080 '0.14.2'
     Assert-AiCoordinationFiles $project080
     foreach ($relative in @('HOME.md', 'ADMIN-SETUP.md', 'START-PROJECT.cmd', 'scripts/setup-project.ps1')) {
         if (-not (Test-Path -LiteralPath (Join-Path $project080 $relative) -PathType Leaf)) {
@@ -1058,30 +1142,30 @@ try {
         }
     }
     $state080 = [System.IO.File]::ReadAllText((Join-Path $project080 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state080.previousTemplateVersion -cne '0.8.0' -or $state080.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.0 -> 0.14.1.'
+    if ($state080.previousTemplateVersion -cne '0.8.0' -or $state080.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.8.0 -> 0.14.2.'
     }
 
     $project070 = New-ProjectFixture 'from-070' '0.7.0'
     & $updater -ProjectPath $project070 -Date '2026-07-17' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project070 '0.14.1'
+    Assert-Version $project070 '0.14.2'
     Assert-AiCoordinationFiles $project070
     Assert-ControlLoopFiles $project070
     $state070 = [System.IO.File]::ReadAllText((Join-Path $project070 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state070.previousTemplateVersion -cne '0.7.0' -or $state070.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.7.0 -> 0.14.1.'
+    if ($state070.previousTemplateVersion -cne '0.7.0' -or $state070.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.7.0 -> 0.14.2.'
     }
 
     $project060 = New-ProjectFixture 'from-060' '0.6.0'
     & $updater -ProjectPath $project060 -Date '2026-07-16' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project060 '0.14.1'
+    Assert-Version $project060 '0.14.2'
     Assert-AiCoordinationFiles $project060
     if (-not (Test-Path -LiteralPath (Join-Path $project060 'scripts/link-registry-references.py') -PathType Leaf)) {
         throw 'Миграция 0.6.0 не добавила преобразователь ссылок реестров.'
     }
     $state060 = [System.IO.File]::ReadAllText((Join-Path $project060 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state060.previousTemplateVersion -cne '0.6.0' -or $state060.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.6.0 -> 0.14.1.'
+    if ($state060.previousTemplateVersion -cne '0.6.0' -or $state060.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.6.0 -> 0.14.2.'
     }
     & (Join-Path $project060 'scripts/validate-vault.ps1')
 
@@ -1093,28 +1177,28 @@ try {
         throw 'План обновления 0.5.0 изменил проект или не сообщил о режиме планирования.'
     }
     & $updater -ProjectPath $project050 -Date '2026-07-16' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project050 '0.14.1'
+    Assert-Version $project050 '0.14.2'
     Assert-AiCoordinationFiles $project050
     Assert-AgentFiles $project050
     if ([System.IO.File]::ReadAllText($agents050) -notmatch 'USER-AGENT-RULE') {
         throw 'Миграция заменила пользовательский AGENTS.md.'
     }
     $state050 = [System.IO.File]::ReadAllText((Join-Path $project050 'TEMPLATE-STATE.json')) | ConvertFrom-Json
-    if ($state050.previousTemplateVersion -cne '0.5.0' -or $state050.templateVersion -cne '0.14.1') {
-        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.5.0 -> 0.14.1.'
+    if ($state050.previousTemplateVersion -cne '0.5.0' -or $state050.templateVersion -cne '0.14.2') {
+        throw 'TEMPLATE-STATE.json не зафиксировал переход 0.5.0 -> 0.14.2.'
     }
     & (Join-Path $project050 'scripts/validate-vault.ps1')
 
     $project040 = New-ProjectFixture 'from-040' '0.4.0'
     & $updater -ProjectPath $project040 -Date '2026-07-16' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project040 '0.14.1'
+    Assert-Version $project040 '0.14.2'
     Assert-AiCoordinationFiles $project040
     Assert-AgentFiles $project040
     & (Join-Path $project040 'scripts/build-ai-package.ps1') -Profile compact -Check
 
     $project030 = New-ProjectFixture 'from-030' '0.3.0'
     & $updater -ProjectPath $project030 -Date '2026-07-16' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project030 '0.14.1'
+    Assert-Version $project030 '0.14.2'
     Assert-AiCoordinationFiles $project030
     Assert-AgentFiles $project030
     & (Join-Path $project030 'scripts/build-context.ps1') -Profile compact -IncludeId D-001,Q-001 -Check
@@ -1123,7 +1207,7 @@ try {
     $decisionsPath = Join-Path $project020 'DECISIONS.md'
     [System.IO.File]::AppendAllText($decisionsPath, "`n<!-- CANONICAL-USER-DATA -->`n", $utf8)
     & $updater -ProjectPath $project020 -Date '2026-07-16' -Apply -SkipLocalSyncInstallation
-    Assert-Version $project020 '0.14.1'
+    Assert-Version $project020 '0.14.2'
     Assert-AiCoordinationFiles $project020
     Assert-AgentFiles $project020
     if ([System.IO.File]::ReadAllText($decisionsPath) -notmatch 'CANONICAL-USER-DATA') {
@@ -1137,7 +1221,7 @@ try {
         & $updater -ProjectPath $legacy -Date '2026-07-16'
     } 'Укажите проверенную исходную версию' 'проект без маркера не обновляется без FromVersion'
     & $updater -ProjectPath $legacy -FromVersion '0.1.0' -Date '2026-07-16' -Apply -SkipLocalSyncInstallation
-    Assert-Version $legacy '0.14.1'
+    Assert-Version $legacy '0.14.2'
     Assert-AiCoordinationFiles $legacy
     Assert-AgentFiles $legacy
     if ([System.IO.File]::ReadAllText((Join-Path $legacy '.gitignore')) -notmatch '(?m)^\.project/$') {
@@ -1164,7 +1248,7 @@ try {
     } 'Найдены конфликты управляемых файлов' 'изменённый управляемый файл блокирует обновление'
     Assert-Version $conflict '0.2.0'
     & $updater -ProjectPath $conflict -Date '2026-07-16' -Apply -ForceManagedFiles -SkipLocalSyncInstallation
-    Assert-Version $conflict '0.14.1'
+    Assert-Version $conflict '0.14.2'
     $managedBackup = Get-ChildItem -LiteralPath (Join-Path $conflict '.project/backups') -Recurse -File |
         Where-Object FullName -match 'files[\\/]scripts[\\/]build-project-dossier\.ps1$' |
         Select-Object -First 1
@@ -1193,7 +1277,7 @@ try {
         & $updater -ProjectPath $rollback -FromVersion '9.9.9' -Date '2026-07-16'
     } 'не совпадает с TEMPLATE-VERSION|не поддерживается' 'противоречащая или неподдерживаемая версия отклоняется'
 
-    Write-Host 'Сценарии миграции проектов до 0.14.1 пройдены.'
+    Write-Host 'Сценарии миграции проектов до 0.14.2 пройдены.'
 }
 finally {
     if (Test-Path -LiteralPath $testRoot) {

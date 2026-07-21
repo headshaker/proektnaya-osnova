@@ -86,6 +86,21 @@ button, select, input { color: inherit; }
 .runtime { flex: none; padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: white; font-size: 10px; font-weight: 700; letter-spacing: .04em; }
 .notice { margin-top: 16px; padding: 12px 14px; border: 1px solid #efc1ba; border-radius: 10px; color: var(--danger); background: var(--danger-soft); font-size: 13px; line-height: 1.45; }
 .notice.is-info { border-color: #b8d5ca; color: var(--accent-strong); background: var(--accent-soft); }
+.maintenance { max-width: 760px; padding: 30px 2px 22px; overflow: auto; }
+.sync-state { display: grid; grid-template-columns: 46px 1fr; gap: 15px; align-items: start; padding: 20px; border: 1px solid #b8d5ca; border-radius: 14px; background: var(--accent-soft); }
+.sync-state.is-disabled { border-color: #ddd4c4; background: #f5f1e8; }
+.sync-state-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; color: white; background: var(--accent); font-size: 19px; font-weight: 800; }
+.sync-state.is-disabled .sync-state-mark { color: #7a7062; background: #ddd4c4; }
+.sync-state p, .sync-state strong, .sync-state small { display: block; margin: 0; }
+.sync-state p { color: var(--accent-strong); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.sync-state strong { margin-top: 5px; font-size: 14px; line-height: 1.45; }
+.sync-state small { margin-top: 8px; color: var(--muted); font-size: 11px; }
+.maintenance-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.maintenance-actions .button:disabled { opacity: .45; cursor: default; }
+.danger-button:not(:disabled) { border-color: #d7aaa4; color: var(--danger); }
+.maintenance-note { margin: 18px 0; padding: 15px 16px; border-left: 3px solid var(--warm); background: #fbf5e9; }
+.maintenance-note strong { font-size: 12px; }
+.maintenance-note p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .technical-error { margin-top: 10px; border: 1px solid #efc1ba; border-radius: 10px; background: #fff8f6; }
 .technical-error summary { padding: 11px 13px; color: #7b3730; font-size: 11px; font-weight: 750; cursor: pointer; }
 .technical-error p { margin: 0; padding: 0 13px 8px; color: var(--muted); font-size: 10px; }
